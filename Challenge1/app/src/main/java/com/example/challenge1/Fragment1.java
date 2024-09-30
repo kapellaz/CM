@@ -125,7 +125,7 @@ public class Fragment1 extends Fragment {
                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 Fragment2 editFragment = new Fragment2();
 
-                transaction.replace(R.id.animal_edit, editFragment);
+                transaction.replace(R.id.animal_info, editFragment);
                 transaction.addToBackStack(null);
                 transaction.commit();
             }
