@@ -78,10 +78,11 @@ public class Fragment1 extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-
-        animals.add(new Animal("Rui", "Guegan", "2"));
-        animals.add(new Animal("Rui", "Bruno", "3"));
-        animals.add(new Animal("Rui", "Samu", "4"));
+        if(animals.isEmpty()){
+            animals.add(new Animal("Rui", "Guegan", "2"));
+            animals.add(new Animal("Rui", "Bruno", "3"));
+            animals.add(new Animal("Rui", "Samu", "4"));
+        }
 
         View view = inflater.inflate(R.layout.fragment_1, container, false);
         spin = view.findViewById(R.id.spinner);
