@@ -14,7 +14,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Edit"
-        android:textAlignment="center" />
+        android:textSize="50dp"
+        android:textAlignment="center"
+        android:fontFamily="monospace"
+        android:textColor="@color/purple"/>
 
     <TextView
         android:id="@+id/name_edit"
@@ -22,18 +25,24 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
         android:text="Name"
-        android:textAlignment="center" />
+        android:textSize="20dp"
+        android:textAlignment="center"
+        android:fontFamily="monospace"
+        android:textColor="@color/purple"/>
 
     <EditText
         android:id="@+id/edit_name_field"
         android:layout_width="280dp"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:background="@drawable/border"
         android:ems="10"
         android:inputType="text"
         android:hint="@string/animal"
-        android:textAlignment="center"
-        android:textSize="40sp" />
+        android:textAlignment="textStart"
+        android:paddingLeft="10dp"
+        android:textSize="20sp"
+        android:fontFamily="monospace"
+        />
 
     <TextView
         android:id="@+id/age_edit"
@@ -41,42 +50,30 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
         android:text="Age"
-        android:textAlignment="center" />
+        android:textSize="20dp"
+        android:textAlignment="center"
+        android:fontFamily="monospace"
+        android:textColor="@color/purple"/>
 
     <EditText
-        android:id="@+id/edit_age_field"
         android:layout_width="280dp"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:background="@drawable/border"
         android:ems="10"
-        android:inputType="text"
+        android:inputType="number"
         android:hint="@string/age"
-        android:textAlignment="center"
-        android:textSize="40sp" />
+        android:paddingLeft="10dp"
+        android:textAlignment="textStart"
+        android:textSize="20sp"
+        android:fontFamily="monospace"/>
 
-    <TextView
-        android:id="@+id/owner_edit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:text="Owner"
-        android:textAlignment="center" />
 
-    <EditText
-        android:id="@+id/edit_owner_field"
-        android:layout_width="280dp"
-        android:layout_height="wrap_content"
-        android:background="@drawable/border"
-        android:ems="10"
-        android:hint="@string/owner"
-        android:inputType="text"
-        android:textAlignment="center"
-        android:textSize="40sp" />
 
     <Button
         android:id="@+id/save_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
         android:text="Save" />
 
 </LinearLayout>

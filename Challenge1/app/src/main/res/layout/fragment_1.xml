@@ -15,10 +15,15 @@
 
         <Spinner
             android:id="@+id/spinner"
-            android:background="@drawable/border"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
             android:padding="10dp"
-            android:layout_width="348dp"
-            android:layout_height="50dp" />
+            android:background="@drawable/spinner_background"
+            android:popupBackground="@drawable/spinner_popup_background"
+
+            android:spinnerMode="dropdown"
+            android:dropDownWidth="match_parent"
+            />
 
 
         <ImageView
