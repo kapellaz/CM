@@ -2,11 +2,13 @@ package com.example.challenge1;
 
 public class Animal
 {
+    private String type;
     private String owner;
     private String name;
     private String age;
 
-    public Animal(String owner, String name, String age) {
+    public Animal(String type, String owner, String name, String age) {
+        this.type = type;
         this.owner = owner;
         this.name = name;
         this.age = age;
@@ -36,8 +38,15 @@ public class Animal
         this.age = age;
     }
 
+    public String getType() {
+        return type;
+    }
+
+
+
+
     @Override
     public String toString() {
-        return name;
+        return type;
     }
 }

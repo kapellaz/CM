@@ -4,6 +4,8 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -42,6 +44,7 @@ public class Fragment1 extends Fragment {
     private TextView animalOwner;
     ArrayList<Animal> animals = new ArrayList<>();
     private Button button;
+    private ModelView modelView;
 
     public Fragment1() {
         // Required empty public constructor
@@ -79,10 +82,16 @@ public class Fragment1 extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         if(animals.isEmpty()){
-            animals.add(new Animal("Rui", "Guegan", "2"));
-            animals.add(new Animal("Rui", "Bruno", "3"));
-            animals.add(new Animal("Rui", "Samu", "4"));
+            animals.add(new Animal("Frog","Rui", "Guegan", "2"));
+            animals.add(new Animal("Snail","Rui", "Bruno", "3"));
+            animals.add(new Animal("Rhino","Rui", "Samu", "4"));
         }
+        modelView = new ViewModelProvider(requireActivity()).get(ModelView.class);
+
+
+
+
+
 
         View view = inflater.inflate(R.layout.fragment_1, container, false);
         spin = view.findViewById(R.id.spinner);
@@ -116,12 +125,13 @@ public class Fragment1 extends Fragment {
 
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        modelView = new ViewModelProvider(requireActivity()).get(ModelView.class);
         button = view.findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.v("TAG","button clicked");
+                modelView.setAnimalData(animal);
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 Fragment2 editFragment = new Fragment2();
@@ -137,14 +147,14 @@ public class Fragment1 extends Fragment {
 
 
     public void setAnimal(Animal animal) {
-        switch (animal.getName()) {
-            case "Guegan":
+        switch (animal.getType()) {
+            case "Frog":
                 animalView.setImageResource(R.drawable.frog);
                 break;
-            case "Bruno":
+            case "Rhino":
                 animalView.setImageResource(R.drawable.rhino);
                 break;
-            case "Samu":
+            case "Snail":
                 animalView.setImageResource(R.drawable.snail);
                 break;
         }

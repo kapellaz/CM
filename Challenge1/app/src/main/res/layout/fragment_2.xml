@@ -60,6 +60,7 @@
         android:layout_height="50dp"
         android:background="@drawable/border"
         android:ems="10"
+        android:id="@+id/edit_age_field"
         android:inputType="number"
         android:hint="@string/age"
         android:paddingLeft="10dp"
