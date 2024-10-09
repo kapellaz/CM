@@ -8,7 +8,6 @@ public class ModelView extends ViewModel{
     private MutableLiveData<Animal> AnimalData = new MutableLiveData<>();
 
     private MutableLiveData<ArrayList<Animal>> ListAnimal = new MutableLiveData<>();
-    private ArrayList<Animal> animals;
 
 
     public void setAnimalData(Animal animal) {

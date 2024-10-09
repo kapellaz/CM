@@ -1,6 +1,7 @@
 package com.example.challenge1;
+import java.io.Serializable;
 
-public class Animal
+public class Animal implements Serializable
 {
     private String type;
     private String owner;
