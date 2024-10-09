@@ -132,13 +132,7 @@ public class Fragment1 extends Fragment {
             public void onClick(View view) {
                 Log.v("TAG","button clicked");
                 modelView.setAnimalData(animal);
-                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                Fragment2 editFragment = new Fragment2();
-
-                transaction.replace(R.id.animal_info, editFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
+                ((MainActivity) getActivity()).switchToFragment2();
             }
         });
 

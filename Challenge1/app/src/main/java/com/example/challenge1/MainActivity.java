@@ -1,6 +1,7 @@
 package com.example.challenge1;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     private Fragment1 infofr;
-    private Fragment2 editfr;
+
 
 
     ArrayList<Animal> animals = new ArrayList<>();
@@ -32,14 +33,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         infofr = new Fragment1();
-        editfr = new Fragment2();
 
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.add(R.id.animal_info, infofr);
-        ft.add(R.id.animal_edit, editfr);
+        ft.replace(R.id.main, infofr);
         ft.commit();
 
 
+    }
+
+    public void switchToFragment2() {
+        Log.v("TAG", "switch to fragment 2");
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main, new Fragment2())
+                .addToBackStack(null)
+                .commit();
+    }
+
+    public void switchToFragment1() {
+        getSupportFragmentManager().popBackStack();
     }
 }

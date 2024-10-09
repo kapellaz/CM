@@ -100,7 +100,8 @@ public class Fragment2 extends Fragment {
 
 
                 Log.v("TAG","button clicked - Save");
-                getParentFragmentManager().popBackStack();
+
+                ((MainActivity) getActivity()).switchToFragment1();
             }
         });
 
