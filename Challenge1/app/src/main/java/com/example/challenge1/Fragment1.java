@@ -96,20 +96,23 @@ public class Fragment1 extends Fragment {
         ArrayAdapter<Animal> adapter = new ArrayAdapter<Animal>(getContext(), android.R.layout.simple_spinner_dropdown_item, animals);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spin.setAdapter(adapter);
-
+        if(modelView.getAnimal() != null){
+            spin.setSelection(animals.indexOf(modelView.getAnimal().getValue()));
+        }
         spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 animal = (Animal) adapterView.getSelectedItem();
                 setAnimal(animal);
-
+                modelView.setAnimalData(animal); // saving last animal
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
 
-            }
-        });
+                }
+            });
+
 
 
         return view;
