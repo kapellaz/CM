@@ -27,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<Animal> animals;
 
+    /**
+     * Called when the activity is first created.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +65,9 @@ public class MainActivity extends AppCompatActivity {
         outState.putSerializable("animals_list", animals);
     }
 
+    /**
+     * Called when we want to switch to fragment 2 from fragment 1.
+     */
     public void switchToFragment2() {
         Log.v("TAG", "switch to fragment 2");
         getSupportFragmentManager().beginTransaction()
@@ -70,6 +76,10 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+
+    /**
+     * Called when we want to switch to fragment 1 from fragment 2.
+     */
     public void switchToFragment1() {
         getSupportFragmentManager().popBackStack();
     }

@@ -36,6 +36,10 @@ public class Fragment1 extends Fragment {
         // Required empty public constructor
     }
 
+
+    /**
+     * Called when the fragment is first created.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -58,6 +62,8 @@ public class Fragment1 extends Fragment {
         if(modelView.getAnimal() != null){
             spin.setSelection(animals.indexOf(modelView.getAnimal().getValue()));
         }
+
+        // Set the animal to the selected item
         spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -78,10 +84,13 @@ public class Fragment1 extends Fragment {
     }
 
 
+    // Called when the fragment is created
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         modelView = new ViewModelProvider(requireActivity()).get(ModelView.class);
         button = view.findViewById(R.id.button);
+
+        // Switch to Fragment2 when the button is clicked
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -27,7 +27,9 @@ public class Fragment2 extends Fragment {
     }
 
 
-
+    /**
+     * Called when the fragment is first created.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -36,6 +38,9 @@ public class Fragment2 extends Fragment {
 
     }
 
+    /**
+     * Called when the fragment is created.
+     */
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -48,6 +53,8 @@ public class Fragment2 extends Fragment {
         TextView editTextAnimalAge = view.findViewById(R.id.edit_age_field);
 
         button = view.findViewById(R.id.save_button);
+
+        // On click save changes and go back to fragment 1
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -63,6 +70,9 @@ public class Fragment2 extends Fragment {
 
     }
 
+    /**
+     * Saves the changes made by the user.
+     */
     public void checkChanges(String name,String age, Animal animal){
         if(!name.isEmpty()){
             animal.setName(name);
