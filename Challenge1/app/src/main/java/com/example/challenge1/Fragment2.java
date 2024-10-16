@@ -52,6 +52,8 @@ public class Fragment2 extends Fragment {
 
         TextView editTextAnimalAge = view.findViewById(R.id.edit_age_field);
 
+        TextView editTextAnimalOwner = view.findViewById(R.id.edit_owner_field);
+
         button = view.findViewById(R.id.save_button);
 
         // On click save changes and go back to fragment 1
@@ -60,7 +62,8 @@ public class Fragment2 extends Fragment {
             public void onClick(View view) {
                 String name = editTextAnimalName.getText().toString();
                 String age = editTextAnimalAge.getText().toString();
-                checkChanges(name,age,animal);
+                String owner = editTextAnimalOwner.getText().toString();
+                checkChanges(name,age,owner,animal);
 
                 Log.v("TAG","button clicked - Save");
                 ((MainActivity) getActivity()).switchToFragment1();
@@ -73,12 +76,15 @@ public class Fragment2 extends Fragment {
     /**
      * Saves the changes made by the user.
      */
-    public void checkChanges(String name,String age, Animal animal){
+    public void checkChanges(String name,String age, String Owner,Animal animal){
         if(!name.isEmpty()){
             animal.setName(name);
         }
         if(!age.isEmpty()){
             animal.setAge(age);
+        }
+        if(!Owner.isEmpty()){
+            animal.setOwner(Owner);
         }
     }
 }
