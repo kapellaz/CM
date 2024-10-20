@@ -60,7 +60,7 @@ public class Fragment1 extends Fragment {
         ArrayAdapter<Animal> adapter = new ArrayAdapter<Animal>(getContext(), android.R.layout.simple_spinner_dropdown_item, animals);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spin.setAdapter(adapter);
-        if(modelView.getAnimal() != null){
+        if(modelView.getAnimal() != null){ // select the last animal choosen
             spin.setSelection(animals.indexOf(modelView.getAnimal().getValue()));
         }
 
