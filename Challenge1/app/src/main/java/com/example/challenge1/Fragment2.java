@@ -44,8 +44,9 @@ public class Fragment2 extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        //find the view model
         viewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
+        //get animal from the view model
         Animal animal = viewModel.getAnimal().getValue();
 
         TextView editTextAnimalName = view.findViewById(R.id.edit_name_field);

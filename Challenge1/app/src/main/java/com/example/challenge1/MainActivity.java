@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
         ModelView modelView = new ViewModelProvider(this).get(ModelView.class);
 
+
+        //check for a saved instance
         if (savedInstanceState != null) {
             animals = (ArrayList<Animal>) savedInstanceState.getSerializable("animals_list");
         } else {
@@ -49,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
             animals.add(new Animal("Rhino","Rui", "Samu", "4"));
         }
 
+
+        //add animals to the view model
         modelView.setAnimalList(animals);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();

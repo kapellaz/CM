@@ -44,8 +44,9 @@ public class Fragment1 extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        //finde the view model
         modelView = new ViewModelProvider(requireActivity()).get(ModelView.class);
-
+        //get animals from the view model
         animals = modelView.getAnimalList().getValue();
 
 
