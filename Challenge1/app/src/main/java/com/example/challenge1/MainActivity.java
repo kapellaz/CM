@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        //salvar os objetos
+        //save the objects
         outState.putSerializable("animals_list", animals);
     }
 

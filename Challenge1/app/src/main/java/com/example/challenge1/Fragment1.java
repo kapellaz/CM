@@ -85,7 +85,9 @@ public class Fragment1 extends Fragment {
     }
 
 
-    // Called when the fragment is created
+    /**
+     * Called when the fragment is created.
+     */
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         modelView = new ViewModelProvider(requireActivity()).get(ModelView.class);
@@ -105,6 +107,9 @@ public class Fragment1 extends Fragment {
     }
 
 
+    /**
+     * Set the animal to the selected item
+     */
     public void setAnimal(Animal animal) {
         switch (animal.getType()) {
             case "Frog":
