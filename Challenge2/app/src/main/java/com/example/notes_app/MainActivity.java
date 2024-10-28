@@ -1,6 +1,7 @@
 package com.example.notes_app;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 public class MainActivity extends AppCompatActivity {
 
     private LoginRegister login;
+    private NoteList List;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         login = new LoginRegister();
+        List = new NoteList();
 
         ModelView modelView = new ViewModelProvider(this).get(ModelView.class);
 
@@ -30,4 +33,12 @@ public class MainActivity extends AppCompatActivity {
         ft.commit();
 
     }
+    public void switchToNoteList() {
+        Log.v("TAG", "switch to fragment 2");
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main, new NoteList())
+                .addToBackStack(null)
+                .commit();
+    }
+
 }
