@@ -115,7 +115,14 @@ public class NoteList extends Fragment {
 
 
 
-
+    public boolean check(String title){
+        for(Note n: notesViewModel.getNotes().getValue()){
+            if(n.getTitle().equals(title)){
+                return false;
+            }
+        }
+        return true;
+    }
 
 
 
@@ -147,8 +154,7 @@ public class NoteList extends Fragment {
                 String newTitle = noteTitleInput.getText().toString().trim();
                 String newDescription = noteDescriptionInput.getText().toString().trim();
                 // Check if the title already exists
-                if (!titleList.contains(newTitle) && !newTitle.isEmpty()) {
-
+                if (check(newTitle) && !newTitle.isEmpty()) {
                     notesViewModel.addNote(new Note(newTitle,newDescription),getContext());
                     listView.requestLayout();
                     Toast.makeText(getActivity(), "New Note Created", Toast.LENGTH_SHORT).show();
