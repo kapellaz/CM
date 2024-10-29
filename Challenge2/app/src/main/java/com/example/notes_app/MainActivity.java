@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         ModelView modelView = new ViewModelProvider(this).get(ModelView.class);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.main, login);
+        ft.replace(R.id.main, List);
         ft.commit();
 
     }
@@ -37,6 +37,14 @@ public class MainActivity extends AppCompatActivity {
         Log.v("TAG", "switch to fragment 2");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new NoteList())
+                .addToBackStack(null)
+                .commit();
+    }
+    public void switchToNoteEdit() {
+        Log.v("TAG", "switch to fragment Edit");
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main, new NoteEdit())
                 .addToBackStack(null)
                 .commit();
     }

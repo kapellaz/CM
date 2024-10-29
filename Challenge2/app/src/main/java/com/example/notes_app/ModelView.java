@@ -19,17 +19,35 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Objects;
+
 public class ModelView extends ViewModel{
     private static final String FILE_NAME = "notes.txt";
     private MutableLiveData<ArrayList<Note>> notesListLiveData = new MutableLiveData<>();
     private MutableLiveData<ArrayList<String>> noteTitlesListLiveData = new MutableLiveData<>();
+
+    private MutableLiveData<Note> editData = new MutableLiveData<>();
 
 
 
     private ArrayList<Note> notes = new ArrayList<>();
     private ArrayList<String> notesTitle = new ArrayList<>();
 
+    public void editData(String title){
+        ArrayList<Note> currentNotes = notesListLiveData.getValue();
+        assert currentNotes != null;
 
+        for(Note n: currentNotes){
+            if (n.getTitle().equals(title)){
+                Log.v("ASHHAD","AHS");
+                editData.setValue(n);
+            }
+        }
+        System.out.println(editData.getValue().getTitle());
+    }
+    public LiveData<Note> getEditNote() {
+        return editData;
+    }
 
     public LiveData<ArrayList<Note>> getNotes() {
         return notesListLiveData;
@@ -126,6 +144,55 @@ public class ModelView extends ViewModel{
             noteTitlesListLiveData.setValue(currentTitles);
         }
         saveNotesToFile(context); // Save to file
+    }
+
+    // new Note, save into Internal Storage
+    public void RemoveNote(String note, Context context) {
+        Note aux = null;
+
+        ArrayList<Note> currentNotes = notesListLiveData.getValue();
+        ArrayList<String> currentTitles = noteTitlesListLiveData.getValue();
+
+        assert currentNotes != null;
+        for(Note n: currentNotes){
+            if (n.getTitle().equals(note)){
+                aux = n;
+            }
+        }
+        if (currentTitles != null) {
+            currentNotes.remove(aux);
+            currentTitles.remove(note);
+            notesListLiveData.setValue(currentNotes);
+            noteTitlesListLiveData.setValue(currentTitles);
+        }
+        saveNotesToFile(context); // Save to file
+    }
+    public void ChangeTitle(String oldTitle, String newTitle,Context context) {
+        Note aux = null;
+
+        ArrayList<Note> currentNotes = notesListLiveData.getValue();
+        ArrayList<String> currentTitles = noteTitlesListLiveData.getValue();
+
+        assert currentNotes != null;
+        int counter = 0;
+        int cert = 0;
+        for(Note n: currentNotes){
+            counter += 1;
+            if (n.getTitle().equals(oldTitle)){
+                cert = counter;
+                n.setTitle(newTitle);
+            }
+        }
+
+
+        if (currentTitles != null) {
+            currentTitles.set(cert-1,newTitle);
+            notesListLiveData.setValue(currentNotes);
+            noteTitlesListLiveData.setValue(currentTitles);
+        }
+        saveNotesToFile(context); // Save to file
+
+
     }
 
 

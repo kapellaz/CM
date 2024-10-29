@@ -12,6 +12,9 @@ public class Note {
     public String getTitle() {
         return title;
     }
+    public void setTitle(String newTitle) {
+        this.title = newTitle;
+    }
 
     public String getDescription() {
         return description;
