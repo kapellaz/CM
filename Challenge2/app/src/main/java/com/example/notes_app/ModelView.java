@@ -196,6 +196,16 @@ public class ModelView extends ViewModel{
     }
 
 
-
-
+    public void updateNoteDescription(String newDescription, Context context) {
+        Note note = editData.getValue();
+        System.out.println("Note: " + note.getTitle());
+        for (Note n : Objects.requireNonNull(notesListLiveData.getValue())) {
+            if (n.getTitle().equals(note.getTitle())) {
+                System.out.println("Old Description: " + n.getDescription());
+                n.setDescription(newDescription);
+                System.out.println("New Description: " + n.getDescription());
+            }
+        }
+        saveNotesToFile(context);
+    }
 }

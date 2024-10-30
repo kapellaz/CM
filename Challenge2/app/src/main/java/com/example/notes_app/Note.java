@@ -19,4 +19,16 @@ public class Note {
     public String getDescription() {
         return description;
     }
+
+    public void setDescription(String newDescription) {
+        this.description = newDescription;
+    }
+
+    @Override
+    public String toString() {
+        return "Note{" +
+                "title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
 }

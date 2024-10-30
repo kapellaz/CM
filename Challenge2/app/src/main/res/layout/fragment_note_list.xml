@@ -18,7 +18,7 @@
 
         android:theme="@style/ThemeOverlay.AppCompat.Dark"
 
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ListView
         android:id="@+id/list_view"
