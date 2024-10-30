@@ -38,8 +38,6 @@ public class NoteList extends Fragment {
 
     private ArrayAdapter arrayAdapter;
 
-    private ArrayList<String> titleList = new ArrayList<>();
-
     private ModelView notesViewModel;
     private ListView listView;
     public NoteList() {
@@ -85,11 +83,6 @@ public class NoteList extends Fragment {
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         // Inflate the layout for this fragment
-        titleList.add("ola");
-        titleList.add("ofla");
-        titleList.add("ola");
-        titleList.add("ocla");
-        titleList.add("ocla");
 
         notesViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
         notesViewModel.loadNotes(getContext());
