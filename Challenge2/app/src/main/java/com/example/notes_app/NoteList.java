@@ -122,7 +122,7 @@ public class NoteList extends Fragment {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 longClick(i);
-                return false;
+                return true;
             }
         })
         ;return view;
