@@ -7,7 +7,9 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
@@ -44,7 +46,7 @@ public class NoteList extends Fragment {
     public NoteList() {
         // Required empty public constructor
     }
-    @Override
+    /*@Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_note_list, menu); // Inflate your menu
@@ -73,7 +75,7 @@ public class NoteList extends Fragment {
             return true;
         });
 
-    }
+    }*/
 
 
 
@@ -82,7 +84,7 @@ public class NoteList extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        //setHasOptionsMenu(true);
         // Inflate the layout for this fragment
 
         notesViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
@@ -118,8 +120,45 @@ public class NoteList extends Fragment {
                 longClick(i);
                 return true;
             }
-        })
-        ;return view;
+        });
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(Menu menu, MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.fragment_note_list, menu);
+                requireActivity().setTitle("Notes");
+
+                MenuItem searchItem = menu.findItem(R.id.action_search);
+                SearchView searchView = (SearchView) searchItem.getActionView();
+                searchView.setQueryHint("Type Here");
+
+                // Set up the search view listener
+                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        // Filter notes based on search query
+                        arrayAdapter.getFilter().filter(newText);
+                        return true;
+                    }
+                });
+
+                MenuItem createItem = menu.findItem(R.id.action_create);
+                createItem.setOnMenuItemClickListener(item -> {
+                    showCreateNoteDialog();
+                    return true;
+                });
+            }
+
+            @Override
+            public boolean onMenuItemSelected(MenuItem item) {
+                return false;
+            }
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        return view;
     }
 
 

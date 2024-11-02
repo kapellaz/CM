@@ -4,7 +4,9 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
@@ -31,7 +33,7 @@ public class NoteEdit extends Fragment {
         // Required empty public constructor
     }
 
-
+/*
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.fragment_note, menu); // Inflate your menu
@@ -54,24 +56,24 @@ public class NoteEdit extends Fragment {
             return super.onOptionsItemSelected(item);
         }
     }
-
+*/
     private void saveNote() {
         String newDescription = editText.getText().toString().trim();
         System.out.println("New Description: " + newDescription);
         notesViewModel.updateNoteDescription(newDescription, getContext());
         Toast.makeText(getActivity(), "Note Saved", Toast.LENGTH_SHORT).show();
-        requireActivity().onBackPressed(); // Go back to the previous screen
+        requireActivity().getOnBackPressedDispatcher().onBackPressed(); // Go back to the previous screen
     }
 
     private void cancelEdit() {
         Toast.makeText(getActivity(), "Edit Canceled", Toast.LENGTH_SHORT).show();
-        requireActivity().onBackPressed();
+        requireActivity().getOnBackPressedDispatcher().onBackPressed();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        //setHasOptionsMenu(true);
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_note, container, false);
         Toolbar toolbar = view.findViewById(R.id.toolbar);
@@ -89,6 +91,27 @@ public class NoteEdit extends Fragment {
         textView.setText("Name: " + title);
         editText = view.findViewById(R.id.note_description);
         editText.setText(description);
+
+        // Adding the menu provider to handle menu creation and item selection
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(Menu menu, MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.fragment_note, menu); // Inflate your menu
+            }
+
+            @Override
+            public boolean onMenuItemSelected(MenuItem item) {
+                if (item.getItemId() == R.id.action_save) {
+                    saveNote();
+                    return true;
+                } else if (item.getItemId() == R.id.action_cancel) {
+                    cancelEdit();
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         return view;
     }
