@@ -32,6 +32,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class NoteList extends Fragment {
@@ -94,15 +95,15 @@ public class NoteList extends Fragment {
 
 
         listView = (ListView) view.findViewById(R.id.list_view);
-        arrayAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1,notesViewModel.getNotesbyTitle().getValue());
+        arrayAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1,notesViewModel.getNotes().getValue());
         listView.setAdapter(arrayAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String oldNoteTitle = (String) listView.getItemAtPosition(i);
-                Log.v("DADA",oldNoteTitle);
-                notesViewModel.editData(oldNoteTitle);
+                Note note = (Note) listView.getItemAtPosition(i);
+
+                notesViewModel.editData(note.getTitle());
 
                 ((MainActivity) getActivity()).switchToNoteEdit();
 
@@ -122,15 +123,6 @@ public class NoteList extends Fragment {
     }
 
 
-
-    public boolean check(String title){
-        for(Note n: notesViewModel.getNotes().getValue()){
-            if(n.getTitle().equals(title)){
-                return false;
-            }
-        }
-        return true;
-    }
 
 
 
@@ -174,9 +166,9 @@ public class NoteList extends Fragment {
         eraseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String oldNoteTitle = (String) listView.getItemAtPosition(pos);
+                Note selectedNote = (Note) listView.getItemAtPosition(pos);
 
-                notesViewModel.RemoveNote(oldNoteTitle,getContext());
+                notesViewModel.RemoveNote(selectedNote.getId_note(),getContext());
                 Toast.makeText(getActivity(), "Ação de apagar executada!", Toast.LENGTH_SHORT).show();
                 dialog2.dismiss();
                 arrayAdapter.notifyDataSetChanged();
@@ -186,7 +178,7 @@ public class NoteList extends Fragment {
         changeTitleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String oldNoteTitle = (String) listView.getItemAtPosition(pos);
+                Note selectedNote = (Note) listView.getItemAtPosition(pos);
                 AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
                 dialog.setTitle("New Note");
 
@@ -204,15 +196,13 @@ public class NoteList extends Fragment {
                         String newTitle = noteTitleInput.getText().toString().trim();
 
                         // Check if the title already exists
-                        if (check(newTitle) && !newTitle.isEmpty()) {
+                        if (!newTitle.isEmpty()) {
                             listView.requestLayout();
-                            notesViewModel.ChangeTitle(oldNoteTitle,newTitle,getContext());
+                            notesViewModel.ChangeTitle(selectedNote.getId_note(),newTitle,getContext());
                             arrayAdapter.notifyDataSetChanged();
                             Toast.makeText(getActivity(), "Title Updated", Toast.LENGTH_SHORT).show();
-                        } else if (newTitle.isEmpty()) {
+                          } else {
                             Toast.makeText(getActivity(), "Title cannot be empty", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(getActivity(), "Title Already Exists", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -228,7 +218,7 @@ public class NoteList extends Fragment {
 
                // Toast.makeText(getActivity(), "Ação de apagar executada!", Toast.LENGTH_SHORT).show();
                 dialog2.dismiss();
-                arrayAdapter.notifyDataSetChanged();
+
             }
         });
 
@@ -256,17 +246,21 @@ public class NoteList extends Fragment {
         dialog.setPositiveButton("Create", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+
                 String newTitle = noteTitleInput.getText().toString().trim();
                 String newDescription = noteDescriptionInput.getText().toString().trim();
                 // Check if the title already exists
-                if (check(newTitle) && !newTitle.isEmpty()) {
-                    notesViewModel.addNote(new Note(newTitle,newDescription),getContext());
+                String id = UUID.randomUUID().toString().replace("-", "");
+                String uuid = UUID.randomUUID().toString().replace("-", "");
+                id = uuid.substring(0, 16);
+                System.out.println("NOVO ID: (SIIIU)) "+ id);
+                if (!newTitle.isEmpty()) {
+
+                    notesViewModel.addNote(new Note(id,newTitle,newDescription),getContext());
                     listView.requestLayout();
                     Toast.makeText(getActivity(), "New Note Created", Toast.LENGTH_SHORT).show();
-                } else if (newTitle.isEmpty()) {
-                    Toast.makeText(getActivity(), "Title cannot be empty", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getActivity(), "Title Already Exists", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Title cannot be empty", Toast.LENGTH_SHORT).show();
                 }
             }
         });
