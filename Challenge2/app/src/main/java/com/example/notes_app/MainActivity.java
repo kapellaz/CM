@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
 
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.main, List);
+            ft.replace(R.id.main, login);
             ft.commit();
         }
     }
