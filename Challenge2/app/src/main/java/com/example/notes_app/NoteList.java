@@ -103,7 +103,7 @@ public class NoteList extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Note note = (Note) listView.getItemAtPosition(i);
 
-                notesViewModel.editData(note.getTitle());
+                notesViewModel.editData(note.getId_note());
 
                 ((MainActivity) getActivity()).switchToNoteEdit();
 

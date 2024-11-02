@@ -27,8 +27,8 @@ import java.util.concurrent.Executors;
 public class NoteSenderFireStore {
 
     public FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private final Handler mainHandler = new Handler(Looper.getMainLooper()); 
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor(); // Executor para operações de rede
+    private final Handler mainHandler = new Handler(Looper.getMainLooper()); // Handler para a thread principal
 
     // Método para verificar se o dispositivo está conectado à internet
     private boolean isConnectedToInternet(Context context) {
@@ -89,9 +89,8 @@ public class NoteSenderFireStore {
                                             });
                                 } else {
 
-
+                                  
                                     for (QueryDocumentSnapshot document : task.getResult()) {
-
                                         String documentId = document.getId();
 
 
@@ -99,7 +98,6 @@ public class NoteSenderFireStore {
                                         updatedNota.put("id", id);
                                         updatedNota.put("title", title);
                                         updatedNota.put("description", description);
-
 
                                         db.collection("notes").document(documentId)
                                                 .set(updatedNota, SetOptions.merge())
@@ -112,7 +110,7 @@ public class NoteSenderFireStore {
                                     }
                                 }
                             } else {
-
+                                // Erro ao verificar a existência do ID
                                 System.err.println("Erro ao verificar ID no Firestore: " + task.getException().getMessage());
                             }
                         });
@@ -125,7 +123,7 @@ public class NoteSenderFireStore {
 
     public void updateNoteInFirestore(Context context,String id,String newTitle, String newDescription) {
         executorService.submit(() -> {
-
+            // Buscar documento com o título especificado
             db.collection("notes")
                     .whereEqualTo("id", id)
                     .get()
@@ -139,6 +137,7 @@ public class NoteSenderFireStore {
                             updates.put("title",newTitle);
                             updates.put("description", newDescription);
 
+
                             db.collection("notes").document(documentId).update(updates)
                                     .addOnSuccessListener(aVoid -> Log.d("UPDATE", "Nota atualizada com sucesso!"))
                                     .addOnFailureListener(e -> Log.e("UPDATE", "Erro ao atualizar a nota: " + e.getMessage()));
@@ -146,7 +145,7 @@ public class NoteSenderFireStore {
                             Log.v("UPDATE", "Nota com ID '" + id + "' não encontrada.");
                         }
                     })
-                    .addOnFailureListener(e -> Log.e("UPDATE", "Erro ao pesqusia nota: " + e.getMessage()));
+                    .addOnFailureListener(e -> Log.e("UPDATE", "Erro ao buscar nota: " + e.getMessage()));
         });
 
     }
@@ -161,8 +160,11 @@ public class NoteSenderFireStore {
 
                                     String firestoreNoteId = document.getString("id");
 
+                                    System.out.println(firestoreNoteId);
+                                    System.out.println(ids);
                                     if (!ids.contains(firestoreNoteId)) {
-
+                                        System.out.println("ENTROU");
+                                        // Deletar a nota do Firestore
                                         assert firestoreNoteId != null;
                                         db.collection("notes").document(firestoreNoteId).delete()
                                                 .addOnSuccessListener(aVoid -> {

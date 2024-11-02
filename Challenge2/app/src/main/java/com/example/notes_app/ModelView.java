@@ -39,12 +39,12 @@ public class ModelView extends ViewModel{
 
     private ArrayList<String> ids = new ArrayList<>();
 
-    public void editData(String title){
+    public void editData(String id){
         ArrayList<Note> currentNotes = notesListLiveData.getValue();
         assert currentNotes != null;
 
         for(Note n: currentNotes){
-            if (n.getTitle().equals(title)){
+            if (n.getId_note().equals(id)){
                 Log.v("ASHHAD","AHS");
                 editData.setValue(n);
             }
