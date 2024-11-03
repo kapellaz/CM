@@ -1,0 +1,21 @@
+<!-- res/drawable/edit_text_border.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Borda externa -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+            <stroke
+                android:width="2dp"
+                android:color="@color/black" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Fundo interno -->
+    <item android:bottom="2dp" android:top="2dp" android:left="2dp" android:right="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFC107" />
+            <corners android:radius="6dp" />
+        </shape>
+    </item>
+</layer-list>
