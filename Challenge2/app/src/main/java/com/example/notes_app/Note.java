@@ -1,5 +1,7 @@
 package com.example.notes_app;
 
+import androidx.annotation.NonNull;
+
 public class Note {
     private String id_note;
     private String title;
@@ -15,9 +17,6 @@ public class Note {
         return id_note;
     }
 
-    public void setId_note(String id_note) {
-        this.id_note = id_note;
-    }
 
     public String getTitle() {
         return title;
@@ -34,6 +33,7 @@ public class Note {
         this.description = newDescription;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return title;

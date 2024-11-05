@@ -3,42 +3,32 @@ package com.example.notes_app;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
-
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.fragment.app.FragmentTransaction;
-import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 
-import java.util.Calendar;
 
 
 public class LoginRegister extends Fragment {
-    private ModelView modelView;
-    private FirebaseAuth Auth;
 
+    private FirebaseAuth Auth;
     private EditText usernameEditText;
     private EditText passwordEditText;
     private Button loginButton;
     private Button registerButton;
+
     public LoginRegister() {
         // Required empty public constructor
     }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Auth = FirebaseAuth.getInstance(); // Inicializar Firebase Auth
+        Auth = FirebaseAuth.getInstance(); // Initialize Firebase Auth
     }
     /**
      * Called when the fragment is first created.
@@ -47,8 +37,6 @@ public class LoginRegister extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        //find the view model
-        modelView = new ViewModelProvider(requireActivity()).get(ModelView.class);
 
         View view = inflater.inflate(R.layout.fragment_login_register, container, false);
         usernameEditText = view.findViewById(R.id.editName);
@@ -56,6 +44,8 @@ public class LoginRegister extends Fragment {
         loginButton = view.findViewById(R.id.Login);
         registerButton = view.findViewById(R.id.Register);
 
+
+        // login
         loginButton.setOnClickListener(v -> {
             String email = usernameEditText.getText().toString();
             String password = passwordEditText.getText().toString();
@@ -63,48 +53,46 @@ public class LoginRegister extends Fragment {
             if (!email.isEmpty() && !password.isEmpty()) {
                 Auth.signInWithEmailAndPassword(email, password)
                         .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(getContext(), "Login bem-sucedido!", Toast.LENGTH_SHORT).show();
-                                ((MainActivity) getActivity()).switchToNoteList();
-                            } else {
-                                Toast.makeText(getContext(), "Falha no login: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            if (task.isSuccessful()) { //sucessful case
+                                Log.v("Login","Login Sucessful");
+                                Toast.makeText(getContext(), "Login successful!", Toast.LENGTH_SHORT).show();
+                                ((MainActivity) requireActivity()).switchToNoteList();
+                            } else { // login failed
+                                Log.v("Login","Login failed: Incorrect email/password");
+                                Toast.makeText(getContext(), "Login failed: Incorrect email/password", Toast.LENGTH_SHORT).show();
                             }
                         });
-            } else {
-                Toast.makeText(getContext(), "Preencha todos os campos", Toast.LENGTH_SHORT).show();
+            } else { //fields empty
+                Log.v("Login","Please fill in all fields");
+                Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
             }
         });
 
-
+        // Register
         registerButton.setOnClickListener(v -> {
             String email = usernameEditText.getText().toString();
             String password = passwordEditText.getText().toString();
 
             if (!email.isEmpty() && !password.isEmpty()) {
-                Auth.createUserWithEmailAndPassword(email, password)
+                Auth.createUserWithEmailAndPassword(email, password) // function to create user using email and password
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
-                                Toast.makeText(getContext(), "Registrado com sucesso!", Toast.LENGTH_SHORT).show();
-                                ((MainActivity) getActivity()).switchToNoteList();
+                                Log.v("Register","Successfully registered!");
+                                Toast.makeText(getContext(), "Successfully registered!", Toast.LENGTH_SHORT).show();
+                                ((MainActivity) requireActivity()).switchToNoteList();
                             } else {
-                                Toast.makeText(getContext(), "Falha no registro: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                Log.v("Register","Login failed: Incorrect email/password");
+                                Toast.makeText(getContext(), "Login failed: Incorrect email/password", Toast.LENGTH_SHORT).show();
                             }
                         });
             } else {
-                Toast.makeText(getContext(), "Preencha todos os campos", Toast.LENGTH_SHORT).show();
+                Log.v("Register","Please fill in all fields");
+                Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
             }
         });
-
-
 
         return view;
     }
 
-
-    // Called when the fragment is created
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-
-
-    }
 
 }

@@ -4,15 +4,11 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,12 +22,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
-
         login = new LoginRegister();
         List = new NoteList();
-
-        ModelView modelView = new ViewModelProvider(this).get(ModelView.class);
 
         if (savedInstanceState != null) {
             // Retrieve the saved fragment tag
@@ -49,14 +41,12 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         fragment = new LoginRegister(); // Load your default fragment if needed
                     }
-
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.main, fragment, fragmentTag)
                             .commit();
                 }
             }
         } else {
-
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.main, login);
             ft.commit();
@@ -64,16 +54,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Switch Fragment - Note List Fragment - List all Notes
+     */
     public void switchToNoteList() {
-        Log.v("TAG", "switch to fragment 2");
+        Log.v("TAG", "switch to fragment Note List");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new NoteList(),TAG_NOTE_LIST)
                 .addToBackStack(null)
                 .commit();
     }
-    public void switchToNoteEdit() {
-        Log.v("TAG", "switch to fragment Edit");
 
+    /**
+     * Switch Fragment - Note Edit Fragment - Edit Description
+     */
+    public void switchToNoteEdit() {
+        Log.v("TAG", "switch to fragment Note Edit");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new NoteEdit(),TAG_NOTE_EDIT)
                 .addToBackStack(null)
@@ -81,12 +77,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main);
         if (currentFragment != null) {
-            Log.v("DADA","Save" + currentFragment.getTag());
+            Log.v("Main Activity","Save" + currentFragment.getTag());
             outState.putString("currentFragmentTag", currentFragment.getTag());
         }
     }

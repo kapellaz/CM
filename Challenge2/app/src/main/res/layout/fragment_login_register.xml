@@ -18,7 +18,7 @@
             android:id="@+id/Iniciar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Iniciar sessão"
+            android:text="Welcome"
             android:textSize="50sp" />
 
         <EditText
@@ -27,7 +27,7 @@
             android:layout_height="48dp"
             android:ems="10"
             android:inputType="text"
-            android:hint="Name" />
+            android:hint="Email" />
 
         <EditText
             android:id="@+id/editPass"
