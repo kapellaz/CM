@@ -61,15 +61,14 @@ public class LoginRegister extends Fragment {
             String name = usernameEditText.getText().toString();
             String password = passwordEditText.getText().toString();
             if(!name.isEmpty() && !password.isEmpty()) {
-                for (Map.Entry<String, String> entry : accounts.entrySet()) {
-                    if (entry.getKey().equals(name) && entry.getValue().equals(password)) {
-                        Log.v("Login", "Login Sucessful");
-                        Toast.makeText(getContext(), "Login Sucessful", Toast.LENGTH_SHORT).show();
-                        ((MainActivity) requireActivity()).switchToNoteList();
-                    }
+                if(LoginCheck(name,password)){
+                    Log.v("Login", "Login Sucessful");
+                    Toast.makeText(getContext(), "Login Sucessful", Toast.LENGTH_SHORT).show();
+                    ((MainActivity) requireActivity()).switchToNoteList();
+                }else {
+                    Log.v("Login", "Login Failed");
+                    Toast.makeText(getContext(), "Login Failed: Incorrect name/Password", Toast.LENGTH_SHORT).show();
                 }
-                Log.v("Login", "Login Failed");
-                Toast.makeText(getContext(), "Login Failed: Incorrect name/Password", Toast.LENGTH_SHORT).show();
             }else{
                 Log.v("Login","Please fill in all fields");
                 Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
@@ -140,6 +139,16 @@ public class LoginRegister extends Fragment {
             }
         }
         return true;
+    }
+
+
+    public boolean LoginCheck(String name, String pass){
+        for (Map.Entry<String, String> entry : accounts.entrySet()) {
+            if (entry.getKey().equals(name) && entry.getValue().equals(pass)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

@@ -1,5 +1,6 @@
 package com.example.notes_app;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,11 +20,13 @@ import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.Objects;
+
 
 public class NoteEdit extends Fragment {
     private EditText editText;
     private ModelView notesViewModel;
-
+    public NoteSenderFireStore NoteSender = new NoteSenderFireStore();
 
     public NoteEdit() {
         // Required empty public constructor
@@ -36,7 +39,7 @@ public class NoteEdit extends Fragment {
     private void saveNote() {
         String newDescription = editText.getText().toString().trim();
         Log.v("Edit Note","Note Saved");
-        notesViewModel.updateNoteDescription(newDescription, getContext());
+        updateNoteDescription(newDescription, getContext());
         Toast.makeText(getActivity(), "Note Saved", Toast.LENGTH_SHORT).show();
         requireActivity().getOnBackPressedDispatcher().onBackPressed(); // Go back to the previous screen
     }
@@ -100,6 +103,27 @@ public class NoteEdit extends Fragment {
         }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         return view;
+    }
+
+
+
+    /**
+     * Function to update a description of a note and update FireStore Database
+     *
+     *
+     */
+    public void updateNoteDescription(String newDescription, Context context) {
+        Note note = notesViewModel.getEditNote().getValue();
+
+        for (Note n : Objects.requireNonNull(notesViewModel.getNotes().getValue())) {
+            assert note != null;
+            if (n.getId_note().equals(note.getId_note())) {
+                Log.v("Model View", "Change Description Note : " + n.getDescription() + " to " + newDescription);
+                NoteSender.updateNoteToFireStoreIfConnected(context, n.getId_note(), n.getTitle(), newDescription);
+                n.setDescription(newDescription);
+            }
+        }
+        notesViewModel.saveNotesToFile(context);
     }
 
 }

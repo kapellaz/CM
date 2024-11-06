@@ -26,7 +26,6 @@ public class ModelView extends ViewModel{
     private MutableLiveData<Note> editData = new MutableLiveData<>();
 
 
-
     private ArrayList<Note> notes = new ArrayList<>();
     private ArrayList<String> notesTitle = new ArrayList<>();
 
@@ -50,6 +49,37 @@ public class ModelView extends ViewModel{
         return notesListLiveData;
     }
 
+    public LiveData<ArrayList<String>> getNotesTitle() {
+        return noteTitlesListLiveData;
+    }
+
+    public void setNoteSender(NoteSenderFireStore noteSender) {
+        NoteSender = noteSender;
+    }
+
+    public void setNotesListLiveData(ArrayList<Note> notesListLiveData) {
+        this.notesListLiveData.setValue(notesListLiveData);
+    }
+
+    public void setNoteTitlesListLiveData(ArrayList<String> noteTitlesListLiveData) {
+        this.noteTitlesListLiveData.setValue(noteTitlesListLiveData);
+    }
+
+    public void setEditData(MutableLiveData<Note> editData) {
+        this.editData = editData;
+    }
+
+    public void setNotes(ArrayList<Note> notes) {
+        this.notes = notes;
+    }
+
+    public void setNotesTitle(ArrayList<String> notesTitle) {
+        this.notesTitle = notesTitle;
+    }
+
+    public void setIds(ArrayList<String> ids) {
+        this.ids = ids;
+    }
 
     public void loadNotes(Context context) {
       //  clearFileContent(context);

@@ -1,6 +1,7 @@
 package com.example.notes_app;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -26,6 +27,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -33,7 +36,7 @@ import java.util.UUID;
 public class NoteList extends Fragment {
 
     private ArrayAdapter arrayAdapter;
-
+    public NoteSenderFireStore NoteSender = new NoteSenderFireStore(); // firestore
     private ModelView notesViewModel;
     private ListView listView;
     public NoteList() {
@@ -162,7 +165,7 @@ public class NoteList extends Fragment {
             public void onClick(View v) {
                 Note selectedNote = (Note) listView.getItemAtPosition(pos);
 
-                notesViewModel.RemoveNote(selectedNote.getId_note(),getContext());
+                RemoveNote(selectedNote.getId_note(),getContext());
                 Log.v("List Note","Note " + selectedNote.getTitle() + " Deleted");
                 Toast.makeText(getActivity(), "Note " + selectedNote.getTitle() +" Deleted", Toast.LENGTH_SHORT).show();
                 dialog2.dismiss();
@@ -193,7 +196,7 @@ public class NoteList extends Fragment {
                         // Check if the title already exists
                         if (!newTitle.isEmpty()) {
                             listView.requestLayout();
-                            notesViewModel.ChangeTitle(selectedNote.getId_note(),newTitle,getContext());
+                            ChangeTitle(selectedNote.getId_note(),newTitle,getContext());
                             arrayAdapter.notifyDataSetChanged();
                             Log.v("List Note","Title Updated");
                             Toast.makeText(getActivity(), "Title Updated", Toast.LENGTH_SHORT).show();
@@ -259,7 +262,7 @@ public class NoteList extends Fragment {
 
                 //check if new title is not empty
                 if (!newTitle.isEmpty()) {
-                    notesViewModel.addNote(new Note(id,newTitle,newDescription),getContext());
+                    addNote(new Note(id,newTitle,newDescription),getContext());
                     listView.requestLayout();
                     Log.v("List Note","New Note Created");
                     Toast.makeText(getActivity(), "New Note Created", Toast.LENGTH_SHORT).show();
@@ -280,6 +283,89 @@ public class NoteList extends Fragment {
 
         dialog.show();
     }
+
+
+    /**
+     * Function to add a new note into arraylist (for another fragments use) and into the Internal Storage
+     *
+     */
+
+    public void addNote(Note note, Context context) {
+        ArrayList<Note> currentNotes = notesViewModel.getNotes().getValue();
+        ArrayList<String> currentTitles = notesViewModel.getNotesTitle().getValue();
+        Log.v("Model View","New Note Add: " + note.getTitle());
+        if (currentNotes != null && currentTitles != null) {
+            currentNotes.add(note);
+            currentTitles.add(note.getTitle());
+            notesViewModel.setNotesListLiveData(currentNotes);
+            notesViewModel.setNoteTitlesListLiveData(currentTitles);
+
+        }
+        NoteSender.sendNoteToFireStoreIfConnected(context,note.getId_note(),note.getTitle(),note.getDescription());
+        notesViewModel.saveNotesToFile(context); // Save to file
+    }
+
+
+    /**
+     * Function to remove a note from arraylist (for another fragments use) and from the Internal Storage
+     *
+     */
+    public void RemoveNote(String id, Context context) {
+        Note aux = null;
+        ArrayList<Note> currentNotes = notesViewModel.getNotes().getValue();
+        ArrayList<String> currentTitles = notesViewModel.getNotesTitle().getValue();
+        String title = null;
+        assert currentNotes != null;
+
+        for(Note n: currentNotes){ //find object with same id
+            if (n.getId_note().equals(id)){
+                aux = n;
+                title = n.getTitle();
+            }
+        }
+        Log.v("Model View","New Note Add: " + title);
+        if (currentTitles != null) { // remove from the arraylists
+            currentNotes.remove(aux);
+            currentTitles.remove(title);
+            notesViewModel.setNotesListLiveData(currentNotes);
+            notesViewModel.setNoteTitlesListLiveData(currentTitles);
+        }
+        NoteSender.deleteNote(context,id); // Delete note from FireStore Database
+        notesViewModel.saveNotesToFile(context); // Save to file
+    }
+
+
+    /**
+     * Function to update a note title into arraylist (for another fragments use) and into the Internal Storage
+     *
+     */
+
+    public void ChangeTitle(String id, String newTitle,Context context) {
+        ArrayList<Note> currentNotes = notesViewModel.getNotes().getValue();
+        ArrayList<String> currentTitles = notesViewModel.getNotesTitle().getValue();
+        assert currentNotes != null;
+        int counter = 0;
+        int cert = 0;
+        for(Note n: currentNotes){ // Send changes to FireStore Database
+            counter += 1;
+            if (n.getId_note().equals(id)){
+                cert = counter;
+                Log.v("Model View","Change Title Note : " + n.getTitle() + " to " + newTitle);
+                NoteSender.updateNoteToFireStoreIfConnected(context,id,newTitle,n.getDescription());
+                n.setTitle(newTitle);
+            }
+        }
+        if (currentTitles != null) {  // update Arraylists
+            currentTitles.set(cert-1,newTitle);
+            notesViewModel.setNotesListLiveData(currentNotes);
+            notesViewModel.setNoteTitlesListLiveData(currentTitles);
+        }
+        notesViewModel.saveNotesToFile(context);
+    }
+
+
+
+
 
 
 }
