@@ -27,7 +27,7 @@
             android:layout_height="48dp"
             android:ems="10"
             android:inputType="text"
-            android:hint="Email" />
+            android:hint="Name" />
 
         <EditText
             android:id="@+id/editPass"

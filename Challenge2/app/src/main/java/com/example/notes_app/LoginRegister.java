@@ -1,5 +1,6 @@
 package com.example.notes_app;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -12,23 +13,33 @@ import android.widget.EditText;
 import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class LoginRegister extends Fragment {
 
-    private FirebaseAuth Auth;
+
     private EditText usernameEditText;
     private EditText passwordEditText;
     private Button loginButton;
     private Button registerButton;
-
+    private Map<String,String> accounts = new HashMap<>();
     public LoginRegister() {
         // Required empty public constructor
     }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Auth = FirebaseAuth.getInstance(); // Initialize Firebase Auth
+        LoadAccounts(getContext());
     }
     /**
      * Called when the fragment is first created.
@@ -47,44 +58,44 @@ public class LoginRegister extends Fragment {
 
         // login
         loginButton.setOnClickListener(v -> {
-            String email = usernameEditText.getText().toString();
+            String name = usernameEditText.getText().toString();
             String password = passwordEditText.getText().toString();
-
-            if (!email.isEmpty() && !password.isEmpty()) {
-                Auth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) { //sucessful case
-                                Log.v("Login","Login Sucessful");
-                                Toast.makeText(getContext(), "Login successful!", Toast.LENGTH_SHORT).show();
-                                ((MainActivity) requireActivity()).switchToNoteList();
-                            } else { // login failed
-                                Log.v("Login","Login failed: Incorrect email/password");
-                                Toast.makeText(getContext(), "Login failed: Incorrect email/password", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-            } else { //fields empty
+            if(!name.isEmpty() && !password.isEmpty()) {
+                for (Map.Entry<String, String> entry : accounts.entrySet()) {
+                    if (entry.getKey().equals(name) && entry.getValue().equals(password)) {
+                        Log.v("Login", "Login Sucessful");
+                        Toast.makeText(getContext(), "Login Sucessful", Toast.LENGTH_SHORT).show();
+                        ((MainActivity) requireActivity()).switchToNoteList();
+                    }
+                }
+                Log.v("Login", "Login Failed");
+                Toast.makeText(getContext(), "Login Failed: Incorrect name/Password", Toast.LENGTH_SHORT).show();
+            }else{
                 Log.v("Login","Please fill in all fields");
                 Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
+
             }
+
         });
 
         // Register
         registerButton.setOnClickListener(v -> {
-            String email = usernameEditText.getText().toString();
+            String name = usernameEditText.getText().toString();
             String password = passwordEditText.getText().toString();
 
-            if (!email.isEmpty() && !password.isEmpty()) {
-                Auth.createUserWithEmailAndPassword(email, password) // function to create user using email and password
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                Log.v("Register","Successfully registered!");
-                                Toast.makeText(getContext(), "Successfully registered!", Toast.LENGTH_SHORT).show();
-                                ((MainActivity) requireActivity()).switchToNoteList();
-                            } else {
-                                Log.v("Register","Login failed: Incorrect email/password");
-                                Toast.makeText(getContext(), "Login failed: Incorrect email/password", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+            if (!name.isEmpty() && !password.isEmpty()) {
+                if(checkAvailable(name)){
+                    accounts.put(name,password);
+                    SaveAccountsToFile(getContext());
+                    Log.v("Register","Register Sucessful");
+                    Toast.makeText(getContext(), "Register Sucessful", Toast.LENGTH_SHORT).show();
+                    ((MainActivity) requireActivity()).switchToNoteList();
+                }else{
+                    Log.v("Register","Register Sucessful");
+                    Toast.makeText(getContext(), "Register Failed: Name/Password Incorrect", Toast.LENGTH_SHORT).show();
+                }
+
+
             } else {
                 Log.v("Register","Please fill in all fields");
                 Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
@@ -92,6 +103,64 @@ public class LoginRegister extends Fragment {
         });
 
         return view;
+    }
+
+    public void LoadAccounts(Context context) {
+
+        try {
+            FileInputStream fis = context.openFileInput("login.txt");
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader reader = new BufferedReader(isr);
+            StringBuilder content = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line);
+            }
+            reader.close();
+
+            // Parse JSON content
+            JSONArray jsonArray = new JSONArray(content.toString());
+            Log.v("Login","Loading accounts");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject noteObject = jsonArray.getJSONObject(i);
+                String name = noteObject.getString("name");
+                String pass = noteObject.getString("pass");
+                accounts.put(name,pass);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public boolean checkAvailable(String name){
+        for (Map.Entry<String, String> entry : accounts.entrySet()) {
+            if (entry.getKey().equals(name)){
+                  return false;
+            }
+        }
+        return true;
+    }
+
+
+    public void SaveAccountsToFile(Context context) {
+        try {
+            JSONArray jsonArray = new JSONArray();
+            Log.v("Model View","Saving Notes");
+            for (Map.Entry<String, String> entry : accounts.entrySet()) {
+                JSONObject noteObject = new JSONObject();
+                noteObject.put("name",entry.getKey());
+                noteObject.put("pass",entry.getValue());
+                jsonArray.put(noteObject);
+            }
+
+            FileOutputStream fos = context.openFileOutput("login.txt", Context.MODE_PRIVATE);
+            OutputStreamWriter osw = new OutputStreamWriter(fos);
+            osw.write(jsonArray.toString());
+            osw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
