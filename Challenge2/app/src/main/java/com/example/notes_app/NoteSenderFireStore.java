@@ -167,7 +167,7 @@ public class NoteSenderFireStore {
                                     if (ids.isEmpty()) {
                                         assert firestoreNoteId != null;
 
-                                        db.collection("notes").document(firestoreNoteId).delete()
+                                        db.collection("notes").document(document.getId()).delete()
                                                 .addOnSuccessListener(aVoid -> {
                                                     Log.d("DELETE_NOTE", "Note Deleted: " + firestoreNoteId);
                                                 })
@@ -180,7 +180,7 @@ public class NoteSenderFireStore {
 
 
                                             assert firestoreNoteId != null;
-                                            db.collection("notes").document(firestoreNoteId).delete()
+                                            db.collection("notes").document(document.getId()).delete()
                                                     .addOnSuccessListener(aVoid -> {
                                                         Log.d("DELETE_NOTE", "Note Deleted (2) : " + firestoreNoteId);
                                                     })
