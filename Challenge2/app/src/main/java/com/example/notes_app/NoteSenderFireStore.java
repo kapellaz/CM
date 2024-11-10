@@ -16,19 +16,17 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 public class NoteSenderFireStore {
 
     public FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor(); // Executor para operações de rede
-    private final Handler mainHandler = new Handler(Looper.getMainLooper()); // Handler para a thread principal
 
-    // Método para verificar se o dispositivo está conectado à internet
+    /**
+     * Check if exists any connection with Internet
+     */
     private boolean isConnectedToInternet(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivityManager != null) {
@@ -38,35 +36,43 @@ public class NoteSenderFireStore {
         return false;
     }
 
-    // Método para enviar a nota apenas se houver conexão com a internet
+    /**
+     * Send new note to Fire Store (checking if exists connection)
+     */
     public void sendNoteToFireStoreIfConnected(Context context, String id, String title, String description) {
         if (isConnectedToInternet(context)) {
             SendNoteToFireStore(context,id,title, description);
         } else {
-            System.out.println("Sem conexão com a internet. A nota não foi enviada.");
+            Log.v("FireStoreError","No Connection! ");
         }
     }
 
-    public void updateNoteToFireStoreIfConnected(Context context,String title, String newTitle,String newDescription) {
+
+    /**
+     * Update the title or Description of a note (checking if exists connection)
+     */
+
+    public void updateNoteToFireStoreIfConnected(Context context,String id, String title,String description) {
         if (isConnectedToInternet(context)) {
-            updateNoteInFirestore(context,title,newTitle,newDescription);
+            updateNoteInFirestore(context,id,title,description);
         } else {
-            System.out.println("Sem conexão com a internet. A nota não foi enviada.");
+            Log.v("FireStoreError","No Connection! ");
         }
     }
 
-    // Método original para enviar a nota ao Firestore
+    /**
+     * Create a new note or update a note  (checking if exists connection)
+     */
+
     public void SendNoteToFireStore(Context context,String id, String title, String description) {
         if (isConnectedToInternet(context)) {
-            executorService.submit(() -> {
-                // Verifica se o ID já existe na coleção
                 db.collection("notes")
-                        .whereEqualTo("id", id) // Filtra as notas pelo ID
+                        .whereEqualTo("id", id)  // check ID (if exists)
                         .get()
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
                                 if (task.getResult().isEmpty()) {
-                                    // O ID não existe, podemos adicionar a nota
+                                    // id is new, so we can add a new note
                                     Map<String, Object> nota = new HashMap<>();
                                     nota.put("id", id);
                                     nota.put("title", title);
@@ -76,21 +82,22 @@ public class NoteSenderFireStore {
                                             .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                                                 @Override
                                                 public void onSuccess(DocumentReference documentReference) {
-                                                    System.out.println("Nota salva com sucesso! ID: " + documentReference.getId());
+                                                    Log.d("CREATE_NOTE", "Note saving note with ID: " + documentReference.getId());
+
                                                 }
                                             })
                                             .addOnFailureListener(new OnFailureListener() {
                                                 @Override
                                                 public void onFailure(Exception e) {
-                                                    System.err.println("Erro ao salvar a nota: " + e.getMessage());
+                                                    Log.e("CREATE_NOTE", "Error Saving Note: " + e.getMessage());
+
                                                 }
                                             });
-                                } else {
+                                } else { // if note exists its because we have to update the info
 
                                   
-                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                    for (QueryDocumentSnapshot document : task.getResult()) { // update note
                                         String documentId = document.getId();
-
 
                                         Map<String, Object> updatedNota = new HashMap<>();
                                         updatedNota.put("id", id);
@@ -100,19 +107,20 @@ public class NoteSenderFireStore {
                                         db.collection("notes").document(documentId)
                                                 .set(updatedNota, SetOptions.merge())
                                                 .addOnSuccessListener(aVoid -> {
-                                                    System.out.println("Nota atualizada com sucesso! ID: " + documentId);
+                                                    Log.d("UPDATE_NOTE", "Note Updated with ID: " + documentId);
                                                 })
                                                 .addOnFailureListener(e -> {
-                                                    System.err.println("Erro ao atualizar a nota: " + e.getMessage());
+                                                    Log.e("UPDATE_NOTE", "Error: " + e.getMessage());
                                                 });
                                     }
                                 }
                             } else {
-                                // Erro ao verificar a existência do ID
-                                System.err.println("Erro ao verificar ID no Firestore: " + task.getException().getMessage());
+                                Log.d("UPDATE_NOTE", "Note with ID not found");
                             }
-                        });
+
             });
+        }else{
+            Log.v("FireStoreError","No Connection! ");
         }
     }
 
@@ -120,8 +128,7 @@ public class NoteSenderFireStore {
 
 
     public void updateNoteInFirestore(Context context,String id,String newTitle, String newDescription) {
-        executorService.submit(() -> {
-            // Buscar documento com o título especificado
+        if (isConnectedToInternet(context)){
             db.collection("notes")
                     .whereEqualTo("id", id)
                     .get()
@@ -130,27 +137,25 @@ public class NoteSenderFireStore {
 
                             String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
 
-
                             Map<String, Object> updates = new HashMap<>();
-                            updates.put("title",newTitle);
+                            updates.put("title", newTitle);
                             updates.put("description", newDescription);
-
-
                             db.collection("notes").document(documentId).update(updates)
-                                    .addOnSuccessListener(aVoid -> Log.d("UPDATE", "Nota atualizada com sucesso!"))
-                                    .addOnFailureListener(e -> Log.e("UPDATE", "Erro ao atualizar a nota: " + e.getMessage()));
+                                    .addOnSuccessListener(aVoid -> Log.d("UPDATE", "Note Updated!"))
+                                    .addOnFailureListener(e -> Log.e("UPDATE", "Error updating a note: " + e.getMessage()));
                         } else {
-                            Log.v("UPDATE", "Nota com ID '" + id + "' não encontrada.");
+                            Log.v("UPDATE", "Note with ID '" + id + "' not found.");
                         }
                     })
-                    .addOnFailureListener(e -> Log.e("UPDATE", "Erro ao buscar nota: " + e.getMessage()));
-        });
+                    .addOnFailureListener(e -> Log.e("UPDATE", "Error: " + e.getMessage()));
 
+    }else{
+            Log.v("FireStoreError","No Connection! ");
+        }
     }
 
-    public void deleteNotesNotInFile(Context context,List<String> ids) {
+    public void deleteNotesNotInFile(Context context, ArrayList<String> ids) {
         if (isConnectedToInternet(context)) {
-            executorService.submit(() -> {
                 db.collection("notes").get()
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
@@ -158,36 +163,50 @@ public class NoteSenderFireStore {
 
                                     String firestoreNoteId = document.getString("id");
 
-                                    System.out.println(firestoreNoteId);
-                                    System.out.println(ids);
-                                    if (!ids.contains(firestoreNoteId)) {
-                                        System.out.println("ENTROU");
-                                        // Deletar a nota do Firestore
+                                    // check if does not exists notes at Internal storage, (remove all documents)
+                                    if (ids.isEmpty()) {
                                         assert firestoreNoteId != null;
+
                                         db.collection("notes").document(firestoreNoteId).delete()
                                                 .addOnSuccessListener(aVoid -> {
-                                                    Log.d("DELETE_NOTE", "Nota deletada com sucesso: " + firestoreNoteId);
+                                                    Log.d("DELETE_NOTE", "Note Deleted: " + firestoreNoteId);
                                                 })
                                                 .addOnFailureListener(e -> {
-                                                    Log.e("DELETE_NOTE", "Erro ao deletar nota: " + e.getMessage());
+                                                    Log.e("DELETE_NOTE", "Error: " + e.getMessage());
                                                 });
+
+                                    } else {
+                                        if (!ids.contains(firestoreNoteId)) {
+
+
+                                            assert firestoreNoteId != null;
+                                            db.collection("notes").document(firestoreNoteId).delete()
+                                                    .addOnSuccessListener(aVoid -> {
+                                                        Log.d("DELETE_NOTE", "Note Deleted (2) : " + firestoreNoteId);
+                                                    })
+                                                    .addOnFailureListener(e -> {
+                                                        Log.e("DELETE_NOTE", "Error : " + e.getMessage());
+                                                    });
+                                        }
                                     }
                                 }
-                            } else {
-                                Log.e("DELETE_NOTE", "Erro ao obter notas do Firestore: " + task.getException().getMessage());
-                            }
+                                } else{
+                                    Log.e("DELETE_NOTE", "Error: " + task.getException().getMessage());
+                                }
+
                         });
-            });
+
+        }else{
+            Log.v("FireStoreError","No Connection! ");
         }
     }
 
-
-
-
+    /***
+     * Method to delete a Note using the id
+     */
 
     public void deleteNote(Context context, String id) {
         if (isConnectedToInternet(context)) {
-            executorService.submit(() -> {
                 db.collection("notes")
                         .whereEqualTo("id", id)
                         .get()
@@ -195,57 +214,60 @@ public class NoteSenderFireStore {
                             @Override
                             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                                 if (!queryDocumentSnapshots.isEmpty()) {
-
                                     QueryDocumentSnapshot document = (QueryDocumentSnapshot) queryDocumentSnapshots.getDocuments().get(0);
-
-
                                     document.getReference().delete()
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {
-                                                    System.out.println("Nota com ID \"" + id + "\" apagada com sucesso!");
+                                                    Log.d("DELETE_NOTE", "Note Deleted: " + id);
                                                 }
                                             })
                                             .addOnFailureListener(new OnFailureListener() {
                                                 @Override
                                                 public void onFailure(Exception e) {
-                                                    System.err.println("Erro ao apagar a nota: " + e.getMessage());
+                                                    Log.e("DELETE_NOTE", "Error "+ e.getMessage());
                                                 }
                                             });
                                 } else {
-                                    System.out.println("Nenhuma nota encontrada com o ID: " + id);
+                                    Log.d("DELETE_NOTE", "There is no note with ID: " + id);
                                 }
                             }
                         })
                         .addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(Exception e) {
-                                System.err.println("Erro ao buscar a nota: " + e.getMessage());
+                                Log.e("DELETE_NOTE",  "Error "+ e.getMessage());
                             }
                         });
-            });
+
+        }else{
+            Log.v("FireStoreError","No Connection! ");
         }
     }
 
 
+    /**
+     * Method to syncronize all information between internal storage and Firestore
+     */
+
 
     public void syncNotesToFireStore(Context context,String id,String title,String description) {
         if (isConnectedToInternet(context)) {
-            executorService.submit(() -> {
                 Query query = db.collection("notes").whereEqualTo("id", id);
                 query.get().addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (queryDocumentSnapshots.isEmpty()) {
-
+                    if (queryDocumentSnapshots.isEmpty()) { // New Note
                         sendNoteToFireStoreIfConnected(context, id, title, description);
                     } else {
                         updateNoteInFirestore(context, id, title, description);
-                        Log.v("SYNC", "Nota com ID '" + id + "' foi atualizada");
+                        Log.v("SYNC", "Note with ID '" + id + "' was updated");
                     }
                 }).addOnFailureListener(e -> {
-                    Log.e("SYNC", "Erro ao verificar nota existente: " + e.getMessage());
+                    Log.e("SYNC", "Error: " + e.getMessage());
 
                 });
-            });
+
+        }else{
+            Log.v("FireStoreError","No Connection! ");
         }
 
     }

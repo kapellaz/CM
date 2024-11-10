@@ -28,17 +28,24 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.UUID;
 
 
-public class NoteList extends Fragment {
-
+public class NoteList extends Fragment implements FileOperator.Callback {
+    private FileOperator fileOperator;
     private ArrayAdapter arrayAdapter;
     public NoteSenderFireStore NoteSender = new NoteSenderFireStore(); // firestore
     private ModelView notesViewModel;
     private ListView listView;
+    public ArrayList<Note> n = new ArrayList<>();
     public NoteList() {
         // Required empty public constructor
     }
@@ -52,9 +59,12 @@ public class NoteList extends Fragment {
         notesViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
         notesViewModel.loadNotes(getContext());
 
+
         View view =  inflater.inflate(R.layout.fragment_note_list, container, false);
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
+        fileOperator = new FileOperator();
+
 
         listView = (ListView) view.findViewById(R.id.list_view);
         arrayAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, Objects.requireNonNull(notesViewModel.getNotes().getValue()));
@@ -217,7 +227,6 @@ public class NoteList extends Fragment {
                 });
                 dialog.setView(layout);
                 dialog.show();
-
                 dialog2.dismiss();
 
             }
@@ -256,7 +265,6 @@ public class NoteList extends Fragment {
                 String newTitle = noteTitleInput.getText().toString().trim();
                 String newDescription = noteDescriptionInput.getText().toString().trim();
 
-
                 String uuid = UUID.randomUUID().toString().replace("-", ""); // creating a random ID to the Note
                 String id = uuid.substring(0, 16);
 
@@ -264,6 +272,7 @@ public class NoteList extends Fragment {
                 if (!newTitle.isEmpty()) {
                     addNote(new Note(id,newTitle,newDescription),getContext());
                     listView.requestLayout();
+                    arrayAdapter.notifyDataSetChanged();
                     Log.v("List Note","New Note Created");
                     Toast.makeText(getActivity(), "New Note Created", Toast.LENGTH_SHORT).show();
                 } else {
@@ -302,7 +311,7 @@ public class NoteList extends Fragment {
 
         }
         NoteSender.sendNoteToFireStoreIfConnected(context,note.getId_note(),note.getTitle(),note.getDescription());
-        notesViewModel.saveNotesToFile(context); // Save to file
+        fileOperator.saveNotesToFile(context,currentNotes,this);
     }
 
 
@@ -323,7 +332,7 @@ public class NoteList extends Fragment {
                 title = n.getTitle();
             }
         }
-        Log.v("Model View","New Note Add: " + title);
+        Log.v("Model View","Remote Note: " + title);
         if (currentTitles != null) { // remove from the arraylists
             currentNotes.remove(aux);
             currentTitles.remove(title);
@@ -331,7 +340,7 @@ public class NoteList extends Fragment {
             notesViewModel.setNoteTitlesListLiveData(currentTitles);
         }
         NoteSender.deleteNote(context,id); // Delete note from FireStore Database
-        notesViewModel.saveNotesToFile(context); // Save to file
+        fileOperator.saveNotesToFile(context,currentNotes,this);
     }
 
 
@@ -360,12 +369,16 @@ public class NoteList extends Fragment {
             notesViewModel.setNotesListLiveData(currentNotes);
             notesViewModel.setNoteTitlesListLiveData(currentTitles);
         }
-        notesViewModel.saveNotesToFile(context);
+        fileOperator.saveNotesToFile(context,currentNotes,this);
     }
 
+    /**
+     * CallBack
+     */
 
-
-
-
+    @Override
+    public void onCompleteRead(ArrayList<Note> result) {
+       Log.v("SAVE_Create/Remove","Notes: " + result.toString() + " Saved into Internal Storage");
+    }
 
 }

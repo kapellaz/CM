@@ -20,13 +20,15 @@ import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 
-public class NoteEdit extends Fragment {
+public class NoteEdit extends Fragment implements FileOperator.Callback {
     private EditText editText;
     private ModelView notesViewModel;
     public NoteSenderFireStore NoteSender = new NoteSenderFireStore();
+    private FileOperator fileOperator;
 
     public NoteEdit() {
         // Required empty public constructor
@@ -67,6 +69,7 @@ public class NoteEdit extends Fragment {
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
         requireActivity().setTitle("Edit Note");
+        fileOperator = new FileOperator();
 
         notesViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
         notesViewModel.loadNotes(getContext());
@@ -113,6 +116,7 @@ public class NoteEdit extends Fragment {
      *
      */
     public void updateNoteDescription(String newDescription, Context context) {
+
         Note note = notesViewModel.getEditNote().getValue();
 
         for (Note n : Objects.requireNonNull(notesViewModel.getNotes().getValue())) {
@@ -123,7 +127,15 @@ public class NoteEdit extends Fragment {
                 n.setDescription(newDescription);
             }
         }
-        notesViewModel.saveNotesToFile(context);
+        fileOperator.saveNotesToFile(context,notesViewModel.getNotes().getValue(), this);
     }
 
+    /**
+     * Callback
+     */
+    @Override
+    public void onCompleteRead(ArrayList<Note> result) {
+        Log.v("SAVE_Update Description","Notes: " + result.toString() + " Saved into Internal Storage");
+
+    }
 }
