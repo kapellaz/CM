@@ -72,7 +72,7 @@ public class NoteEdit extends Fragment implements FileOperator.Callback {
         fileOperator = new FileOperator();
 
         notesViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
-        notesViewModel.loadNotes(getContext());
+
 
         Note note = notesViewModel.getEditNote().getValue();
         assert note != null;

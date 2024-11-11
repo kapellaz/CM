@@ -3,8 +3,6 @@ package com.example.notes_app;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -18,7 +16,6 @@ import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 public class NoteSenderFireStore {
 
@@ -125,6 +122,9 @@ public class NoteSenderFireStore {
     }
 
 
+    /**
+     * Update a note  (checking if exists connection)
+     */
 
 
     public void updateNoteInFirestore(Context context,String id,String newTitle, String newDescription) {
@@ -153,6 +153,10 @@ public class NoteSenderFireStore {
             Log.v("FireStoreError","No Connection! ");
         }
     }
+
+    /**
+     * Delete note that does not exist in Internal Storage  (checking if exists connection)
+     */
 
     public void deleteNotesNotInFile(Context context, ArrayList<String> ids) {
         if (isConnectedToInternet(context)) {
@@ -271,9 +275,4 @@ public class NoteSenderFireStore {
         }
 
     }
-
-
-
-
-
 }

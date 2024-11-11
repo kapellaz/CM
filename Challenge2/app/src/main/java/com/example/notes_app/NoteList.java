@@ -27,15 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.UUID;
 
 
@@ -45,7 +37,6 @@ public class NoteList extends Fragment implements FileOperator.Callback {
     public NoteSenderFireStore NoteSender = new NoteSenderFireStore(); // firestore
     private ModelView notesViewModel;
     private ListView listView;
-    public ArrayList<Note> n = new ArrayList<>();
     public NoteList() {
         // Required empty public constructor
     }
@@ -57,18 +48,27 @@ public class NoteList extends Fragment implements FileOperator.Callback {
                              Bundle savedInstanceState) {
 
         notesViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
-        notesViewModel.loadNotes(getContext());
 
 
         View view =  inflater.inflate(R.layout.fragment_note_list, container, false);
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
         fileOperator = new FileOperator();
+        fileOperator.loadNotesFromFile(getContext(),notesViewModel,NoteSender);
 
 
         listView = (ListView) view.findViewById(R.id.list_view);
-        arrayAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, Objects.requireNonNull(notesViewModel.getNotes().getValue()));
+        arrayAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<>());
         listView.setAdapter(arrayAdapter);
+
+        //adaptador quando os dados mudarem
+        notesViewModel.getNotes().observe(getViewLifecycleOwner(), notes -> {
+
+            arrayAdapter.clear();
+            arrayAdapter.addAll(notes);
+            arrayAdapter.notifyDataSetChanged();
+
+        });
 
         // click
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -140,7 +140,9 @@ public class NoteList extends Fragment implements FileOperator.Callback {
  */
 
 
-// Function with Pop up - choose Erase or Change Title
+    /**
+     * pop up change name / Erase
+     */
     @SuppressLint("SetTextI18n")
     public void longClick(int pos){
         AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
@@ -272,7 +274,7 @@ public class NoteList extends Fragment implements FileOperator.Callback {
                 if (!newTitle.isEmpty()) {
                     addNote(new Note(id,newTitle,newDescription),getContext());
                     listView.requestLayout();
-                    arrayAdapter.notifyDataSetChanged();
+
                     Log.v("List Note","New Note Created");
                     Toast.makeText(getActivity(), "New Note Created", Toast.LENGTH_SHORT).show();
                 } else {
@@ -302,7 +304,7 @@ public class NoteList extends Fragment implements FileOperator.Callback {
     public void addNote(Note note, Context context) {
         ArrayList<Note> currentNotes = notesViewModel.getNotes().getValue();
         ArrayList<String> currentTitles = notesViewModel.getNotesTitle().getValue();
-        Log.v("Model View","New Note Add: " + note.getTitle());
+        Log.v("Model View","New Note Add: " + currentNotes + currentTitles);
         if (currentNotes != null && currentTitles != null) {
             currentNotes.add(note);
             currentTitles.add(note.getTitle());

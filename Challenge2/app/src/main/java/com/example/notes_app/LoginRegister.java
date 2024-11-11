@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import com.google.firebase.auth.FirebaseAuth;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -83,7 +82,7 @@ public class LoginRegister extends Fragment {
             String password = passwordEditText.getText().toString();
 
             if (!name.isEmpty() && !password.isEmpty()) {
-                if(checkAvailable(name)){
+                if(checkAvailable(name)){ // if already exists any account with that name
                     accounts.put(name,password);
                     SaveAccountsToFile(getContext());
                     Log.v("Register","Register Sucessful");
@@ -104,6 +103,9 @@ public class LoginRegister extends Fragment {
         return view;
     }
 
+    /**
+     * Method to load all acounts
+     */
     public void LoadAccounts(Context context) {
 
         try {
@@ -132,6 +134,10 @@ public class LoginRegister extends Fragment {
 
     }
 
+    /**
+     * Check if exists any account with same name
+     */
+
     public boolean checkAvailable(String name){
         for (Map.Entry<String, String> entry : accounts.entrySet()) {
             if (entry.getKey().equals(name)){
@@ -141,7 +147,9 @@ public class LoginRegister extends Fragment {
         return true;
     }
 
-
+    /**
+     * Login Function
+     */
     public boolean LoginCheck(String name, String pass){
         for (Map.Entry<String, String> entry : accounts.entrySet()) {
             if (entry.getKey().equals(name) && entry.getValue().equals(pass)) {
@@ -150,6 +158,11 @@ public class LoginRegister extends Fragment {
         }
         return false;
     }
+
+
+    /**
+     * Method to save all accounts into a File (login.txt)
+     */
 
 
     public void SaveAccountsToFile(Context context) {

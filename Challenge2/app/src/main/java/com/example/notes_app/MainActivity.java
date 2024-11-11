@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment;
 public class MainActivity extends AppCompatActivity {
 
     private LoginRegister login;
-    private NoteList List;
     private static final String TAG_NOTE_EDIT = "NOTE_EDIT";
     private static final String TAG_NOTE_LIST = "NOTE_LIST";
 
@@ -23,7 +22,6 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         login = new LoginRegister();
-        List = new NoteList();
 
         if (savedInstanceState != null) {
             // Retrieve the saved fragment tag
