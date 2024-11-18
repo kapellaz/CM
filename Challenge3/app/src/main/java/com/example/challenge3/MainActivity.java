@@ -24,22 +24,43 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         login = new FirstTimeFrag();
+        Chat c = new Chat();
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.main, login);
         ft.commit();
-
     }
 
 
-    /**
+    /**switchToChat
      * Switch Fragment - First Fragment to Chat List
      */
-    public void switchToChatList() {
+    public void switchToChatList(String username) {
+
+        ChatList chatListFragment = new ChatList();
+        Bundle args = new Bundle();
+        args.putString("username", username); // Adicione o username ao bundle
+        chatListFragment.setArguments(args); // Passe o bundle para o fragmento
+
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, new ChatList(),TAG_NOTE_EDIT)
+                .replace(R.id.main, chatListFragment, TAG_NOTE_EDIT)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    public void switchToChat(String receive,String username) {
+
+        Chat chat = new Chat();
+        Bundle args = new Bundle();
+        args.putString("userReceive", receive); // Adicione o username ao bundle
+        args.putString("username", username);
+        chat.setArguments(args); // Passe o bundle para o fragmento
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main, chat, TAG_NOTE_EDIT)
+                .addToBackStack(null)
+                .commit();
+
     }
 
 

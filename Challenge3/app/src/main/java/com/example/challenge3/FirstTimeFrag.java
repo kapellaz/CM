@@ -39,7 +39,7 @@ public class FirstTimeFrag extends Fragment {
 
                 // Verifica se o campo está vazio
                 if (!username.isEmpty()) {
-                    ((MainActivity) requireActivity()).switchToChatList();
+                    ((MainActivity) requireActivity()).switchToChatList(username);
                     Toast.makeText(getActivity(), "Username: " + username, Toast.LENGTH_SHORT).show();
                 } else {
                     // Mostra uma mensagem se o campo estiver vazio
