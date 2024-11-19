@@ -3,11 +3,9 @@ package com.example.challenge3;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -59,7 +57,7 @@ public class Chat extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflando o layout
+
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
         Toolbar toolbar = view.findViewById(R.id.toolbar);
 
@@ -74,37 +72,40 @@ public class Chat extends Fragment {
                 Toolbar.LayoutParams.MATCH_PARENT);
         layoutParams.gravity = Gravity.CENTER;
         titleTextView.setLayoutParams(layoutParams);
-
+        databaseHelper.markMessagesAsRead(username,contactName);
 
         toolbar.addView(titleTextView);
 
+        toolbar.setNavigationOnClickListener(v -> ((MainActivity) requireActivity()).switchToChatList(username));
 
-        // Inicializando o ListView e o adaptador
+
         listView = view.findViewById(R.id.chat_recycler_view);
         adapter = new ArrayAdapter<Message>(requireContext(), android.R.layout.simple_list_item_2, android.R.id.text1, messages) {
+            @NonNull
+            @SuppressLint("SetTextI18n")
             @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-                Message message = (Message) getItem(position);
-                if (message != null) {
-
-                    TextView text1 = view.findViewById(android.R.id.text1);
-                    TextView text2 = view.findViewById(android.R.id.text2);
-
-                    text1.setText(message.getUserSend() + ": " + message.getText());
-                    text2.setText(message.getTime());
+            public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+                Message message = getItem(position);
 
 
-                    if (message.getUserSend() != null && message.getUserSend().equals(username)) {
-                        text1.setTextColor(getResources().getColor(R.color.blue));  // Cor para as mensagens do usuário
-                    } else {
-                        text1.setTextColor(getResources().getColor(R.color.green));  // Cor para as mensagens do contato
-                    }
-
+                if (message != null && message.getUserSend().equals(username)) {
+                    convertView = LayoutInflater.from(getContext()).inflate(R.layout.send, parent, false);
+                } else {
+                    convertView = LayoutInflater.from(getContext()).inflate(R.layout.received, parent, false);
                 }
-                return view;
+
+
+                TextView messageText = convertView.findViewById(R.id.message_text);
+                TextView messageTime = convertView.findViewById(R.id.message_time);
+
+                messageText.setText(message.getText());
+                messageTime.setText(message.getTime());
+
+
+                return convertView;
             }
         };
+
         listView.setAdapter(adapter);
 
         // Configuração do campo de input e botão de envio
@@ -115,12 +116,13 @@ public class Chat extends Fragment {
         sendButton.setOnClickListener(v -> {
             String messageText = inputMessage.getText().toString();
             if (!messageText.isEmpty()) {
-                Message message = new Message(username, contactName, messageText, getCurrentTime());
+                Message message = new Message(username, contactName, messageText, getCurrentTime(),0);
                 messages.add(message);
                 databaseHelper.insertMessage(message);
+                databaseHelper.updateMessageReadStatus(username,contactName,true);
                 adapter.notifyDataSetChanged();
-                inputMessage.setText(""); // Limpa o campo de texto
-                listView.setSelection(messages.size() - 1); // Rolando para a última mensagem
+                inputMessage.setText("");
+                listView.setSelection(messages.size() - 1);
             }
         });
 
@@ -129,9 +131,9 @@ public class Chat extends Fragment {
 
 
     private void loadMessagesFromDatabase() {
-        // Carregar mensagens do banco de dados
+
         ArrayList<Message> dbMessages = databaseHelper.getAllMessages(contactName,username);
-       // databaseHelper.deleteAllMessages();
+
         messages.addAll(dbMessages);
 
     }

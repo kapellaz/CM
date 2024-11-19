@@ -7,13 +7,15 @@ public class Message {
     private String userReceive;
     private String text;
     private String time;
+    private int isRead;
 
     // Construtor
-    public Message(String userSend, String userReceive, String text, String time) {
+    public Message(String userSend, String userReceive, String text, String time, int isRead) {
         this.userSend = userSend;
         this.userReceive = userReceive;
         this.text = text;
         this.time = time;
+        this.isRead=isRead;
     }
 
     // Getters e Setters
@@ -49,9 +51,13 @@ public class Message {
         this.time = time;
     }
 
+    public int getIsRead() {
+        return isRead;
+    }
     @NonNull
     @Override
     public String toString() {
         return userReceive;
     }
+
 }
