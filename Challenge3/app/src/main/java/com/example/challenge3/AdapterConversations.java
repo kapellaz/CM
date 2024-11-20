@@ -39,15 +39,20 @@ public class AdapterConversations extends ArrayAdapter<String> {
 
             Message lastMessage = databaseHelper.getLastMessage(contactName, username);
 
-
+            System.out.println("LAST: " + lastMessage.getUserSend() + " " + lastMessage.getIsRead());
             boolean isUnread;
             if (lastMessage.getUserSend().equals(username)) {
 
                 isUnread = false;
             } else {
-                isUnread = lastMessage.getIsRead() != 1;
+                if(lastMessage.getIsRead() == 0){
+                    isUnread = true;
+                }else{
+                    isUnread = false;
+                }
+               // isUnread = lastMessage.getIsRead() != 1;
             }
-
+            System.out.println(isUnread);
 
             if (isUnread) {
                 view.setBackgroundColor(context.getResources().getColor(R.color.light_blue)); // Cor para não lido

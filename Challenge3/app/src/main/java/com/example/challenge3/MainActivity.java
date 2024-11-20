@@ -63,6 +63,19 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void switchToArduinoConfigs(String username) {
+
+        ArduinoConfiguration config = new ArduinoConfiguration();
+        Bundle args = new Bundle();
+        args.putString("username", username);
+        config.setArguments(args); // Passe o bundle para o fragmento
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main, config, TAG_NOTE_EDIT)
+                .addToBackStack(null)
+                .commit();
+
+    }
 
 
 

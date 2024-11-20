@@ -53,7 +53,6 @@ public class ChatList extends Fragment {
 
 
 
-
     }
 
     @Override
@@ -121,6 +120,7 @@ public class ChatList extends Fragment {
         view.findViewById(R.id.arduino_config_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ((MainActivity) requireActivity()).switchToArduinoConfigs(username);
 
             }
         });
@@ -131,10 +131,12 @@ public class ChatList extends Fragment {
     private void loadMessagesFromDatabase(String username) {
 
         ArrayList<String> dbMessages = databaseHelper.getContactsWithUser(username);
-
+        conversations.clear();
         System.out.println(dbMessages);
         conversations.addAll(dbMessages);
+
         System.out.println(conversations);
+        System.out.println(" LOADDINGGGG  ");
 
 
     }

@@ -51,8 +51,9 @@ public class Chat extends Fragment {
             contactName = getArguments().getString("userReceive");
         }
         databaseHelper = new DatabaseHelper(requireContext());
+
         loadMessagesFromDatabase();
-        System.out.println(messages);
+
     }
 
     @Override
@@ -72,11 +73,10 @@ public class Chat extends Fragment {
                 Toolbar.LayoutParams.MATCH_PARENT);
         layoutParams.gravity = Gravity.CENTER;
         titleTextView.setLayoutParams(layoutParams);
-        databaseHelper.markMessagesAsRead(username,contactName);
 
         toolbar.addView(titleTextView);
 
-        toolbar.setNavigationOnClickListener(v -> ((MainActivity) requireActivity()).switchToChatList(username));
+        toolbar.setNavigationOnClickListener(v -> {((MainActivity) requireActivity()).switchToChatList(username);});
 
 
         listView = view.findViewById(R.id.chat_recycler_view);
@@ -119,12 +119,14 @@ public class Chat extends Fragment {
                 Message message = new Message(username, contactName, messageText, getCurrentTime(),0);
                 messages.add(message);
                 databaseHelper.insertMessage(message);
-                databaseHelper.updateMessageReadStatus(username,contactName,true);
+
                 adapter.notifyDataSetChanged();
                 inputMessage.setText("");
                 listView.setSelection(messages.size() - 1);
             }
         });
+        System.out.println("SDHADIUSAHIDAHSD ");
+        //databaseHelper.markMessagesAsRead(username,contactName);
 
         return view;
     }
@@ -133,7 +135,7 @@ public class Chat extends Fragment {
     private void loadMessagesFromDatabase() {
 
         ArrayList<Message> dbMessages = databaseHelper.getAllMessages(contactName,username);
-
+        messages.clear();
         messages.addAll(dbMessages);
 
     }
