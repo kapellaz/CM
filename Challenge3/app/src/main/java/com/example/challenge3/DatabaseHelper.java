@@ -126,6 +126,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return lastMessage;
     }
 
+    public void markMessagesAsRead(String receiver, String sender) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("isRead", 1);
+        db.update(TABLE_MESSAGES, values, COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?", new String[]{sender, receiver});
+    }
+
+
     // Método para atualizar o campo isRead das mensagens
     public void updateMessageReadStatus(String sender, String receiver, boolean isSender) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -207,4 +215,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void removeContactFromArduinoNotification(String username, String contact) {
         // Código para remover contato do banco de dados.
     }
+
+
 }

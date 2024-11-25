@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +41,10 @@ public class ChatList extends Fragment {
     private ArrayList<String> conversations = new ArrayList<>();
     private DatabaseHelper databaseHelper;
     private String username;
+    //MainActivity activity = (MainActivity) getActivity();
+    private String clientId;
+    final String server = "tcp://test.mosquitto.org:1883";
+    private MQTTHelper mqttHelper;
 
     public ChatList() {
         // Required empty public constructor
@@ -49,11 +58,86 @@ public class ChatList extends Fragment {
         }
         databaseHelper = new DatabaseHelper(requireContext());
 
-
-
-
+        mqttHelper = new MQTTHelper();
+        clientId = username+"111111";
+        connectToMqtt();
 
     }
+
+
+    private void connectToMqtt() {
+        new Thread(() -> {
+            // Set the callback inside the fragment itself
+            mqttHelper.connect(server, clientId, username, requireContext(), new MqttCallbackExtended() {
+                @Override
+                public void connectComplete(boolean reconnect, String serverURI) {
+                    // Connection successful callback
+                    Log.d("MQTT", "Connected to: " + serverURI);
+                }
+
+                @Override
+                public void connectionLost(Throwable cause) {
+                    // Connection lost callback
+                    Log.d("MQTT", "Connection lost: " + cause.getMessage());
+                }
+
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    // Handle incoming messages
+                    String[] topicParts = topic.split("/");
+                    if (!topicParts[1].equals("create")) {
+                        System.out.println("ChatList case 1");
+                        String lastTopicPart = topicParts[topicParts.length - 1];
+                        String contactName = topicParts[topicParts.length - 2];
+                        if (lastTopicPart.equals(username)){
+                            Log.d("MQTT", "Message arrived: " + message.toString());
+                            Message msg = new Message(contactName, username, message.toString(), getCurrentTime(), 0);
+                            // Insert message into database
+                            databaseHelper.insertMessage(msg);
+                        }
+                    }else if (topicParts[1].equals("create") && topicParts[2].equals(username)) {
+                        System.out.println("ChatList case 2");
+                        String sender = topicParts[3];  //"chat/create/<sender>/<receiver>"
+                        String messageContent = message.toString();
+                        if (!conversations.contains(sender)) {
+                            // If not, add the sender as a new conversation
+                            requireActivity().runOnUiThread(() -> {
+                                conversations.add(sender);
+
+                                databaseHelper.insertMessage(new Message(sender, username, messageContent, getCurrentTime(), 0));  // Add to database as well
+
+                                adapter.notifyDataSetChanged();
+                            });
+                        }
+                    }
+
+
+                    // Notify the adapter
+                    requireActivity().runOnUiThread(() -> {
+                        adapter.notifyDataSetChanged();
+                    });
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+                    // Handle delivery confirmation
+                    Log.d("MQTT", "Message delivered: " + token.getMessageId());
+                }
+            });
+
+            requireActivity().runOnUiThread(this::subscribeToTopic);
+        }).start();
+    }
+    private void subscribeToTopic(){
+        //String chatTopic = "chat/create/" + username + "/#"; // Tópico do chat específico
+        String chatTopic2 = "chat/#"; // Tópico para todos os chats
+        //System.out.println("Subscribing to topic " + chatTopic);
+        System.out.println("Subscribing to topic " + chatTopic2);
+        //mqttHelper.subscribe(chatTopic);
+        mqttHelper.subscribe(chatTopic2);
+    }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -143,7 +227,10 @@ public class ChatList extends Fragment {
 
 
 
-
+    private String getCurrentTime() {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        return sdf.format(new Date());
+    }
 
     private void showNewConversationDialog() {
        

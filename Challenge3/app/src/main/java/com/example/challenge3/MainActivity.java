@@ -11,21 +11,25 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import org.eclipse.paho.client.mqttv3.MqttClient;
+
 public class MainActivity extends AppCompatActivity {
 
 
     private FirstTimeFrag login;
     private static final String TAG_NOTE_EDIT = "NOTE_EDIT";
     private static final String TAG_NOTE_LIST = "NOTE_LIST";
+    private String clientId = MqttClient.generateClientId();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        login = new FirstTimeFrag();
-        Chat c = new Chat();
 
+        login = new FirstTimeFrag();
+        System.out.println("asdkasjdkasd");
+        //Chat c = new Chat();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.main, login);
         ft.commit();
@@ -78,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
+    public String getClientId() {
+        return clientId;
+    }
 }
