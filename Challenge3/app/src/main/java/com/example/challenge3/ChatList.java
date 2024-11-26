@@ -85,7 +85,8 @@ public class ChatList extends Fragment {
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     // Handle incoming messages
                     String[] topicParts = topic.split("/");
-                    if (!topicParts[1].equals("create")) {
+                    System.out.println(topicParts[1]);
+                    if (!topicParts[1].equals("create") && !topicParts[1].equals("delete")) {
                         System.out.println("ChatList case 1");
                         String lastTopicPart = topicParts[topicParts.length - 1];
                         String contactName = topicParts[topicParts.length - 2];
@@ -110,7 +111,21 @@ public class ChatList extends Fragment {
                                 adapter.notifyDataSetChanged();
                             });
                         }
+                    } else if  (topicParts[1].equals("delete")) {
+                        // Exclusão sincronizada
+                        System.out.println("YOOOOO");
+                        String sender = topicParts[2];
+                        String contact = topicParts[3];
+                        if (sender.equals(username) || contact.equals(username)) {
+                            databaseHelper.deleteConversation(sender, contact);
+                            requireActivity().runOnUiThread(() -> {
+                                loadMessagesFromDatabase(username);
+                                adapter.notifyDataSetChanged();
+                            });
+                        }
                     }
+
+
 
 
                     // Notify the adapter
@@ -176,14 +191,24 @@ public class ChatList extends Fragment {
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                String contactToDelete = conversations.get(position); // Contato a ser excluído
+
                 new AlertDialog.Builder(requireContext())
                         .setTitle("Delete Conversation")
                         .setMessage("Are you sure you want to delete this conversation?")
                         .setPositiveButton("Yes", (dialog, which) -> {
+                            // 1. Apagar conversa e mensagens no banco de dados
+                            databaseHelper.deleteConversation(username, contactToDelete);
 
-                            databaseHelper.deleteConversation(username, (String) listView.getItemAtPosition(position));
-                            conversations.remove(position);
+                            // 2. Publicar mensagem no MQTT para sincronizar exclusão
+                            String deleteTopic = "chat/delete/" + username + "/" + contactToDelete;
+                            mqttHelper.publish(deleteTopic, "delete");
+
+                            // 3. Recarregar a lista de conversas
+                            loadMessagesFromDatabase(username);
                             adapter.notifyDataSetChanged();
+
+                            // 4. Feedback ao usuário
                             Toast.makeText(requireContext(), "Conversation deleted", Toast.LENGTH_SHORT).show();
                         })
                         .setNegativeButton("No", null)
@@ -234,7 +259,7 @@ public class ChatList extends Fragment {
     }
 
     private void showNewConversationDialog() {
-       
+
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("New Conversation");
 
