@@ -94,6 +94,7 @@ public class ChatList extends Fragment {
                             Message msg = new Message(contactName, username, message.toString(), getCurrentTime(), 0);
                             // Insert message into database
                             databaseHelper.insertMessage(msg);
+                            loadMessagesFromDatabase(username);
                         }
                     }else if (topicParts[1].equals("create") && topicParts[2].equals(username)) {
                         System.out.println("ChatList case 2");
@@ -105,7 +106,7 @@ public class ChatList extends Fragment {
                                 conversations.add(sender);
 
                                 databaseHelper.insertMessage(new Message(sender, username, messageContent, getCurrentTime(), 0));  // Add to database as well
-
+                                loadMessagesFromDatabase(username);
                                 adapter.notifyDataSetChanged();
                             });
                         }
