@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
 import android.view.Gravity;
@@ -61,6 +62,8 @@ public class Chat extends Fragment {
     private String topic = "qweqweqwqweqweqhh";
     private MQTTHelper mqttHelper;
     private ArrayList<String> conversations = new ArrayList<>();
+    private ViewModelChat viewModelChat;
+
 
 
 
@@ -72,10 +75,7 @@ public class Chat extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            username = getArguments().getString("username");
-            contactName = getArguments().getString("userReceive");
-        }
+
 
         clientId = username+"111111";
         databaseHelper = new DatabaseHelper(requireContext());
@@ -85,7 +85,6 @@ public class Chat extends Fragment {
         connectToMqtt();
 
 
-        loadMessagesFromDatabase();
 
     }
 
@@ -179,7 +178,12 @@ public class Chat extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        viewModelChat = new ViewModelProvider(requireActivity()).get(ViewModelChat.class);
+        username = viewModelChat.getUsername();
+        contactName = viewModelChat.getContactName();
+        loadMessagesFromDatabase();
 
+        System.out.println(username +  "     " + contactName);
         databaseHelper.markMessagesAsRead(username, contactName);
 
 
@@ -200,7 +204,7 @@ public class Chat extends Fragment {
 
         toolbar.addView(titleTextView);
 
-        toolbar.setNavigationOnClickListener(v -> {((MainActivity) requireActivity()).switchToChatList(username);});
+        toolbar.setNavigationOnClickListener(v -> {((MainActivity) requireActivity()).switchToChatList();});
 
 
         listView = view.findViewById(R.id.chat_recycler_view);

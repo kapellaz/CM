@@ -150,7 +150,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public ArrayList<String> getContactsWithUser(String username) {
         ArrayList<String> contacts = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-
+        System.out.println(username + " DATABASE ");
 
         String query = "SELECT DISTINCT " +
                 "CASE WHEN " + COLUMN_USER_SEND + " = ? THEN " + COLUMN_USER_RECEIVE + " ELSE " + COLUMN_USER_SEND + " END AS contact, " +

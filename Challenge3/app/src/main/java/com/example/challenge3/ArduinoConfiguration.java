@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
 
@@ -24,15 +25,14 @@ public class ArduinoConfiguration extends Fragment {
     private DatabaseHelper databaseHelper;
     private String username;
     private ArrayList<String> contacts;
+    private ViewModelChat viewModelChat;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            username = getArguments().getString("username");
-        }
+
         databaseHelper = new DatabaseHelper(requireContext());
-        contacts = databaseHelper.getContactsWithUser(username);
+
     }
 
     @Nullable
@@ -62,7 +62,9 @@ public class ArduinoConfiguration extends Fragment {
         toolbar.addView(titleTextView);
 
         // Configurar a navegação na Toolbar
-        toolbar.setNavigationOnClickListener(v -> ((MainActivity) requireActivity()).switchToChatList(username));
+        toolbar.setNavigationOnClickListener(v -> ((MainActivity) requireActivity()).switchToChatList());
+        viewModelChat = new ViewModelProvider(requireActivity()).get(ViewModelChat.class);
+        username = viewModelChat.getUsername();
 
         // Carregar os contatos a partir do banco de dados
         contacts = databaseHelper.getContactsWithUser(username);
@@ -109,7 +111,7 @@ public class ArduinoConfiguration extends Fragment {
             } else {
                 Toast.makeText(requireContext(), "No contacts selected", Toast.LENGTH_SHORT).show();
             }
-            ((MainActivity) requireActivity()).switchToChatList(username);
+            ((MainActivity) requireActivity()).switchToChatList();
         });
 
         return view;

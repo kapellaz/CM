@@ -15,7 +15,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 
 public class MainActivity extends AppCompatActivity {
 
-
+    private ViewModelChat viewModelChat = new ViewModelChat();
     private FirstTimeFrag login;
     private static final String TAG_NOTE_EDIT = "NOTE_EDIT";
     private static final String TAG_NOTE_LIST = "NOTE_LIST";
@@ -28,8 +28,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         login = new FirstTimeFrag();
-        System.out.println("asdkasjdkasd");
-        //Chat c = new Chat();
+
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.main, login);
         ft.commit();
@@ -39,12 +38,9 @@ public class MainActivity extends AppCompatActivity {
     /**switchToChat
      * Switch Fragment - First Fragment to Chat List
      */
-    public void switchToChatList(String username) {
+    public void switchToChatList() {
 
         ChatList chatListFragment = new ChatList();
-        Bundle args = new Bundle();
-        args.putString("username", username);
-        chatListFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, chatListFragment, TAG_NOTE_EDIT)
@@ -52,13 +48,10 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    public void switchToChat(String receive,String username) {
+    public void switchToChat() {
 
         Chat chat = new Chat();
-        Bundle args = new Bundle();
-        args.putString("userReceive", receive);
-        args.putString("username", username);
-        chat.setArguments(args);
+
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, chat, TAG_NOTE_EDIT)
@@ -67,12 +60,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void switchToArduinoConfigs(String username) {
+    public void switchToArduinoConfigs() {
 
         ArduinoConfiguration config = new ArduinoConfiguration();
-        Bundle args = new Bundle();
-        args.putString("username", username);
-        config.setArguments(args);
+
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, config, TAG_NOTE_EDIT)
