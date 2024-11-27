@@ -131,6 +131,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put("isRead", 1);
         db.update(TABLE_MESSAGES, values, COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?", new String[]{sender, receiver});
+
     }
 
 

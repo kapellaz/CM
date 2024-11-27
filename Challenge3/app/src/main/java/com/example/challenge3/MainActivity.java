@@ -43,8 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
         ChatList chatListFragment = new ChatList();
         Bundle args = new Bundle();
-        args.putString("username", username); // Adicione o username ao bundle
-        chatListFragment.setArguments(args); // Passe o bundle para o fragmento
+        args.putString("username", username);
+        chatListFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, chatListFragment, TAG_NOTE_EDIT)
@@ -56,9 +56,9 @@ public class MainActivity extends AppCompatActivity {
 
         Chat chat = new Chat();
         Bundle args = new Bundle();
-        args.putString("userReceive", receive); // Adicione o username ao bundle
+        args.putString("userReceive", receive);
         args.putString("username", username);
-        chat.setArguments(args); // Passe o bundle para o fragmento
+        chat.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, chat, TAG_NOTE_EDIT)
@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         ArduinoConfiguration config = new ArduinoConfiguration();
         Bundle args = new Bundle();
         args.putString("username", username);
-        config.setArguments(args); // Passe o bundle para o fragmento
+        config.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, config, TAG_NOTE_EDIT)

@@ -112,7 +112,9 @@ public class Chat extends Fragment {
                     // Handle incoming messages
                     String[] topicParts = topic.split("/");
                     String lastTopicPart = topicParts[topicParts.length - 1];
-                    if (lastTopicPart.equals(username) && !topicParts[1].equals("create") && !topicParts[1].equals("delete") && topicParts[topicParts.length - 2].equals(contactName)) {
+                    System.out.println("CHAT " + message.toString() + lastTopicPart + topic);
+                    ArrayList<String> contacts = databaseHelper.getContactsWithUser(username);
+                    if ((lastTopicPart.equals(username) && !topicParts[1].equals("create") && topicParts[topicParts.length - 2].equals(contactName)) || (topicParts[1].equals("create") && contacts.contains(contactName) && !lastTopicPart.equals(username))) {
                         System.out.println("Chat case 1");
                         // Message is for this user
                         Log.d("MQTT", "Message arrived: " + message.toString());
@@ -147,17 +149,7 @@ public class Chat extends Fragment {
                                 databaseHelper.insertMessage(new Message(sender, username, messageContent, getCurrentTime(), 0));  // Add to database as well
                             });
                         }
-                    }else if (topicParts[1].equals("delete")) {
-
-                        requireActivity().runOnUiThread(() -> {
-                            Toast.makeText(requireContext(), "O chat foi excluído pelo outro utilizador.", Toast.LENGTH_SHORT).show();
-
-                            // Redirecionar para a lista de chats
-                            ((MainActivity) requireActivity()).switchToChatList(username);
-                        });
-
-                    }
-                }
+                    }                }
 
                 @Override
                 public void deliveryComplete(IMqttDeliveryToken token) {

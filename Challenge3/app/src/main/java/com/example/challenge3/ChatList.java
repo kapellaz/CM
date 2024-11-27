@@ -84,15 +84,26 @@ public class ChatList extends Fragment {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     // Handle incoming messages
+
                     String[] topicParts = topic.split("/");
-                    System.out.println(topicParts[1]);
-                    if (!topicParts[1].equals("create") && !topicParts[1].equals("delete")) {
+                    System.out.println(topic);
+
+                    System.out.println("CHAT LIST" + message.toString());
+                    ArrayList<String> contacts = databaseHelper.getContactsWithUser(username);
+                    if ((!topicParts[1].equals("create") && !topicParts[1].equals("delete")) || (topicParts[1].equals("create") && topicParts[2].equals(username) && contacts.contains(topicParts[3])) ) {
                         System.out.println("ChatList case 1");
                         String lastTopicPart = topicParts[topicParts.length - 1];
                         String contactName = topicParts[topicParts.length - 2];
-                        if (lastTopicPart.equals(username)){
+                        System.out.println(lastTopicPart + " " + username);
+                        if (lastTopicPart.equals(username) && !topicParts[1].equals("create")){
                             Log.d("MQTT", "Message arrived: " + message.toString());
                             Message msg = new Message(contactName, username, message.toString(), getCurrentTime(), 0);
+                            // Insert message into database
+                            databaseHelper.insertMessage(msg);
+                            loadMessagesFromDatabase(username);
+                        }else{
+                            Log.d("MQTT2", "Message arrived: " + message.toString());
+                            Message msg = new Message(lastTopicPart, username,message.toString(), getCurrentTime(), 0);
                             // Insert message into database
                             databaseHelper.insertMessage(msg);
                             loadMessagesFromDatabase(username);
@@ -111,18 +122,7 @@ public class ChatList extends Fragment {
                                 adapter.notifyDataSetChanged();
                             });
                         }
-                    } else if  (topicParts[1].equals("delete")) {
-                        // Exclusão sincronizada
-                        System.out.println("YOOOOO");
-                        String sender = topicParts[2];
-                        String contact = topicParts[3];
-                        if (sender.equals(username) || contact.equals(username)) {
-                            databaseHelper.deleteConversation(sender, contact);
-                            requireActivity().runOnUiThread(() -> {
-                                loadMessagesFromDatabase(username);
-                                adapter.notifyDataSetChanged();
-                            });
-                        }
+
                     }
 
 
@@ -200,9 +200,6 @@ public class ChatList extends Fragment {
                             // 1. Apagar conversa e mensagens no banco de dados
                             databaseHelper.deleteConversation(username, contactToDelete);
 
-                            // 2. Publicar mensagem no MQTT para sincronizar exclusão
-                            String deleteTopic = "chat/delete/" + username + "/" + contactToDelete;
-                            mqttHelper.publish(deleteTopic, "delete");
 
                             // 3. Recarregar a lista de conversas
                             loadMessagesFromDatabase(username);
