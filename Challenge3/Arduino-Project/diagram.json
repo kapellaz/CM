@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "author": "Uri Shaked",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": -79.21, "left": 20.73, "attrs": {} },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd1",
+      "top": -67.52,
+      "left": 164.67,
+      "attrs": { "pins": "i2c" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -70.8,
+      "left": -53.8,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": -4.49,
+      "left": -54.73,
+      "rotate": 270,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "esp:VIN", "lcd1:VDD", "red", [ "h0" ] ],
+    [ "esp:GND.1", "lcd1:GND", "black", [ "h23.18", "v-101.8" ] ],
+    [ "lcd1:VCC", "esp:3V3", "red", [ "h-16.57", "v0.91" ] ],
+    [ "esp:D21", "lcd1:SDA", "green", [ "h0" ] ],
+    [ "lcd1:SCL", "esp:D22", "purple", [ "h-31.08", "v-29.71" ] ],
+    [ "esp:GND.2", "led1:C", "black", [ "h0" ] ],
+    [ "r2:1", "esp:D12", "green", [ "h-0.14", "v7.57" ] ],
+    [ "r2:2", "led1:A", "green", [ "h0" ] ]
+  ],
+  "dependencies": {}
+}
