@@ -42,7 +42,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 
 
 public class Chat extends Fragment {
-
+    
     private ListView chatRecyclerView;
     private ListView listView;
     private ArrayAdapter<Message> adapter;
@@ -301,6 +301,9 @@ public class Chat extends Fragment {
         System.out.println("Publishing message: " + messageText);
         databaseHelper.insertMessage(new Message(username, contactName, messageText, getCurrentTime(),0));
         mqttHelper.publish(topic, messageText);
+        String m = username + ":" + messageText;
+        mqttHelper.publish("chat/arduinooooo", m);
+        System.out.println("ENVIOI");
     }
 
     private void publishMessageCreate(String messageText){
@@ -330,5 +333,7 @@ public class Chat extends Fragment {
         //mqttHelper.subscribe(chatTopic);
         //mqttHelper.subscribe(chatTopic3);
         mqttHelper.subscribe(chatTopic4);
+        System.out.println("Subscribing to topic chat/arduino");
+        mqttHelper.subscribe("chat/arduinooooo");
     }
 }
