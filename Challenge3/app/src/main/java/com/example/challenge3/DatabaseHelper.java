@@ -49,49 +49,65 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void insertMessage(Message message) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_USER_SEND, message.getUserSend());
-        values.put(COLUMN_USER_RECEIVE, message.getUserReceive());
-        values.put(COLUMN_TEXT, message.getText());
-        values.put(COLUMN_TIME, message.getTime());
-        values.put("isRead", 0);
+        SQLiteDatabase db = null;
+        try {
+            db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_USER_SEND, message.getUserSend());
+            values.put(COLUMN_USER_RECEIVE, message.getUserReceive());
+            values.put(COLUMN_TEXT, message.getText());
+            values.put(COLUMN_TIME, message.getTime());
+            values.put("isRead", 0);
 
-        db.insert(TABLE_MESSAGES, null, values);
-        db.close();
+            db.insert(TABLE_MESSAGES, null, values);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();  // Fecha o banco de dados de forma segura
+            }
+        }
     }
 
+
     public ArrayList<Message> getAllMessages(String contactName, String username) {
-        System.out.println("GETTTT ");
+
         ArrayList<Message> messages = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = null;
+        try{
+            db = this.getReadableDatabase();
+            String selection = "(" + COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?) OR (" +
+                    COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?)";
 
-        String selection = "(" + COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?) OR (" +
-                COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?)";
+            String[] selectionArgs = new String[]{username, contactName, contactName, username};
 
-        String[] selectionArgs = new String[]{username, contactName, contactName, username};
+            // Ordenar as mensagens por tempo, do mais recente para o mais antigo
+            Cursor cursor = db.query(TABLE_MESSAGES, null, selection, selectionArgs, null, null, COLUMN_TIME + " ASC");
 
-        // Ordenar as mensagens por tempo, do mais recente para o mais antigo
-        Cursor cursor = db.query(TABLE_MESSAGES, null, selection, selectionArgs, null, null, COLUMN_TIME + " ASC");
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    do {
+                        // Adiciona as mensagens à lista
+                        @SuppressLint("Range") Message message = new Message(
+                                cursor.getString(cursor.getColumnIndex(COLUMN_USER_SEND)),
+                                cursor.getString(cursor.getColumnIndex(COLUMN_USER_RECEIVE)),
+                                cursor.getString(cursor.getColumnIndex(COLUMN_TEXT)),
+                                cursor.getString(cursor.getColumnIndex(COLUMN_TIME)),
+                                cursor.getInt(cursor.getColumnIndex("isRead"))
 
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                do {
-                    // Adiciona as mensagens à lista
-                    @SuppressLint("Range") Message message = new Message(
-                            cursor.getString(cursor.getColumnIndex(COLUMN_USER_SEND)),
-                            cursor.getString(cursor.getColumnIndex(COLUMN_USER_RECEIVE)),
-                            cursor.getString(cursor.getColumnIndex(COLUMN_TEXT)),
-                            cursor.getString(cursor.getColumnIndex(COLUMN_TIME)),
-                            cursor.getInt(cursor.getColumnIndex("isRead"))
-
-                    );
-                    messages.add(message);
-                } while (cursor.moveToNext());
+                        );
+                        messages.add(message);
+                    } while (cursor.moveToNext());
+                }
+                cursor.close();
             }
-            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();  // Fecha o banco de dados de forma segura
+            }
         }
-        db.close();
         return messages;
     }
 
@@ -99,39 +115,56 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Método para obter a última mensagem entre dois usuários
     @SuppressLint("Range")
     public Message getLastMessage(String sender, String receiver) {
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = null;
         Message lastMessage = null;
+        try{
+            db = this.getReadableDatabase();
 
-        // Consulta SQL para pegar a última mensagem entre o sender e receiver, ordenando por data
-        String query = "SELECT * FROM " + TABLE_MESSAGES + " WHERE (" + COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?) " +
-                "OR (" + COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?) " +
-                "ORDER BY " + COLUMN_TIME + " DESC LIMIT 1";
+            // Consulta SQL para pegar a última mensagem entre o sender e receiver, ordenando por data
+            String query = "SELECT * FROM " + TABLE_MESSAGES + " WHERE (" + COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?) " +
+                    "OR (" + COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?) " +
+                    "ORDER BY " + COLUMN_TIME + " DESC LIMIT 1";
 
-        Cursor cursor = db.rawQuery(query, new String[]{sender, receiver, receiver, sender});
+            Cursor cursor = db.rawQuery(query, new String[]{sender, receiver, receiver, sender});
 
-        if (cursor != null && cursor.moveToFirst()) {
+            if (cursor != null && cursor.moveToFirst()) {
 
-            lastMessage = new Message(
-                    cursor.getString(cursor.getColumnIndex(COLUMN_USER_SEND)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_USER_RECEIVE)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_TEXT)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_TIME)),
-                    cursor.getInt(cursor.getColumnIndex("isRead"))
-            );
+                lastMessage = new Message(
+                        cursor.getString(cursor.getColumnIndex(COLUMN_USER_SEND)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_USER_RECEIVE)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_TEXT)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_TIME)),
+                        cursor.getInt(cursor.getColumnIndex("isRead"))
+                );
 
-            cursor.close();
+                cursor.close();
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();  // Fecha o banco de dados de forma segura
+            }
         }
-
-        db.close();
         return lastMessage;
     }
 
     public void markMessagesAsRead(String receiver, String sender) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("isRead", 1);
-        db.update(TABLE_MESSAGES, values, COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?", new String[]{sender, receiver});
-
+        SQLiteDatabase db = null;
+        try{
+            db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put("isRead", 1);
+            db.update(TABLE_MESSAGES, values, COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?", new String[]{sender, receiver});
+            } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();  // Fecha o banco de dados de forma segura
+            }
+        }
     }
 
 
@@ -148,8 +181,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
     public ArrayList<String> getContactsWithUser(String username) {
+        SQLiteDatabase db = null;
         ArrayList<String> contacts = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
+        try{
+
+        db = this.getReadableDatabase();
 
 
         String query = "SELECT DISTINCT " +
@@ -177,20 +213,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
             cursor.close();
         }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();  // Fecha o banco de dados de forma segura
+            }
+        }
 
-        db.close();
+
         return contacts;
     }
 
 
 
     public void deleteConversation(String userSend, String userReceive) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = null;
+        try{
+        db = this.getWritableDatabase();
         db.delete(TABLE_MESSAGES,
                 "(" + COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?) OR " +
                         "(" + COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?)",
                 new String[]{userSend, userReceive, userReceive, userSend});
-        db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();  // Fecha o banco de dados de forma segura
+            }
+        }
     }
 
     public void deleteAllMessages() {

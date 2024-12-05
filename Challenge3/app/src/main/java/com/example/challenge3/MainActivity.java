@@ -12,13 +12,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
-
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.os.Build;
 public class MainActivity extends AppCompatActivity {
 
 
     private FirstTimeFrag login;
-    private static final String TAG_NOTE_EDIT = "NOTE_EDIT";
-    private static final String TAG_NOTE_LIST = "NOTE_LIST";
     private String clientId = MqttClient.generateClientId();
 
     @Override
@@ -28,11 +28,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         login = new FirstTimeFrag();
-        System.out.println("asdkasjdkasd");
+        createNotificationChannel();
         //Chat c = new Chat();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.main, login);
         ft.commit();
+    }
+
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String channelId = "default_channel_id";
+            CharSequence name = "Default Channel";
+            String description = "Notifications for app events";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+
+            NotificationChannel channel = new NotificationChannel(channelId, name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
 
@@ -47,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         chatListFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, chatListFragment, TAG_NOTE_EDIT)
+                .replace(R.id.main, chatListFragment, "ChatList")
                 .addToBackStack(null)
                 .commit();
     }
@@ -61,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         chat.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, chat, TAG_NOTE_EDIT)
+                .replace(R.id.main, chat, "Chat")
                 .addToBackStack(null)
                 .commit();
 
@@ -75,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         config.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, config, TAG_NOTE_EDIT)
+                .replace(R.id.main, config, "Arduino")
                 .addToBackStack(null)
                 .commit();
 

@@ -1,10 +1,18 @@
 package com.example.challenge3;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
-
+import android.Manifest;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -15,29 +23,22 @@ import android.view.ViewGroup;
 
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
-import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttException;
-
 
 
 public class Chat extends Fragment {
@@ -76,12 +77,20 @@ public class Chat extends Fragment {
             username = getArguments().getString("username");
             contactName = getArguments().getString("userReceive");
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(requireActivity(),
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
+            }
+        }
+
 
         clientId = username+"111111";
         databaseHelper = new DatabaseHelper(requireContext());
 
         mqttHelper = new MQTTHelper();
-
+        createNotificationChannel();
         connectToMqtt();
 
 
@@ -114,7 +123,7 @@ public class Chat extends Fragment {
                     String lastTopicPart = topicParts[topicParts.length - 1];
                     System.out.println("CHAT " + message.toString() + lastTopicPart + topic);
                     ArrayList<String> contacts = databaseHelper.getContactsWithUser(username);
-                    if ((lastTopicPart.equals(username) && !topicParts[1].equals("create") && topicParts[topicParts.length - 2].equals(contactName)) || (topicParts[1].equals("create") && contacts.contains(contactName) && !lastTopicPart.equals(username))) {
+                    if ((lastTopicPart.equals(username) && !topicParts[1].equals("create") && topicParts[topicParts.length - 2].equals(contactName))) {
                         System.out.println("Chat case 1");
                         // Message is for this user
                         Log.d("MQTT", "Message arrived: " + message.toString());
@@ -127,36 +136,55 @@ public class Chat extends Fragment {
                             adapter.notifyDataSetChanged();
                             listView.setSelection(messages.size() - 1);
                         });
-                    }else if (!topicParts[1].equals("create") && !topicParts[topicParts.length - 2].equals(contactName)) {
+
+                    } else if (!topicParts[1].equals("create") && !topicParts[topicParts.length - 2].equals(contactName)) {
                         System.out.println("Chat case 2");
                         String lastTopicParts = topicParts[topicParts.length - 1];
                         String contactName = topicParts[topicParts.length - 2];
-                        if (lastTopicParts.equals(username)){
+                        if (lastTopicParts.equals(username)) {
                             Log.d("MQTT", "Message arrived: " + message.toString());
                             Message msg = new Message(contactName, username, message.toString(), getCurrentTime(), 0);
                             // Insert message into database
+                            showNotification("New Message!", contactName + " : " + message.toString());
+
                             databaseHelper.insertMessage(msg);
                         }
-                    }else if(topicParts[1].equals("create") && !topicParts[3].equals(username) && topicParts[2].equals(username)){
+                    }
+                    else if ((topicParts[1].equals("create") && contacts.contains(contactName) && !lastTopicPart.equals(username))) {
+                        System.out.println("Chat case 4");
+                        // Message is for this user
+                        Log.d("MQTT", "Message arrived: " + message.toString());
+                        Message msg = new Message(contactName, username, message.toString(), getCurrentTime(), 0);
+                        // Insert message into database
+                        databaseHelper.insertMessage(msg);
+                        // Update UI
+                        requireActivity().runOnUiThread(() -> {
+                            messages.add(msg);
+                            adapter.notifyDataSetChanged();
+                            listView.setSelection(messages.size() - 1);
+                        });
+                    }
+                    else if (topicParts[1].equals("create") && !topicParts[3].equals(username) && topicParts[2].equals(username)) {
                         System.out.println("Chat case 3");
                         String sender = topicParts[3];  //"chat/create/<sender>/<receiver>"
                         String messageContent = message.toString();
                         if (!conversations.contains(sender)) {
-                            // If not, add the sender as a new conversation
+
                             requireActivity().runOnUiThread(() -> {
-                                //conversations.add(sender);
-                                //adapter.notifyDataSetChanged();
+                                showNotification("New Conversation!", sender + " : " + message.toString());
                                 databaseHelper.insertMessage(new Message(sender, username, messageContent, getCurrentTime(), 0));  // Add to database as well
                             });
                         }
-                    }                }
 
-                @Override
-                public void deliveryComplete(IMqttDeliveryToken token) {
-                    // Handle delivery confirmation
-                    Log.d("MQTT", "Message delivered: " + token.getMessageId());
+                    }
                 }
-            });
+
+                    @Override
+                    public void deliveryComplete(IMqttDeliveryToken token) {
+                        // Handle delivery confirmation
+                        Log.d("MQTT", "Message delivered: " + token.getMessageId());
+                    }
+                });
 
             requireActivity().runOnUiThread(this::subscribeToTopic);
         }).start();
@@ -238,11 +266,13 @@ public class Chat extends Fragment {
 
         // Lógica para enviar mensagem
         sendButton.setOnClickListener(v -> {
+
+
             String messageText = inputMessage.getText().toString();
             if (!messageText.isEmpty()) {
                 Message message = new Message(username, contactName, messageText, getCurrentTime(),0);
                 messages.add(message);
-                //databaseHelper.insertMessage(message);
+                adapter.notifyDataSetChanged();
                 //check if this is the first message to that user
                 if(messages.size() == 1){
                     publishMessageCreate(messageText);
@@ -250,7 +280,7 @@ public class Chat extends Fragment {
                     publishMessage(messageText);
                 }
 
-                adapter.notifyDataSetChanged();
+
                 inputMessage.setText("");
                 listView.setSelection(messages.size() - 1);
             }
@@ -278,12 +308,10 @@ public class Chat extends Fragment {
 
 
 
-
     private String getCurrentTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         return sdf.format(new Date());
     }
-
 
 
     @Override
@@ -329,5 +357,64 @@ public class Chat extends Fragment {
         //mqttHelper.subscribe(chatTopic);
         //mqttHelper.subscribe(chatTopic3);
         mqttHelper.subscribe(chatTopic4);
+    }
+
+
+    public void Notification(View view){
+            Snackbar snackbar = Snackbar.make(view.findViewById(R.id.send_button), "User: Rui send a Message!", Snackbar.LENGTH_LONG);
+
+    // Obter a visualização do Snackbar
+            View snackbarView = snackbar.getView();
+
+    // Mudar a posição do Snackbar para o topo
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) snackbarView.getLayoutParams();
+            params.gravity = Gravity.TOP;
+            snackbarView.setLayoutParams(params);
+
+            snackbar.show();
+
+    }
+
+
+
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            System.out.println("CHANEL CRIARRARA<");
+            String channelId = "chat_notifications";
+            CharSequence name = "Chat Messages";
+            String description = "Notifications for chat messages";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+
+            NotificationChannel channel = new NotificationChannel(channelId, name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = requireContext().getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+
+    private void showNotification(String title,String message) {
+        String channelId = "chat_notifications";
+
+        // Construir a notificação
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), channelId)
+                .setSmallIcon(R.drawable.ic_arrow_back) // Ícone pequeno da notificação
+                .setContentTitle(title) // Título da notificação
+                .setContentText(message) // Texto da notificação
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // Prioridade para mostrar no topo
+                .setAutoCancel(true); // Fechar automaticamente ao clicar
+
+        // Obter o NotificationManager para exibir a notificação
+        NotificationManager notificationManager = (NotificationManager) requireContext().getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Exibir a notificação com um ID único
+        if (notificationManager != null) {
+
+            notificationManager.notify(1, builder.build());
+        } else {
+            Log.e("Notification", "NotificationManager is null");
+        }
     }
 }

@@ -1,10 +1,18 @@
 package com.example.challenge3;
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -43,6 +51,7 @@ public class ChatList extends Fragment {
     private String username;
     //MainActivity activity = (MainActivity) getActivity();
     private String clientId;
+
     final String server = "tcp://test.mosquitto.org:1883";
     private MQTTHelper mqttHelper;
 
@@ -57,6 +66,14 @@ public class ChatList extends Fragment {
             username = getArguments().getString("username");
         }
         databaseHelper = new DatabaseHelper(requireContext());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(requireActivity(),
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
+            }
+        }
+
 
         mqttHelper = new MQTTHelper();
         clientId = username+"111111";
@@ -101,13 +118,16 @@ public class ChatList extends Fragment {
                             // Insert message into database
                             databaseHelper.insertMessage(msg);
                             loadMessagesFromDatabase(username);
+                            showNotification("New Message!",contactName + " : " + message.toString());
                         }else if (lastTopicPart.contains(username) || contactName.contains(username)){
                             Log.d("MQTT2", "Message arrived: " + message.toString());
                             Message msg = new Message(lastTopicPart, username,message.toString(), getCurrentTime(), 0);
                             // Insert message into database
                             databaseHelper.insertMessage(msg);
                             loadMessagesFromDatabase(username);
+                            showNotification("New Message!",lastTopicPart + " : " + message.toString());
                         }
+
                     }else if (topicParts[1].equals("create") && topicParts[2].equals(username)) {
                         System.out.println("ChatList case 2");
                         String sender = topicParts[3];  //"chat/create/<sender>/<receiver>"
@@ -116,10 +136,10 @@ public class ChatList extends Fragment {
                             // If not, add the sender as a new conversation
                             requireActivity().runOnUiThread(() -> {
                                 conversations.add(sender);
-
                                 databaseHelper.insertMessage(new Message(sender, username, messageContent, getCurrentTime(), 0));  // Add to database as well
                                 loadMessagesFromDatabase(username);
                                 adapter.notifyDataSetChanged();
+                                showNotification("New Conversation!",sender + " : " + message.toString());
                             });
                         }
 
@@ -251,7 +271,7 @@ public class ChatList extends Fragment {
 
 
     private String getCurrentTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         return sdf.format(new Date());
     }
 
@@ -278,6 +298,32 @@ public class ChatList extends Fragment {
 
         // Show the dialog
         builder.show();
+    }
+
+
+
+
+    private void showNotification(String title,String message) {
+        String channelId = "chat_notifications";
+
+        // Construir a notificação
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), channelId)
+                .setSmallIcon(R.mipmap.ic_launcher_round) // Ícone pequeno da notificação
+                .setContentTitle(title) // Título da notificação
+                .setContentText(message) // Texto da notificação
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // Prioridade para mostrar no topo
+                .setAutoCancel(true); // Fechar automaticamente ao clicar
+
+        // Obter o NotificationManager para exibir a notificação
+        NotificationManager notificationManager = (NotificationManager) requireContext().getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Exibir a notificação com um ID único
+        if (notificationManager != null) {
+
+            notificationManager.notify(1, builder.build());
+        } else {
+            Log.e("Notification", "NotificationManager is null");
+        }
     }
 
 
