@@ -297,6 +297,9 @@ public class Chat extends Fragment {
         System.out.println("Publishing message: " + messageText);
         databaseHelper.insertMessage(new Message(username, contactName, messageText, getCurrentTime(),0));
         mqttHelper.publish(topic, messageText);
+        String m = username + ":" + messageText;
+        mqttHelper.publish("chat/arduinooooo", m);
+        System.out.println("ENVIOI");
     }
 
     private void publishMessageCreate(String messageText){

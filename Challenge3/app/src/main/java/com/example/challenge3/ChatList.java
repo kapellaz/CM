@@ -101,7 +101,7 @@ public class ChatList extends Fragment {
                             // Insert message into database
                             databaseHelper.insertMessage(msg);
                             loadMessagesFromDatabase(username);
-                        }else{
+                        }else if (lastTopicPart.contains(username) || contactName.contains(username)){
                             Log.d("MQTT2", "Message arrived: " + message.toString());
                             Message msg = new Message(lastTopicPart, username,message.toString(), getCurrentTime(), 0);
                             // Insert message into database
