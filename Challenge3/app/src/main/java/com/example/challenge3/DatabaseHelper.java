@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "chat_db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 3;
 
     // Tabela de mensagens
     private static final String TABLE_MESSAGES = "messages";
@@ -23,6 +23,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_USER_RECEIVE = "userReceive";
     private static final String COLUMN_TEXT = "text";
     private static final String COLUMN_TIME = "time";
+    private static final String TABLE_ARDUINO_CONFIGURATION = "arduino_configuration";
+    private static final String COLUMN_USERNAME = "username";
+    private static final String COLUMN_CONTACT = "contact";
+
+    private static final String CREATE_TABLE_ARDUINO_CONFIGURATION = "CREATE TABLE " + TABLE_ARDUINO_CONFIGURATION + "(" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            COLUMN_USERNAME + " TEXT, " +
+            COLUMN_CONTACT + " TEXT);";
+
 
 
     // Criação da tabela com a coluna isRead
@@ -33,20 +42,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             COLUMN_TEXT + " TEXT, " +
             COLUMN_TIME + " TEXT, " +
             "isRead INTEGER DEFAULT 0);";
+
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLE_MESSAGES);  // Cria a tabela
+        db.execSQL(CREATE_TABLE_MESSAGES);  // Create messages table
+        db.execSQL(CREATE_TABLE_ARDUINO_CONFIGURATION); // Create arduino_configuration table
+
+        // Log table creation
+        Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name=?", new String[]{TABLE_ARDUINO_CONFIGURATION});
+        if (cursor.moveToFirst()) {
+            System.out.println("Table " + TABLE_ARDUINO_CONFIGURATION + " created successfully.");
+        } else {
+            System.out.println("Table " + TABLE_ARDUINO_CONFIGURATION + " creation failed.");
+        }
+        cursor.close();
     }
+
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);  // Remove a tabela se existir
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ARDUINO_CONFIGURATION);
         onCreate(db);
     }
+
 
     public void insertMessage(Message message) {
         SQLiteDatabase db = null;
@@ -256,16 +281,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public ArrayList<String> getContactsForArduinoNotification(String username) {
         ArrayList<String> selectedContacts = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+
+        try {
+            cursor = db.query(TABLE_ARDUINO_CONFIGURATION, new String[]{COLUMN_CONTACT},
+                    COLUMN_USERNAME + " = ?", new String[]{username}, null, null, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    selectedContacts.add(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONTACT)));
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace(); // Log the exception
+        } finally {
+            if (cursor != null) {
+                cursor.close(); // Always close the cursor
+            }
+            db.close(); // Close the database connection
+        }
 
         return selectedContacts;
     }
 
+
     public void saveContactForArduinoNotification(String username, String contact) {
-        // Código para salvar contato no banco de dados.
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USERNAME, username);
+        values.put(COLUMN_CONTACT, contact);
+        db.insert(TABLE_ARDUINO_CONFIGURATION, null, values);
     }
 
     public void removeContactFromArduinoNotification(String username, String contact) {
-        // Código para remover contato do banco de dados.
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_ARDUINO_CONFIGURATION, COLUMN_USERNAME + " = ? AND " + COLUMN_CONTACT + " = ?",
+                new String[]{username, contact});
     }
 
 

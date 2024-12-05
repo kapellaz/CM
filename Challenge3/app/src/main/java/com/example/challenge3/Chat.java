@@ -136,6 +136,14 @@ public class Chat extends Fragment {
                             adapter.notifyDataSetChanged();
                             listView.setSelection(messages.size() - 1);
                         });
+                        //send message to arduino if the contact is selected to receive notifications
+                        if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
+                            System.out.println("Sending message to arduino");
+                            String m = contactName + ":" + message.toString();
+                            mqttHelper.publish("chat/arduinooooo", m);
+                            System.out.println("ENVIOI");;
+                        }
+
 
                     } else if (!topicParts[1].equals("create") && !topicParts[topicParts.length - 2].equals(contactName)) {
                         System.out.println("Chat case 2");
@@ -148,6 +156,14 @@ public class Chat extends Fragment {
                             showNotification("New Message!", contactName + " : " + message.toString());
 
                             databaseHelper.insertMessage(msg);
+                            //send message to arduino if the contact is selected to receive notifications
+                            if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
+                                System.out.println("Sending message to arduino");
+                                String m = contactName + ":" + message.toString();
+                                mqttHelper.publish("chat/arduinooooo", m);
+                                System.out.println("ENVIOI");;
+                            }
+
                         }
                     }
                     else if ((topicParts[1].equals("create") && contacts.contains(contactName) && !lastTopicPart.equals(username))) {
@@ -163,6 +179,14 @@ public class Chat extends Fragment {
                             adapter.notifyDataSetChanged();
                             listView.setSelection(messages.size() - 1);
                         });
+                        //send message to arduino if the contact is selected to receive notifications
+                        if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
+                            System.out.println("Sending message to arduino");
+                            String m = contactName + ":" + message.toString();
+                            mqttHelper.publish("chat/arduinooooo", m);
+                            System.out.println("ENVIOI");;
+                        }
+
                     }
                     else if (topicParts[1].equals("create") && !topicParts[3].equals(username) && topicParts[2].equals(username)) {
                         System.out.println("Chat case 3");
@@ -174,6 +198,14 @@ public class Chat extends Fragment {
                                 showNotification("New Conversation!", sender + " : " + message.toString());
                                 databaseHelper.insertMessage(new Message(sender, username, messageContent, getCurrentTime(), 0));  // Add to database as well
                             });
+                            //send message to arduino if the contact is selected to receive notifications
+                            if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
+                                System.out.println("Sending message to arduino");
+                                String m = contactName + ":" + message.toString();
+                                mqttHelper.publish("chat/arduinooooo", m);
+                                System.out.println("ENVIOI");;
+                            }
+
                         }
 
                     }
@@ -325,9 +357,6 @@ public class Chat extends Fragment {
         System.out.println("Publishing message: " + messageText);
         databaseHelper.insertMessage(new Message(username, contactName, messageText, getCurrentTime(),0));
         mqttHelper.publish(topic, messageText);
-        String m = username + ":" + messageText;
-        mqttHelper.publish("chat/arduinooooo", m);
-        System.out.println("ENVIOI");
     }
 
     private void publishMessageCreate(String messageText){
