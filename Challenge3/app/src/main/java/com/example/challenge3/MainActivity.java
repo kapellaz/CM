@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_TEXTING = "TEXTING";
     private static final String TAG_LISTING = "LISTING";
     private static final String TAG_ARDUINO = "ARDUINO";
+    private String username = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
      * Switch Fragment - First Fragment to Chat List
      */
     public void switchToChatList(String username) {
-
+        this.username = username;
         ChatList chatListFragment = new ChatList();
         Bundle args = new Bundle();
         args.putString("username", username);
@@ -98,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void switchToChat(String receive,String username) {
-
+        this.username = username;
         Chat chat = new Chat();
         Bundle args = new Bundle();
         args.putString("userReceive", receive);
@@ -113,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void switchToArduinoConfigs(String username) {
-
+        this.username = username;
         ArduinoConfiguration config = new ArduinoConfiguration();
         Bundle args = new Bundle();
         args.putString("username", username);
@@ -124,6 +125,28 @@ public class MainActivity extends AppCompatActivity {
                 .addToBackStack(null)
                 .commit();
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main);
+        Log.v("Main Activity","Username:" + username);
+        if (currentFragment instanceof Chat) {
+            // Navigate to ChatList from Chat
+            switchToChatList(username);
+        } else if (currentFragment instanceof ChatList) {
+            // Navigate to Login from ChatList
+            getSupportFragmentManager().popBackStack(); // Clear ChatList from back stack
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.main, login, "LOGIN");
+            transaction.commit();
+        } else if (currentFragment instanceof ArduinoConfiguration) {
+            // Navigate to ChatList from ArduinoConfiguration
+            switchToChatList(username);
+        } else {
+            // Default behavior (exit the app)
+            super.onBackPressed();
+        }
     }
 
 
