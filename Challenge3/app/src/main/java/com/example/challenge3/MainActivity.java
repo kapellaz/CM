@@ -4,11 +4,13 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -20,19 +22,46 @@ public class MainActivity extends AppCompatActivity {
 
     private FirstTimeFrag login;
     private String clientId = MqttClient.generateClientId();
+    private static final String TAG_TEXTING = "TEXTING";
+    private static final String TAG_LISTING = "LISTING";
+    private static final String TAG_ARDUINO = "ARDUINO";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
+        //inicializar o login
         login = new FirstTimeFrag();
+
+        if (savedInstanceState != null) {
+            // Retrieve the saved fragment tag
+            String fragmentTag = savedInstanceState.getString("currentFragmentTag");
+            if (fragmentTag != null) {
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag(fragmentTag);
+                if (fragment == null) {
+                    // Fragment is not currently in the manager, recreate it based on the tag
+                    if (fragmentTag.equals(TAG_LISTING)) {
+                        fragment = new ChatList();
+                    } else if (fragmentTag.equals(TAG_TEXTING )) {
+                        fragment = new Chat();
+                    } else if (fragmentTag.equals(TAG_ARDUINO)) {
+                        fragment = new ArduinoConfiguration();
+                    } else {
+                        fragment = new FirstTimeFrag(); // Load your default fragment if needed
+                    }
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main, fragment, fragmentTag)
+                            .commit();
+                }
+            }
+        } else {
+
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.main, login);
+            ft.commit();
+        }
         createNotificationChannel();
-        //Chat c = new Chat();
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.main, login);
-        ft.commit();
     }
 
 
@@ -63,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         chatListFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, chatListFragment, "ChatList")
+                .replace(R.id.main, chatListFragment, "LISTING")
                 .addToBackStack(null)
                 .commit();
     }
@@ -77,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         chat.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, chat, "Chat")
+                .replace(R.id.main, chat, "TEXTING")
                 .addToBackStack(null)
                 .commit();
 
@@ -91,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         config.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, config, "Arduino")
+                .replace(R.id.main, config, "ARDUINO")
                 .addToBackStack(null)
                 .commit();
 
@@ -101,4 +130,16 @@ public class MainActivity extends AppCompatActivity {
     public String getClientId() {
         return clientId;
     }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main);
+        if (currentFragment != null) {
+            Log.v("Main Activity","Save" + currentFragment.getTag());
+            outState.putString("currentFragmentTag", currentFragment.getTag());
+        }
+    }
+
 }
