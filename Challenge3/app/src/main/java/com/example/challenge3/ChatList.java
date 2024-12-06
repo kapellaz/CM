@@ -51,6 +51,7 @@ public class ChatList extends Fragment {
     private String username;
     //MainActivity activity = (MainActivity) getActivity();
     private String clientId;
+    //private String server = "tcp://broker.hivemq.com:1883";
 
     final String server = "tcp://test.mosquitto.org:1883";
     private MQTTHelper mqttHelper;
@@ -118,11 +119,23 @@ public class ChatList extends Fragment {
                             // Insert message into database
                             databaseHelper.insertMessage(msg);
                             loadMessagesFromDatabase(username);
+                            if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
+                                System.out.println("Sending message to arduino");
+                                String m = contactName + ":" + message.toString();
+                                mqttHelper.publish("chat/arduinooooo", m);
+                                System.out.println("ENVIOI");;
+                            }
                             showNotification("New Message!",contactName + " : " + message.toString());
                         }else if (lastTopicPart.contains(username) || contactName.contains(username)){
                             Log.d("MQTT2", "Message arrived: " + message.toString());
                             Message msg = new Message(lastTopicPart, username,message.toString(), getCurrentTime(), 0);
                             // Insert message into database
+                            if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
+                                System.out.println("Sending message to arduino");
+                                String m = contactName + ":" + message.toString();
+                                mqttHelper.publish("chat/arduinooooo", m);
+                                System.out.println("ENVIOI");;
+                            }
                             databaseHelper.insertMessage(msg);
                             loadMessagesFromDatabase(username);
                             showNotification("New Message!",lastTopicPart + " : " + message.toString());
@@ -139,6 +152,12 @@ public class ChatList extends Fragment {
                                 databaseHelper.insertMessage(new Message(sender, username, messageContent, getCurrentTime(), 0));  // Add to database as well
                                 loadMessagesFromDatabase(username);
                                 adapter.notifyDataSetChanged();
+                                if(databaseHelper.getContactsForArduinoNotification(username).contains(sender)){
+                                    System.out.println("Sending message to arduino");
+                                    String m = sender + ":" + message.toString();
+                                    mqttHelper.publish("chat/arduinooooo", m);
+                                    System.out.println("ENVIOI");;
+                                }
                                 showNotification("New Conversation!",sender + " : " + message.toString());
                             });
                         }
@@ -247,6 +266,7 @@ public class ChatList extends Fragment {
         view.findViewById(R.id.arduino_config_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                System.out.println("ARDUINO CONFIGS");
                 ((MainActivity) requireActivity()).switchToArduinoConfigs(username);
 
             }
