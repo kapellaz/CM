@@ -144,8 +144,7 @@ public class MainActivity extends AppCompatActivity {
             // Navigate to ChatList from ArduinoConfiguration
             switchToChatList(username);
         } else {
-            // Default behavior (exit the app)
-            super.onBackPressed();
+            finish();
         }
     }
 
