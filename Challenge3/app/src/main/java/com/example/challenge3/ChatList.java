@@ -15,6 +15,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.util.Log;
@@ -52,7 +53,7 @@ public class ChatList extends Fragment {
     //MainActivity activity = (MainActivity) getActivity();
     private String clientId;
     //private String server = "tcp://broker.hivemq.com:1883";
-
+    private ModelView chatViewModel;
     final String server = "tcp://test.mosquitto.org:1883";
     private MQTTHelper mqttHelper;
 
@@ -63,9 +64,8 @@ public class ChatList extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            username = getArguments().getString("username");
-        }
+        chatViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
+        username = chatViewModel.getUsername().getValue();
         databaseHelper = new DatabaseHelper(requireContext());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS)
@@ -223,7 +223,8 @@ public class ChatList extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ((MainActivity) requireActivity()).switchToChat((String) listView.getItemAtPosition(position), username);
+                chatViewModel.setContactName((String) listView.getItemAtPosition(position));
+                ((MainActivity) requireActivity()).switchToChat();
             }
         });
 
@@ -267,7 +268,7 @@ public class ChatList extends Fragment {
             @Override
             public void onClick(View v) {
                 System.out.println("ARDUINO CONFIGS");
-                ((MainActivity) requireActivity()).switchToArduinoConfigs(username);
+                ((MainActivity) requireActivity()).switchToArduinoConfigs();
 
             }
         });
@@ -308,8 +309,8 @@ public class ChatList extends Fragment {
         builder.setPositiveButton("Start", (dialog, which) -> {
             String contact = input.getText().toString().trim();
             if (!contact.isEmpty()) {
-
-                ((MainActivity) requireActivity()).switchToChat(contact,username);
+                chatViewModel.setContactName(contact);
+                ((MainActivity) requireActivity()).switchToChat();
             } else {
                 Toast.makeText(requireContext(), "Username cannot be empty", Toast.LENGTH_SHORT).show();
             }

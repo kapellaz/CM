@@ -14,6 +14,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
 import android.view.Gravity;
@@ -62,7 +63,7 @@ public class Chat extends Fragment {
     private String topic = "qweqweqwqweqweqhh";
     private MQTTHelper mqttHelper;
     private ArrayList<String> conversations = new ArrayList<>();
-
+    private ModelView chatViewModel;
 
 
     public Chat() {
@@ -72,11 +73,11 @@ public class Chat extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        chatViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
 
-        if (getArguments() != null) {
-            username = getArguments().getString("username");
-            contactName = getArguments().getString("userReceive");
-        }
+        username = chatViewModel.getUsername().getValue();
+        contactName = chatViewModel.getContactName().getValue();
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -260,7 +261,7 @@ public class Chat extends Fragment {
 
         toolbar.addView(titleTextView);
 
-        toolbar.setNavigationOnClickListener(v -> {((MainActivity) requireActivity()).switchToChatList(username);});
+        toolbar.setNavigationOnClickListener(v -> {((MainActivity) requireActivity()).switchToChatList();});
 
 
         listView = view.findViewById(R.id.chat_recycler_view);

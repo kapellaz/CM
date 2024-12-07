@@ -25,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_TEXTING = "TEXTING";
     private static final String TAG_LISTING = "LISTING";
     private static final String TAG_ARDUINO = "ARDUINO";
-    private String username = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,11 +84,9 @@ public class MainActivity extends AppCompatActivity {
     /**switchToChat
      * Switch Fragment - First Fragment to Chat List
      */
-    public void switchToChatList(String username) {
-        this.username = username;
+    public void switchToChatList() {
         ChatList chatListFragment = new ChatList();
         Bundle args = new Bundle();
-        args.putString("username", username);
         chatListFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
@@ -98,12 +95,9 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    public void switchToChat(String receive,String username) {
-        this.username = username;
+    public void switchToChat() {
         Chat chat = new Chat();
         Bundle args = new Bundle();
-        args.putString("userReceive", receive);
-        args.putString("username", username);
         chat.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
@@ -113,11 +107,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void switchToArduinoConfigs(String username) {
-        this.username = username;
+    public void switchToArduinoConfigs() {
         ArduinoConfiguration config = new ArduinoConfiguration();
         Bundle args = new Bundle();
-        args.putString("username", username);
         config.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
@@ -130,10 +122,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main);
-        Log.v("Main Activity","Username:" + username);
         if (currentFragment instanceof Chat) {
             // Navigate to ChatList from Chat
-            switchToChatList(username);
+            switchToChatList();
         } else if (currentFragment instanceof ChatList) {
             // Navigate to Login from ChatList
             getSupportFragmentManager().popBackStack(); // Clear ChatList from back stack
@@ -142,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             transaction.commit();
         } else if (currentFragment instanceof ArduinoConfiguration) {
             // Navigate to ChatList from ArduinoConfiguration
-            switchToChatList(username);
+            switchToChatList();
         } else {
             finish();
         }

@@ -3,6 +3,7 @@ package com.example.challenge3;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +14,7 @@ import android.widget.Toast;
 
 public class FirstTimeFrag extends Fragment {
 
-
+    private ModelView chatViewModel;
 
     public FirstTimeFrag() {
         // Required empty public constructor
@@ -23,6 +24,8 @@ public class FirstTimeFrag extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        chatViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
 
         View view = inflater.inflate(R.layout.fragment_first_time, container, false);
 
@@ -39,7 +42,8 @@ public class FirstTimeFrag extends Fragment {
 
                 // Verifica se o campo está vazio
                 if (!username.isEmpty()) {
-                    ((MainActivity) requireActivity()).switchToChatList(username);
+                    chatViewModel.setUsername(username);
+                    ((MainActivity) requireActivity()).switchToChatList();
                     Toast.makeText(getActivity(), "Username: " + username, Toast.LENGTH_SHORT).show();
                 } else {
                     // Mostra uma mensagem se o campo estiver vazio
