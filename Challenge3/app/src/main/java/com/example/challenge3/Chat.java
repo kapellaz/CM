@@ -102,8 +102,9 @@ public class Chat extends Fragment {
 
     private void connectToMqtt() {
         new Thread(() -> {
+            System.out.println("NOVA CONEXÃO");
             // Set the callback inside the fragment itself
-            mqttHelper.connect(server, clientId, username, requireContext(), new MqttCallbackExtended() {
+            mqttHelper.connect(server, clientId, username, getContext(), new MqttCallbackExtended() {
                 @Override
                 public void connectComplete(boolean reconnect, String serverURI) {
                     // Connection successful callback
@@ -114,6 +115,7 @@ public class Chat extends Fragment {
                 public void connectionLost(Throwable cause) {
                     // Connection lost callback
                     Log.d("MQTT", "Connection lost: " + cause.getMessage());
+
                 }
 
                 @Override
@@ -130,6 +132,7 @@ public class Chat extends Fragment {
                         Log.d("MQTT", "Message arrived: " + message.toString());
                         Message msg = new Message(contactName, username, message.toString(), getCurrentTime(), 0);
                         // Insert message into database
+
                         databaseHelper.insertMessage(msg);
                         // Update UI
                         requireActivity().runOnUiThread(() -> {
@@ -155,7 +158,7 @@ public class Chat extends Fragment {
                             Message msg = new Message(contactName, username, message.toString(), getCurrentTime(), 0);
                             // Insert message into database
                             showNotification("New Message!", contactName + " : " + message.toString());
-
+                            System.out.println("Notificações");
                             databaseHelper.insertMessage(msg);
                             //send message to arduino if the contact is selected to receive notifications
                             if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
@@ -291,7 +294,10 @@ public class Chat extends Fragment {
             }
         };
 
+
         listView.setAdapter(adapter);
+        listView.setSelection(messages.size() - 1);
+
 
         // Configuração do campo de input e botão de envio
         inputMessage = view.findViewById(R.id.input_message);
@@ -326,14 +332,11 @@ public class Chat extends Fragment {
 
 
     private void loadMessagesFromDatabase() {
-        new Thread(() -> {
-            ArrayList<Message> dbMessages = databaseHelper.getAllMessages(contactName, username);
-            requireActivity().runOnUiThread(() -> {
-                messages.clear();
-                messages.addAll(dbMessages);
-                adapter.notifyDataSetChanged();
-            });
-        }).start();
+
+        ArrayList<Message> dbMessages = databaseHelper.getAllMessages(contactName, username);
+        messages.clear();
+        messages.addAll(dbMessages);
+
     }
 
 
@@ -349,8 +352,19 @@ public class Chat extends Fragment {
 
     @Override
     public void onDestroy() {
-        mqttHelper.disconnect();
+        //mqttHelper.disconnect();
         super.onDestroy();
+
+        if (mqttHelper != null) {
+            try {
+                mqttHelper.disconnect(); // Desconecta do MQTT
+                Log.d("MQTT", "Disconnected from MQTT");
+            } catch (Exception e) {
+                Log.e("MQTT", "Error during MQTT disconnection: " + e.getMessage());
+            }
+        }
+
+
 
     }
     private void publishMessage(String messageText){

@@ -125,6 +125,7 @@ public class ChatList extends Fragment {
                                 mqttHelper.publish("cmchatteste/arduinooooo", m);
                                 System.out.println("ENVIOI");;
                             }
+                            System.out.println("notigicações 1");
                             showNotification("New Message!",contactName + " : " + message.toString());
                         }else if (lastTopicPart.contains(username) || contactName.contains(username)){
                             Log.d("MQTT2", "Message arrived: " + message.toString());
@@ -138,6 +139,7 @@ public class ChatList extends Fragment {
                             }
                             databaseHelper.insertMessage(msg);
                             loadMessagesFromDatabase(username);
+                            System.out.println("Notificações");
                             showNotification("New Message!",lastTopicPart + " : " + message.toString());
                         }
 
@@ -158,6 +160,7 @@ public class ChatList extends Fragment {
                                     mqttHelper.publish("cmchatteste/arduinooooo", m);
                                     System.out.println("ENVIOI");;
                                 }
+                                System.out.println("Notificações");
                                 showNotification("New Conversation!",sender + " : " + message.toString());
                             });
                         }
