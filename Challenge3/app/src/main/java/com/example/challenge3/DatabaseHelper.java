@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "chat_db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 10;
 
     // Tabela de mensagens
     private static final String TABLE_MESSAGES = "messages";

@@ -52,9 +52,9 @@ public class ChatList extends Fragment {
     private String username;
     //MainActivity activity = (MainActivity) getActivity();
     private String clientId;
-    //private String server = "tcp://broker.hivemq.com:1883";
+    private String server = "tcp://broker.hivemq.com:1883";
     private ModelView chatViewModel;
-    final String server = "tcp://test.mosquitto.org:1883";
+    //final String server = "tcp://test.mosquitto.org:1883";
     private MQTTHelper mqttHelper;
 
     public ChatList() {
@@ -122,7 +122,7 @@ public class ChatList extends Fragment {
                             if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
                                 System.out.println("Sending message to arduino");
                                 String m = contactName + ":" + message.toString();
-                                mqttHelper.publish("chat/arduinooooo", m);
+                                mqttHelper.publish("cmchatteste/arduinooooo", m);
                                 System.out.println("ENVIOI");;
                             }
                             showNotification("New Message!",contactName + " : " + message.toString());
@@ -133,7 +133,7 @@ public class ChatList extends Fragment {
                             if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
                                 System.out.println("Sending message to arduino");
                                 String m = contactName + ":" + message.toString();
-                                mqttHelper.publish("chat/arduinooooo", m);
+                                mqttHelper.publish("cmchatteste/arduinooooo", m);
                                 System.out.println("ENVIOI");;
                             }
                             databaseHelper.insertMessage(msg);
@@ -155,7 +155,7 @@ public class ChatList extends Fragment {
                                 if(databaseHelper.getContactsForArduinoNotification(username).contains(sender)){
                                     System.out.println("Sending message to arduino");
                                     String m = sender + ":" + message.toString();
-                                    mqttHelper.publish("chat/arduinooooo", m);
+                                    mqttHelper.publish("cmchatteste/arduinooooo", m);
                                     System.out.println("ENVIOI");;
                                 }
                                 showNotification("New Conversation!",sender + " : " + message.toString());
@@ -185,7 +185,7 @@ public class ChatList extends Fragment {
     }
     private void subscribeToTopic(){
         //String chatTopic = "chat/create/" + username + "/#"; // Tópico do chat específico
-        String chatTopic2 = "chat/#"; // Tópico para todos os chats
+        String chatTopic2 = "cmchatteste/#"; // Tópico para todos os chats
         //System.out.println("Subscribing to topic " + chatTopic);
         System.out.println("Subscribing to topic " + chatTopic2);
         //mqttHelper.subscribe(chatTopic);

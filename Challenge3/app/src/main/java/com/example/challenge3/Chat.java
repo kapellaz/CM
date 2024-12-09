@@ -58,8 +58,8 @@ public class Chat extends Fragment {
     //get client id fromn main activity
     //MainActivity activity = (MainActivity) getActivity();
     private String clientId;
-    //private String server = "tcp://broker.hivemq.com:1883";
-    final String server = "tcp://test.mosquitto.org:1883";
+    private String server = "tcp://broker.hivemq.com:1883";
+    //final String server = "tcp://test.mosquitto.org:1883";
     private String topic = "qweqweqwqweqweqhh";
     private MQTTHelper mqttHelper;
     private ArrayList<String> conversations = new ArrayList<>();
@@ -141,7 +141,7 @@ public class Chat extends Fragment {
                         if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
                             System.out.println("Sending message to arduino");
                             String m = contactName + ":" + message.toString();
-                            mqttHelper.publish("chat/arduinooooo", m);
+                            mqttHelper.publish("cmchatteste/arduinooooo", m);
                             System.out.println("ENVIOI");;
                         }
 
@@ -161,7 +161,7 @@ public class Chat extends Fragment {
                             if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
                                 System.out.println("Sending message to arduino");
                                 String m = contactName + ":" + message.toString();
-                                mqttHelper.publish("chat/arduinooooo", m);
+                                mqttHelper.publish("cmchatteste/arduinooooo", m);
                                 System.out.println("ENVIOI");;
                             }
 
@@ -184,7 +184,7 @@ public class Chat extends Fragment {
                         if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
                             System.out.println("Sending message to arduino");
                             String m = contactName + ":" + message.toString();
-                            mqttHelper.publish("chat/arduinooooo", m);
+                            mqttHelper.publish("cmchatteste/arduinooooo", m);
                             System.out.println("ENVIOI");;
                         }
 
@@ -203,7 +203,7 @@ public class Chat extends Fragment {
                             if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
                                 System.out.println("Sending message to arduino");
                                 String m = contactName + ":" + message.toString();
-                                mqttHelper.publish("chat/arduinooooo", m);
+                                mqttHelper.publish("cmchatteste/arduinooooo", m);
                                 System.out.println("ENVIOI");;
                             }
 
@@ -354,7 +354,7 @@ public class Chat extends Fragment {
 
     }
     private void publishMessage(String messageText){
-        String topic = "chat/" + username + "/" + contactName; // Define o tópico para o chat específico
+        String topic = "cmchatteste/" + username + "/" + contactName; // Define o tópico para o chat específico
         System.out.println("Publishing message: " + messageText);
         databaseHelper.insertMessage(new Message(username, contactName, messageText, getCurrentTime(),0));
         mqttHelper.publish(topic, messageText);
@@ -363,13 +363,13 @@ public class Chat extends Fragment {
     private void publishMessageCreate(String messageText){
         //subscribeToTopicCreate();
         System.out.println("Publishing message create: " + messageText);
-        String topic = "chat/create/" + contactName + "/" + username;
+        String topic = "cmchatteste/create/" + contactName + "/" + username;
         databaseHelper.insertMessage(new Message(username, contactName, messageText, getCurrentTime(),0));
         mqttHelper.publish(topic, messageText);
     }
 
     private void subscribeToTopicCreate(){
-        String chatTopic = "chat/create/" + contactName + "/" + username; // Tópico do chat específico
+        String chatTopic = "cmchatteste/create/" + contactName + "/" + username; // Tópico do chat específico
         System.out.println("Subscribing to topic " + chatTopic);
         mqttHelper.subscribe(chatTopic);
     }
@@ -378,7 +378,7 @@ public class Chat extends Fragment {
         //String chatTopic = "chat/" + username + "/" + contactName; // Tópico do chat específico
         //String chatTopic2 = "chat/" + contactName + "/" + username; // Tópico do chat específico
         //String chatTopic3 = "chat/create/" + username + "/#"; // Tópico do chat específico
-        String chatTopic4 = "chat/#";
+        String chatTopic4 = "cmchatteste/#";
         //System.out.println("Subscribing to topic " + chatTopic);
         //System.out.println("Subscribing to topic " + chatTopic2);
         //System.out.println("Subscribing to topic " + chatTopic3);
