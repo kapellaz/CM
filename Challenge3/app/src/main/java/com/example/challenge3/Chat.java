@@ -58,8 +58,8 @@ public class Chat extends Fragment {
     //get client id fromn main activity
     //MainActivity activity = (MainActivity) getActivity();
     private String clientId;
-    private String server = "tcp://broker.hivemq.com:1883";
-    //final String server = "tcp://test.mosquitto.org:1883";
+    //private String server = "tcp://broker.hivemq.com:1883";
+    final String server = "tcp://test.mosquitto.org:1883";
     private String topic = "qweqweqwqweqweqhh";
     private MQTTHelper mqttHelper;
     private ArrayList<String> conversations = new ArrayList<>();
@@ -70,6 +70,11 @@ public class Chat extends Fragment {
         // Required empty public constructor
     }
 
+    /**
+     * Initializes the fragment and sets up essential components such as the ViewModel and database.
+     * Requests notification permissions if needed.
+     * Establishes MQTT connection.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,7 +96,7 @@ public class Chat extends Fragment {
         databaseHelper = new DatabaseHelper(requireContext());
 
         mqttHelper = new MQTTHelper();
-        createNotificationChannel();
+
         connectToMqtt();
 
 
@@ -99,10 +104,12 @@ public class Chat extends Fragment {
 
     }
 
-
+    /**
+     * Connects to the MQTT broker and sets up message handling callbacks.
+     */
     private void connectToMqtt() {
         new Thread(() -> {
-            System.out.println("NOVA CONEXÃO");
+
             // Set the callback inside the fragment itself
             mqttHelper.connect(server, clientId, username, getContext(), new MqttCallbackExtended() {
                 @Override
@@ -115,6 +122,7 @@ public class Chat extends Fragment {
                 public void connectionLost(Throwable cause) {
                     // Connection lost callback
                     Log.d("MQTT", "Connection lost: " + cause.getMessage());
+
 
                 }
 
@@ -145,7 +153,7 @@ public class Chat extends Fragment {
                             System.out.println("Sending message to arduino");
                             String m = contactName + ":" + message.toString();
                             mqttHelper.publish("cmchatteste/arduinooooo", m);
-                            System.out.println("ENVIOI");;
+
                         }
 
 
@@ -165,7 +173,7 @@ public class Chat extends Fragment {
                                 System.out.println("Sending message to arduino");
                                 String m = contactName + ":" + message.toString();
                                 mqttHelper.publish("cmchatteste/arduinooooo", m);
-                                System.out.println("ENVIOI");;
+
                             }
 
                         }
@@ -188,7 +196,7 @@ public class Chat extends Fragment {
                             System.out.println("Sending message to arduino");
                             String m = contactName + ":" + message.toString();
                             mqttHelper.publish("cmchatteste/arduinooooo", m);
-                            System.out.println("ENVIOI");;
+
                         }
 
                     }
@@ -207,7 +215,7 @@ public class Chat extends Fragment {
                                 System.out.println("Sending message to arduino");
                                 String m = contactName + ":" + message.toString();
                                 mqttHelper.publish("cmchatteste/arduinooooo", m);
-                                System.out.println("ENVIOI");;
+
                             }
 
                         }
@@ -227,20 +235,10 @@ public class Chat extends Fragment {
     }
 
 
-    private void loadMessagesFromDatabase(String username) {
 
-        ArrayList<String> dbMessages = databaseHelper.getContactsWithUser(username);
-        conversations.clear();
-        System.out.println(dbMessages);
-        conversations.addAll(dbMessages);
-
-        System.out.println(conversations);
-        System.out.println(" LOADDINGGGG  ");
-
-
-    }
-
-
+    /**
+     * Called when the fragment is first created.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -299,11 +297,11 @@ public class Chat extends Fragment {
         listView.setSelection(messages.size() - 1);
 
 
-        // Configuração do campo de input e botão de envio
+
         inputMessage = view.findViewById(R.id.input_message);
         sendButton = view.findViewById(R.id.send_button);
 
-        // Lógica para enviar mensagem
+        // Send Message
         sendButton.setOnClickListener(v -> {
 
 
@@ -324,19 +322,15 @@ public class Chat extends Fragment {
                 listView.setSelection(messages.size() - 1);
             }
         });
-        System.out.println("SDHADIUSAHIDAHSD ");
-        //databaseHelper.markMessagesAsRead(username,contactName);
 
         return view;
     }
 
 
     private void loadMessagesFromDatabase() {
-
         ArrayList<Message> dbMessages = databaseHelper.getAllMessages(contactName, username);
         messages.clear();
         messages.addAll(dbMessages);
-
     }
 
 
@@ -344,6 +338,9 @@ public class Chat extends Fragment {
 
 
 
+    /**
+     * This method returns the current date and time in the format dd/MM/yyyy HH:mm:ss.
+     */
     private String getCurrentTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         return sdf.format(new Date());
@@ -352,7 +349,7 @@ public class Chat extends Fragment {
 
     @Override
     public void onDestroy() {
-        //mqttHelper.disconnect();
+
         super.onDestroy();
 
         if (mqttHelper != null) {
@@ -363,99 +360,57 @@ public class Chat extends Fragment {
                 Log.e("MQTT", "Error during MQTT disconnection: " + e.getMessage());
             }
         }
-
-
-
     }
+
     private void publishMessage(String messageText){
-        String topic = "cmchatteste/" + username + "/" + contactName; // Define o tópico para o chat específico
-        System.out.println("Publishing message: " + messageText);
+        String topic = "cmchatteste/" + username + "/" + contactName;
+
         databaseHelper.insertMessage(new Message(username, contactName, messageText, getCurrentTime(),0));
         mqttHelper.publish(topic, messageText);
     }
 
     private void publishMessageCreate(String messageText){
-        //subscribeToTopicCreate();
         System.out.println("Publishing message create: " + messageText);
         String topic = "cmchatteste/create/" + contactName + "/" + username;
         databaseHelper.insertMessage(new Message(username, contactName, messageText, getCurrentTime(),0));
         mqttHelper.publish(topic, messageText);
     }
 
-    private void subscribeToTopicCreate(){
-        String chatTopic = "cmchatteste/create/" + contactName + "/" + username; // Tópico do chat específico
-        System.out.println("Subscribing to topic " + chatTopic);
-        mqttHelper.subscribe(chatTopic);
-    }
+
 
     private void subscribeToTopic(){
         //String chatTopic = "chat/" + username + "/" + contactName; // Tópico do chat específico
         //String chatTopic2 = "chat/" + contactName + "/" + username; // Tópico do chat específico
         //String chatTopic3 = "chat/create/" + username + "/#"; // Tópico do chat específico
         String chatTopic4 = "cmchatteste/#";
-        //System.out.println("Subscribing to topic " + chatTopic);
-        //System.out.println("Subscribing to topic " + chatTopic2);
-        //System.out.println("Subscribing to topic " + chatTopic3);
         System.out.println("Subscribing to topic " + chatTopic4);
-        //mqttHelper.subscribe(chatTopic2);
-        //mqttHelper.subscribe(chatTopic);
-        //mqttHelper.subscribe(chatTopic3);
+
         mqttHelper.subscribe(chatTopic4);
     }
 
 
-    public void Notification(View view){
-            Snackbar snackbar = Snackbar.make(view.findViewById(R.id.send_button), "User: Rui send a Message!", Snackbar.LENGTH_LONG);
-
-    // Obter a visualização do Snackbar
-            View snackbarView = snackbar.getView();
-
-    // Mudar a posição do Snackbar para o topo
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) snackbarView.getLayoutParams();
-            params.gravity = Gravity.TOP;
-            snackbarView.setLayoutParams(params);
-
-            snackbar.show();
-
-    }
 
 
 
-
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            System.out.println("CHANEL CRIARRARA<");
-            String channelId = "chat_notifications";
-            CharSequence name = "Chat Messages";
-            String description = "Notifications for chat messages";
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-
-            NotificationChannel channel = new NotificationChannel(channelId, name, importance);
-            channel.setDescription(description);
-
-            NotificationManager notificationManager = requireContext().getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
-    }
-
-
+    /**
+     * It displays a notification to the user.
+     * @param title - Could be "New Conversation" or "New Message"
+     * @param message - The content of message "Sender : Content"
+     */
     private void showNotification(String title,String message) {
         String channelId = "chat_notifications";
 
-        // Construir a notificação
+        // Build the notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), channelId)
-                .setSmallIcon(R.drawable.ic_arrow_back) // Ícone pequeno da notificação
-                .setContentTitle(title) // Título da notificação
-                .setContentText(message) // Texto da notificação
-                .setPriority(NotificationCompat.PRIORITY_HIGH) // Prioridade para mostrar no topo
-                .setAutoCancel(true); // Fechar automaticamente ao clicar
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
 
-        // Obter o NotificationManager para exibir a notificação
+
         NotificationManager notificationManager = (NotificationManager) requireContext().getSystemService(Context.NOTIFICATION_SERVICE);
-
-        // Exibir a notificação com um ID único
         if (notificationManager != null) {
-
             notificationManager.notify(1, builder.build());
         } else {
             Log.e("Notification", "NotificationManager is null");

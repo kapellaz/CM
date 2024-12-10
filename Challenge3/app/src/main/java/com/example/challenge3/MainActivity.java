@@ -121,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main);
         if (currentFragment instanceof Chat) {
             // Navigate to ChatList from Chat

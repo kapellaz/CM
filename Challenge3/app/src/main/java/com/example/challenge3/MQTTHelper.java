@@ -16,7 +16,6 @@ import java.util.Date;
 
 
 public class MQTTHelper {
-    public MqttAndroidClient mqttAndroidClient;
     private DatabaseHelper databaseHelper;
     public MqttClient client;
 

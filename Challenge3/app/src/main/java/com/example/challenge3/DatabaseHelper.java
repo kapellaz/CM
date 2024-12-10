@@ -27,14 +27,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_USERNAME = "username";
     private static final String COLUMN_CONTACT = "contact";
 
+     /**
+       * Creating table Arduino configuration - SQL
+      */
     private static final String CREATE_TABLE_ARDUINO_CONFIGURATION = "CREATE TABLE " + TABLE_ARDUINO_CONFIGURATION + "(" +
             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             COLUMN_USERNAME + " TEXT, " +
             COLUMN_CONTACT + " TEXT);";
 
 
+    /**
+     * Creating table Message - SQL
+     */
 
-    // Criação da tabela com a coluna isRead
     private static final String CREATE_TABLE_MESSAGES = "CREATE TABLE " + TABLE_MESSAGES + "(" +
             COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             COLUMN_USER_SEND + " TEXT, " +
@@ -48,6 +53,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    /**
+     * Initializes and sets up essential components creating new tables
+     * Requests notification permissions if needed.
+     * @param db - db connection
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_MESSAGES);  // Create messages table
@@ -72,6 +82,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    /**
+     * Method input into DB a new message
+     * @param message - Message sent
+     */
 
     public void insertMessage(Message message) {
         SQLiteDatabase db = null;
@@ -83,18 +97,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             values.put(COLUMN_TEXT, message.getText());
             values.put(COLUMN_TIME, message.getTime());
             values.put("isRead", 0);
-
             db.insert(TABLE_MESSAGES, null, values);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             if (db != null && db.isOpen()) {
-                db.close();  // Fecha o banco de dados de forma segura
+                db.close();
             }
         }
     }
 
 
+    /**
+     * Method that returns all messaages between contactName and username
+     * @param contactName - Contact that username will contact
+     * @param username - Username name
+     * @return All messages between both
+     */
     public ArrayList<Message> getAllMessages(String contactName, String username) {
 
         ArrayList<Message> messages = new ArrayList<>();
@@ -106,38 +125,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             String[] selectionArgs = new String[]{username, contactName, contactName, username};
 
-            // Ordenar as mensagens por tempo, do mais recente para o mais antigo
+            // Sort messages by time, from newest to oldest
             Cursor cursor = db.query(TABLE_MESSAGES, null, selection, selectionArgs, null, null, COLUMN_TIME + " ASC");
 
-            if (cursor != null) {
-                if (cursor.moveToFirst()) {
-                    do {
-                        // Adiciona as mensagens à lista
-                        @SuppressLint("Range") Message message = new Message(
-                                cursor.getString(cursor.getColumnIndex(COLUMN_USER_SEND)),
-                                cursor.getString(cursor.getColumnIndex(COLUMN_USER_RECEIVE)),
-                                cursor.getString(cursor.getColumnIndex(COLUMN_TEXT)),
-                                cursor.getString(cursor.getColumnIndex(COLUMN_TIME)),
-                                cursor.getInt(cursor.getColumnIndex("isRead"))
+            if (cursor.moveToFirst()) {
+                do {
+                    // Adiciona as mensagens à lista
+                    @SuppressLint("Range") Message message = new Message(
+                            cursor.getString(cursor.getColumnIndex(COLUMN_USER_SEND)),
+                            cursor.getString(cursor.getColumnIndex(COLUMN_USER_RECEIVE)),
+                            cursor.getString(cursor.getColumnIndex(COLUMN_TEXT)),
+                            cursor.getString(cursor.getColumnIndex(COLUMN_TIME)),
+                            cursor.getInt(cursor.getColumnIndex("isRead"))
 
-                        );
-                        messages.add(message);
-                    } while (cursor.moveToNext());
-                }
-                cursor.close();
+                    );
+                    messages.add(message);
+                } while (cursor.moveToNext());
             }
+            cursor.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             if (db != null && db.isOpen()) {
-                db.close();  // Fecha o banco de dados de forma segura
+                db.close();
             }
         }
         return messages;
     }
 
 
-    // Método para obter a última mensagem entre dois usuários
+    /**
+     * Method to get the last message between two users
+     */
     @SuppressLint("Range")
     public Message getLastMessage(String sender, String receiver) {
         SQLiteDatabase db = null;
@@ -145,14 +164,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try{
             db = this.getReadableDatabase();
 
-            // Consulta SQL para pegar a última mensagem entre o sender e receiver, ordenando por data
+            // SQL query to get the last message between the sender and receiver, ordering by date
             String query = "SELECT * FROM " + TABLE_MESSAGES + " WHERE (" + COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?) " +
                     "OR (" + COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?) " +
                     "ORDER BY " + COLUMN_TIME + " DESC LIMIT 1";
 
             Cursor cursor = db.rawQuery(query, new String[]{sender, receiver, receiver, sender});
 
-            if (cursor != null && cursor.moveToFirst()) {
+            if (cursor.moveToFirst()) {
 
                 lastMessage = new Message(
                         cursor.getString(cursor.getColumnIndex(COLUMN_USER_SEND)),
@@ -170,11 +189,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             e.printStackTrace();
         } finally {
             if (db != null && db.isOpen()) {
-                db.close();  // Fecha o banco de dados de forma segura
+                db.close();
             }
         }
         return lastMessage;
     }
+
+    /**
+     * Method that update the state of 'isRead' to True - That happens when a user enters into a chat
+     * @param receiver - contact
+     * @param sender - username
+     */
 
     public void markMessagesAsRead(String receiver, String sender) {
         SQLiteDatabase db = null;
@@ -187,23 +212,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             e.printStackTrace();
         } finally {
             if (db != null && db.isOpen()) {
-                db.close();  // Fecha o banco de dados de forma segura
+                db.close();
             }
         }
     }
 
 
-    // Método para atualizar o campo isRead das mensagens
-    public void updateMessageReadStatus(String sender, String receiver, boolean isSender) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        db.update(TABLE_MESSAGES, values, COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?", new String[]{sender, receiver});
-        db.update(TABLE_MESSAGES, values, COLUMN_USER_SEND + " = ? AND " + COLUMN_USER_RECEIVE + " = ?", new String[]{receiver, sender});
-        db.close();
-    }
-
-
-
+    /**
+     * Method that returns all contacts between username and other contacts
+     * @param username - username logged
+     * @return
+     */
 
     public ArrayList<String> getContactsWithUser(String username) {
         SQLiteDatabase db = null;
@@ -226,23 +245,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery(query, selectionArgs);
 
-        // Processar os resultados
-        if (cursor != null) {
+
             if (cursor.moveToFirst()) {
                 do {
                     @SuppressLint("Range") String contact = cursor.getString(cursor.getColumnIndex("contact"));
-                    if (!contacts.contains(contact)) { // Evita contatos duplicados
+                    if (!contacts.contains(contact)) { // avoid duplicated contacts
                         contacts.add(contact);
                     }
                 } while (cursor.moveToNext());
             }
             cursor.close();
-        }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             if (db != null && db.isOpen()) {
-                db.close();  // Fecha o banco de dados de forma segura
+                db.close();
             }
         }
 
@@ -250,6 +267,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return contacts;
     }
 
+    /**
+     * Method that delete all messages between the username and contact selected
+     * @param userSend - username logged
+     * @param userReceive - contact selected
+     */
 
 
     public void deleteConversation(String userSend, String userReceive) {
@@ -264,19 +286,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             e.printStackTrace();
         } finally {
             if (db != null && db.isOpen()) {
-                db.close();  // Fecha o banco de dados de forma segura
+                db.close();
             }
         }
     }
 
-    public void deleteAllMessages() {
-        SQLiteDatabase db = this.getWritableDatabase();
 
-        // Apaga todos os registros da tabela de mensagens
-        db.execSQL("DELETE FROM " + TABLE_MESSAGES);
+    /**
+     * Method that get all contact selected in arduino notifications
+     * @param username - username logged
+     */
 
-        db.close();
-    }
 
 
     public ArrayList<String> getContactsForArduinoNotification(String username) {
@@ -295,16 +315,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
-            e.printStackTrace(); // Log the exception
+            e.printStackTrace();
         } finally {
             if (cursor != null) {
-                cursor.close(); // Always close the cursor
+                cursor.close();
             }
-            db.close(); // Close the database connection
+            db.close();
         }
 
         return selectedContacts;
     }
+
+    /**
+     * Method that save contact for arduino notifications
+     * @param username - username logged
+     * @param contact - contact selected
+     */
 
 
     public void saveContactForArduinoNotification(String username, String contact) {
