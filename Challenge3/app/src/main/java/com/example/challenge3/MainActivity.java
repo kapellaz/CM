@@ -130,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
     //Define a behaviour do botão de recuar
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main);
         if (currentFragment instanceof Chat) {
             // Navigate to ChatList from Chat
@@ -145,10 +144,10 @@ public class MainActivity extends AppCompatActivity {
             // Navigate to ChatList from ArduinoConfiguration
             switchToChatList();
         } else {
-            finish();
+            super.onBackPressed();
         }
     }
-    
+
 
     //Metodo que faz o save do fragmento atual
     @Override
