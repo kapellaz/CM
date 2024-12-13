@@ -14,7 +14,6 @@ public class AdapterConversations extends ArrayAdapter<String> {
 
         private Context context;
         private ArrayList<String> conversations;
-
         private DatabaseHelper databaseHelper;
         private String username;
 
@@ -39,23 +38,16 @@ public class AdapterConversations extends ArrayAdapter<String> {
 
             Message lastMessage = databaseHelper.getLastMessage(contactName, username);
 
-            System.out.println("LAST: " + lastMessage.getUserSend() + " " + lastMessage.getIsRead());
             boolean isUnread;
             if (lastMessage.getUserSend().equals(username)) {
 
                 isUnread = false;
             } else {
-                if(lastMessage.getIsRead() == 0){
-                    isUnread = true;
-                }else{
-                    isUnread = false;
-                }
-               // isUnread = lastMessage.getIsRead() != 1;
+                isUnread = lastMessage.getIsRead() == 0;
             }
-            System.out.println(isUnread);
 
             if (isUnread) {
-                view.setBackgroundColor(context.getResources().getColor(R.color.light_blue)); // Cor para não lido
+                view.setBackgroundColor(context.getResources().getColor(R.color.light_blue)); // Color for unread
             } else {
                 view.setBackgroundColor(context.getResources().getColor(R.color.white));
             }

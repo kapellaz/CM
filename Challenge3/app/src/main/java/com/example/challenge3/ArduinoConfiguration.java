@@ -27,6 +27,12 @@ public class ArduinoConfiguration extends Fragment {
     private ArrayList<String> contacts;
     private ModelView chatViewModel;
 
+
+    /**
+     * Switches the current fragment to the Chat fragment.
+     * Creates a new instance of the Chat fragment, sets its arguments, and replaces the current fragment with it.
+     * The transaction is added to the back stack.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         chatViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
@@ -37,6 +43,17 @@ public class ArduinoConfiguration extends Fragment {
         contacts = databaseHelper.getContactsWithUser(username);
     }
 
+
+    /**
+     * Creates and returns the view hierarchy associated with the fragment.
+     * Initializes the ListView and submit button, configures the Toolbar, loads contacts from the database,
+     * sets up the ListView adapter, and handles item selection and submission actions.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views in the fragment.
+     * @param container If non-null, this is the parent view that the fragment's UI should be attached to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     * @return The View for the fragment's UI, or null.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

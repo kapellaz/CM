@@ -20,7 +20,9 @@ public class FirstTimeFrag extends Fragment {
         // Required empty public constructor
     }
 
-
+    /**
+     * Initializes the fragment asking by username input
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -40,7 +42,7 @@ public class FirstTimeFrag extends Fragment {
 
                 String username = usernameInput.getText().toString().trim();
 
-                // Verifica se o campo está vazio
+                // check if input is empty
                 if (!username.isEmpty()) {
                     chatViewModel.setUsername(username);
                     ((MainActivity) requireActivity()).switchToChatList();
