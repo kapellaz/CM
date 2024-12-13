@@ -46,12 +46,13 @@ public class ChatList extends Fragment {
     public ChatList() {
         // Required empty public constructor
     }
+
+
     /**
      * Initializes the fragment and sets up essential components such as the ViewModel and database.
      * Requests notification permissions if needed.
      * Establishes MQTT connection.
      */
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +73,7 @@ public class ChatList extends Fragment {
         connectToMqtt();
 
     }
+
 
     /**
      * Connects to the MQTT broker and sets up message handling callbacks.
@@ -169,6 +171,9 @@ public class ChatList extends Fragment {
             requireActivity().runOnUiThread(this::subscribeToTopic);
         }).start();
     }
+
+
+
     /**
      * Subscribes to the MQTT topic for chat-related messages.
      */
@@ -177,6 +182,7 @@ public class ChatList extends Fragment {
         System.out.println("Subscribing to topic " + chatTopic2);
         mqttHelper.subscribe(chatTopic2); // Subscribe to all topics under "cmchatteste"
     }
+
 
 
     /**
@@ -232,7 +238,6 @@ public class ChatList extends Fragment {
             }
         });
 
-
         view.findViewById(R.id.new_conversation_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -240,7 +245,6 @@ public class ChatList extends Fragment {
 
             }
         });
-
 
         view.findViewById(R.id.arduino_config_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -254,25 +258,28 @@ public class ChatList extends Fragment {
         return view;
     }
 
+
     /**
      * This method is responsible for loading messages from the database related to a specific username.
      * @param username - Username logged
      */
-
     private void loadMessagesFromDatabase(String username) {
         ArrayList<String> dbMessages = databaseHelper.getContactsWithUser(username);
         conversations.clear();
         conversations.addAll(dbMessages);
     }
 
+
+
     /**
      * This method returns the current date and time in the format dd/MM/yyyy HH:mm:ss.
      */
-
     private String getCurrentTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         return sdf.format(new Date());
     }
+
+
 
     /**
      * Displays a dialog to start a new conversation.
@@ -301,13 +308,13 @@ public class ChatList extends Fragment {
         builder.show();
     }
 
+
+
     /**
      * It displays a notification to the user.
      * @param title - Could be "New Conversation" or "New Message"
      * @param message - The content of message "Sender : Content"
      */
-
-
     private void showNotification(String title,String message) {
         String channelId = "chat_notifications";
 
@@ -328,10 +335,4 @@ public class ChatList extends Fragment {
             Log.e("Notification", "NotificationManager is null");
         }
     }
-
-
-
-
-
-
 }

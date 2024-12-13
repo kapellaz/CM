@@ -36,10 +36,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             COLUMN_CONTACT + " TEXT);";
 
 
+
     /**
      * Creating table Message - SQL
      */
-
     private static final String CREATE_TABLE_MESSAGES = "CREATE TABLE " + TABLE_MESSAGES + "(" +
             COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             COLUMN_USER_SEND + " TEXT, " +
@@ -52,6 +52,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
+
+
 
     /**
      * Initializes and sets up essential components creating new tables
@@ -75,6 +77,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
 
+    /**
+     * Method that updates the database
+     * @param db - db connection
+     * @param oldVersion - old version
+     * @param newVersion - new version
+     */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
@@ -82,11 +90,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+
+
     /**
      * Method input into DB a new message
      * @param message - Message sent
      */
-
     public void insertMessage(Message message) {
         SQLiteDatabase db = null;
         try {
@@ -106,6 +115,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
     }
+
 
 
     /**
@@ -154,6 +164,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+
     /**
      * Method to get the last message between two users
      */
@@ -195,12 +206,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return lastMessage;
     }
 
+
+
     /**
      * Method that update the state of 'isRead' to True - That happens when a user enters into a chat
      * @param receiver - contact
      * @param sender - username
      */
-
     public void markMessagesAsRead(String receiver, String sender) {
         SQLiteDatabase db = null;
         try{
@@ -218,12 +230,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+
     /**
      * Method that returns all contacts between username and other contacts
      * @param username - username logged
      * @return
      */
-
     public ArrayList<String> getContactsWithUser(String username) {
         SQLiteDatabase db = null;
         ArrayList<String> contacts = new ArrayList<>();
@@ -267,13 +279,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return contacts;
     }
 
+
+
     /**
      * Method that delete all messages between the username and contact selected
      * @param userSend - username logged
      * @param userReceive - contact selected
      */
-
-
     public void deleteConversation(String userSend, String userReceive) {
         SQLiteDatabase db = null;
         try{
@@ -292,13 +304,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+
     /**
      * Method that get all contact selected in arduino notifications
      * @param username - username logged
      */
-
-
-
     public ArrayList<String> getContactsForArduinoNotification(String username) {
         ArrayList<String> selectedContacts = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -326,13 +336,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return selectedContacts;
     }
 
+
     /**
      * Method that save contact for arduino notifications
      * @param username - username logged
      * @param contact - contact selected
      */
-
-
     public void saveContactForArduinoNotification(String username, String contact) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -346,6 +355,4 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_ARDUINO_CONFIGURATION, COLUMN_USERNAME + " = ? AND " + COLUMN_CONTACT + " = ?",
                 new String[]{username, contact});
     }
-
-
 }

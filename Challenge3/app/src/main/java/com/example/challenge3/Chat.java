@@ -1,7 +1,6 @@
 package com.example.challenge3;
 
 import android.annotation.SuppressLint;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -24,12 +23,10 @@ import android.view.ViewGroup;
 
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.android.material.snackbar.Snackbar;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -55,12 +52,9 @@ public class Chat extends Fragment {
     private ArrayList<Message> messages = new ArrayList<>();
     private DatabaseHelper databaseHelper  ;
     public MqttAndroidClient client;
-    //get client id fromn main activity
-    //MainActivity activity = (MainActivity) getActivity();
     private String clientId;
     //private String server = "tcp://broker.hivemq.com:1883";
     final String server = "tcp://test.mosquitto.org:1883";
-    private String topic = "qweqweqwqweqweqhh";
     private MQTTHelper mqttHelper;
     private ArrayList<String> conversations = new ArrayList<>();
     private ModelView chatViewModel;
@@ -327,6 +321,9 @@ public class Chat extends Fragment {
     }
 
 
+    /**
+     * Loads messages from the database
+     */
     private void loadMessagesFromDatabase() {
         ArrayList<Message> dbMessages = databaseHelper.getAllMessages(contactName, username);
         messages.clear();
@@ -347,6 +344,11 @@ public class Chat extends Fragment {
     }
 
 
+
+
+    /**
+     * Disconnects from the MQTT broker when the fragment is destroyed.
+     */
     @Override
     public void onDestroy() {
 
@@ -362,6 +364,13 @@ public class Chat extends Fragment {
         }
     }
 
+
+
+    /**
+     * Publishes a message to a specific MQTT topic and inserts the message into the database.
+     *
+     * @param messageText The text of the message to be published.
+     */
     private void publishMessage(String messageText){
         String topic = "cmchatteste/" + username + "/" + contactName;
 
@@ -369,6 +378,13 @@ public class Chat extends Fragment {
         mqttHelper.publish(topic, messageText);
     }
 
+
+
+    /**
+     * Publishes a message to a specific MQTT topic and inserts the message into the database.
+     *
+     * @param messageText The text of the message to be published.
+     */
     private void publishMessageCreate(String messageText){
         System.out.println("Publishing message create: " + messageText);
         String topic = "cmchatteste/create/" + contactName + "/" + username;
@@ -377,7 +393,10 @@ public class Chat extends Fragment {
     }
 
 
-
+    /**
+     * Subscribes to a specific MQTT topic.
+     * The topic is set to "cmchatteste/#" which subscribes to all subtopics under "cmchatteste".
+     */
     private void subscribeToTopic(){
         //String chatTopic = "chat/" + username + "/" + contactName; // Tópico do chat específico
         //String chatTopic2 = "chat/" + contactName + "/" + username; // Tópico do chat específico

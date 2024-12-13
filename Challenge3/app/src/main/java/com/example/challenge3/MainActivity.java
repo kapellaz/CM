@@ -6,14 +6,9 @@ import android.util.Log;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
@@ -21,7 +16,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     private FirstTimeFrag login;
-    private String clientId = MqttClient.generateClientId();
     private static final String TAG_TEXTING = "TEXTING";
     private static final String TAG_LISTING = "LISTING";
     private static final String TAG_ARDUINO = "ARDUINO";
@@ -95,6 +89,12 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+
+    /**
+     * Switches the current fragment to the Chat fragment.
+     * Creates a new instance of the Chat fragment, sets its arguments, and replaces the current fragment with it.
+     * The transaction is added to the back stack.
+     */
     public void switchToChat() {
         Chat chat = new Chat();
         Bundle args = new Bundle();
@@ -107,6 +107,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+
+    /**
+     * Switches the current fragment to the ArduinoConfiguration fragment.
+     * Creates a new instance of the ArduinoConfiguration fragment, sets its arguments, and replaces the current fragment with it.
+     * The transaction is added to the back stack.
+     */
     public void switchToArduinoConfigs() {
         ArduinoConfiguration config = new ArduinoConfiguration();
         Bundle args = new Bundle();
@@ -140,10 +147,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    public String getClientId() {
-        return clientId;
-    }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
