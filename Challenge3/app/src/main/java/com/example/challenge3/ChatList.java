@@ -65,6 +65,7 @@ public class ChatList extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         chatViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
+        //retrieve do node do utilizador no viewmodel
         username = chatViewModel.getUsername().getValue();
         databaseHelper = new DatabaseHelper(requireContext());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -223,6 +224,7 @@ public class ChatList extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //guarda no viewmodel o contacto com quem estamos a falar
                 chatViewModel.setContactName((String) listView.getItemAtPosition(position));
                 ((MainActivity) requireActivity()).switchToChat();
             }
@@ -309,6 +311,7 @@ public class ChatList extends Fragment {
         builder.setPositiveButton("Start", (dialog, which) -> {
             String contact = input.getText().toString().trim();
             if (!contact.isEmpty()) {
+                //guarda no view model o contacto com quem estamos a falar
                 chatViewModel.setContactName(contact);
                 ((MainActivity) requireActivity()).switchToChat();
             } else {

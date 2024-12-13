@@ -31,6 +31,7 @@ public class ArduinoConfiguration extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         chatViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
         super.onCreate(savedInstanceState);
+        //retrive do nome de utilizador no viewmodel
         username = chatViewModel.getUsername().getValue();
         databaseHelper = new DatabaseHelper(requireContext());
         contacts = databaseHelper.getContactsWithUser(username);

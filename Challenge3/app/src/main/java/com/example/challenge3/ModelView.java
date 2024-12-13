@@ -3,7 +3,7 @@ package com.example.challenge3;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
+//Guarda o Node o utilizador e o utilizador com quem estamos a conversar
 public class ModelView extends ViewModel {
 
     private final MutableLiveData<String> username = new MutableLiveData<>();

@@ -75,6 +75,7 @@ public class Chat extends Fragment {
         super.onCreate(savedInstanceState);
         chatViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
 
+        //retrieve dos nomes no viewmodel
         username = chatViewModel.getUsername().getValue();
         contactName = chatViewModel.getContactName().getValue();
 

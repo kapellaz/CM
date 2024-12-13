@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
                     // Fragment is not currently in the manager, recreate it based on the tag
                     if (fragmentTag.equals(TAG_LISTING)) {
                         fragment = new ChatList();
-                    } else if (fragmentTag.equals(TAG_TEXTING )) {
+                    } else if (fragmentTag.equals(TAG_TEXTING)) {
                         fragment = new Chat();
                     } else if (fragmentTag.equals(TAG_ARDUINO)) {
                         fragment = new ArduinoConfiguration();
@@ -119,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Define a behaviour do botão de recuar
     @Override
     public void onBackPressed() {
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main);
@@ -144,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
         return clientId;
     }
 
+    //Metodo que faz o save do fragmento atual
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
