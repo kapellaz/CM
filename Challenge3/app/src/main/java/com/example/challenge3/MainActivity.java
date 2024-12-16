@@ -15,7 +15,7 @@ import android.app.NotificationManager;
 import android.os.Build;
 public class MainActivity extends AppCompatActivity {
 
-
+    private ViewModelChat viewModelChat = new ViewModelChat();
     private FirstTimeFrag login;
     private static final String TAG_TEXTING = "TEXTING";
     private static final String TAG_LISTING = "LISTING";
@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //inicializar o login
         login = new FirstTimeFrag();
+
 
         if (savedInstanceState != null) {
             // Retrieve the saved fragment tag
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+
     }
 
 
@@ -80,9 +82,11 @@ public class MainActivity extends AppCompatActivity {
      * Switch Fragment - First Fragment to Chat List
      */
     public void switchToChatList() {
+
         ChatList chatListFragment = new ChatList();
         Bundle args = new Bundle();
         chatListFragment.setArguments(args);
+
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, chatListFragment, "LISTING")
@@ -98,8 +102,10 @@ public class MainActivity extends AppCompatActivity {
      */
     public void switchToChat() {
         Chat chat = new Chat();
+
         Bundle args = new Bundle();
         chat.setArguments(args);
+
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, chat, "TEXTING")
@@ -117,8 +123,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void switchToArduinoConfigs() {
         ArduinoConfiguration config = new ArduinoConfiguration();
-        Bundle args = new Bundle();
-        config.setArguments(args);
+
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, config, "ARDUINO")

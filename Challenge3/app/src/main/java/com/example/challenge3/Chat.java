@@ -40,7 +40,7 @@ import java.util.Date;
 
 
 public class Chat extends Fragment {
-
+    
     private ListView chatRecyclerView;
     private ListView listView;
     private ArrayAdapter<Message> adapter;
@@ -57,7 +57,9 @@ public class Chat extends Fragment {
     final String server = "tcp://test.mosquitto.org:1883";
     private MQTTHelper mqttHelper;
     private ArrayList<String> conversations = new ArrayList<>();
+
     private ModelView chatViewModel;
+
 
 
     public Chat() {
@@ -78,6 +80,7 @@ public class Chat extends Fragment {
         username = chatViewModel.getUsername().getValue();
         contactName = chatViewModel.getContactName().getValue();
 
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -85,6 +88,7 @@ public class Chat extends Fragment {
                         new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
             }
         }
+
 
 
         clientId = username+"111111";
@@ -95,7 +99,6 @@ public class Chat extends Fragment {
         connectToMqtt();
 
 
-        loadMessagesFromDatabase();
 
     }
 
@@ -236,7 +239,12 @@ public class Chat extends Fragment {
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        viewModelChat = new ViewModelProvider(requireActivity()).get(ViewModelChat.class);
+        username = viewModelChat.getUsername();
+        contactName = viewModelChat.getContactName();
+        loadMessagesFromDatabase();
 
+        System.out.println(username +  "     " + contactName);
         databaseHelper.markMessagesAsRead(username, contactName);
 
 
@@ -406,6 +414,8 @@ public class Chat extends Fragment {
         System.out.println("Subscribing to topic " + chatTopic4);
 
         mqttHelper.subscribe(chatTopic4);
+        System.out.println("Subscribing to topic chat/arduino");
+        mqttHelper.subscribe("chat/arduinooooo");
     }
 
 

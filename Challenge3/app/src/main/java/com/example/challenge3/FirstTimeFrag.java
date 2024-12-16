@@ -16,6 +16,7 @@ public class FirstTimeFrag extends Fragment {
 
     private ModelView chatViewModel;
 
+
     public FirstTimeFrag() {
         // Required empty public constructor
     }
@@ -34,7 +35,7 @@ public class FirstTimeFrag extends Fragment {
 
         EditText usernameInput = view.findViewById(R.id.username_input);
         Button submitButton = view.findViewById(R.id.submit_button);
-
+        viewModelChat = new ViewModelProvider(requireActivity()).get(ViewModelChat.class);
 
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,7 +45,9 @@ public class FirstTimeFrag extends Fragment {
 
                 // check if input is empty
                 if (!username.isEmpty()) {
+
                     chatViewModel.setUsername(username);
+
                     ((MainActivity) requireActivity()).switchToChatList();
                     Toast.makeText(getActivity(), "Username: " + username, Toast.LENGTH_SHORT).show();
                 } else {

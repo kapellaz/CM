@@ -239,6 +239,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public ArrayList<String> getContactsWithUser(String username) {
         SQLiteDatabase db = null;
         ArrayList<String> contacts = new ArrayList<>();
+
         try{
 
         db = this.getReadableDatabase();
