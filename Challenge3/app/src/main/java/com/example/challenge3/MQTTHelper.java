@@ -2,8 +2,6 @@ package com.example.challenge3;
 
 import android.content.Context;
 
-import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -11,22 +9,31 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 
+/**
+ * MQTTHelper class provides methods to connect, disconnect, publish, subscribe, and unsubscribe
+ * from an MQTT broker.
+ */
 public class MQTTHelper {
-    public MqttAndroidClient mqttAndroidClient;
     private DatabaseHelper databaseHelper;
     public MqttClient client;
 
     //final String server = "tcp://2.80.198.184:1883";
-    final String server = "tcp://test.mosquitto.org:1883";
 
     final String TAG = "MQTT";
 
 
 
+    /**
+     * Connects to the specified MQTT broker.
+     *
+     * @param brokerUrl The URL of the MQTT broker.
+     * @param clientId The client ID to use for the connection.
+     * @param username The username for the connection (if required).
+     * @param context The application context.
+     * @param mqttCallbackExtended The callback to handle MQTT events.
+     */
     public void connect(String brokerUrl, String clientId, String username, Context context, MqttCallbackExtended mqttCallbackExtended) {
         try {
             // Set up the persistence layer
@@ -51,11 +58,9 @@ public class MQTTHelper {
         }
     }
 
-    private String getCurrentTime() {
-        java.text.SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        return sdf.format(new Date());
-    }
-
+    /**
+     * Disconnects from the MQTT broker.
+     */
     public void disconnect() {
         try {
             client.disconnect();
@@ -64,7 +69,11 @@ public class MQTTHelper {
         }
     }
 
-    //function to leave a specific topic
+    /**
+     * Unsubscribes from a specific topic.
+     *
+     * @param topic The topic to unsubscribe from.
+     */
     public void leaveTopic(String topic) {
         try {
             client.unsubscribe(topic);
@@ -74,7 +83,11 @@ public class MQTTHelper {
     }
 
 
-
+    /**
+     * Unsubscribes from a specific topic.
+     *
+     * @param topic The topic to unsubscribe from.
+     */
     public void publish(String topic, String message) {
         try {
             MqttMessage mqttMessage = new MqttMessage(message.getBytes());
@@ -84,6 +97,11 @@ public class MQTTHelper {
         }
     }
 
+    /**
+     * Subscribes to a specific topic.
+     *
+     * @param topic The topic to subscribe to.
+     */
     public void subscribe(String topic) {
         try {
             client.subscribe(topic);

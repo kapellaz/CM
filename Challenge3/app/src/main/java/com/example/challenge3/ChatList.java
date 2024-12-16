@@ -1,11 +1,20 @@
 package com.example.challenge3;
 
+import android.Manifest;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
-
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+
+import androidx.lifecycle.ViewModelProvider;
+
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,22 +25,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -44,6 +45,8 @@ public class ChatList extends Fragment {
     private String username;
     //MainActivity activity = (MainActivity) getActivity();
     private String clientId;
+    //private String server = "tcp://broker.hivemq.com:1883";
+    private ModelView chatViewModel;
     final String server = "tcp://test.mosquitto.org:1883";
     private MQTTHelper mqttHelper;
     private ViewModelChat viewModelChat;
@@ -52,9 +55,28 @@ public class ChatList extends Fragment {
         // Required empty public constructor
     }
 
+
+    /**
+     * Initializes the fragment and sets up essential components such as the ViewModel and database.
+     * Requests notification permissions if needed.
+     * Establishes MQTT connection.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        chatViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
+        username = chatViewModel.getUsername().getValue();
+        databaseHelper = new DatabaseHelper(requireContext());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(requireActivity(),
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
+            }
+        }
+
+
 
         System.out.println(username + " AQUIIIII ");
         databaseHelper = new DatabaseHelper(requireContext());
@@ -66,6 +88,9 @@ public class ChatList extends Fragment {
     }
 
 
+    /**
+     * Connects to the MQTT broker and sets up message handling callbacks.
+     */
     private void connectToMqtt() {
         new Thread(() -> {
             // Set the callback inside the fragment itself
@@ -102,13 +127,28 @@ public class ChatList extends Fragment {
                             // Insert message into database
                             databaseHelper.insertMessage(msg);
                             loadMessagesFromDatabase(username);
+                            if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
+                                System.out.println("Sending message to arduino");
+                                String m = contactName + ":" + message.toString();
+                                mqttHelper.publish("chat/arduinooooo", m);
+                                System.out.println("ENVIOI");;
+                            }
+                            showNotification("New Message!",contactName + " : " + message.toString());
                         }else if (lastTopicPart.contains(username) || contactName.contains(username)){
                             Log.d("MQTT2", "Message arrived: " + message.toString());
                             Message msg = new Message(lastTopicPart, username,message.toString(), getCurrentTime(), 0);
                             // Insert message into database
+                            if(databaseHelper.getContactsForArduinoNotification(username).contains(contactName)){
+                                System.out.println("Sending message to arduino");
+                                String m = contactName + ":" + message.toString();
+                                mqttHelper.publish("chat/arduinooooo", m);
+                                System.out.println("ENVIOI");;
+                            }
                             databaseHelper.insertMessage(msg);
                             loadMessagesFromDatabase(username);
+                            showNotification("New Message!",lastTopicPart + " : " + message.toString());
                         }
+
                     }else if (topicParts[1].equals("create") && topicParts[2].equals(username)) {
                         System.out.println("ChatList case 2");
                         String sender = topicParts[3];  //"chat/create/<sender>/<receiver>"
@@ -117,17 +157,19 @@ public class ChatList extends Fragment {
                             // If not, add the sender as a new conversation
                             requireActivity().runOnUiThread(() -> {
                                 conversations.add(sender);
-
                                 databaseHelper.insertMessage(new Message(sender, username, messageContent, getCurrentTime(), 0));  // Add to database as well
                                 loadMessagesFromDatabase(username);
                                 adapter.notifyDataSetChanged();
+                                if(databaseHelper.getContactsForArduinoNotification(username).contains(sender)){
+                                    System.out.println("Sending message to arduino");
+                                    String m = sender + ":" + message.toString();
+                                    mqttHelper.publish("cmchatteste/arduinooooo", m);
+                                }
+                                showNotification("New Conversation!",sender + " : " + message.toString());
                             });
                         }
 
                     }
-
-
-
 
                     // Notify the adapter
                     requireActivity().runOnUiThread(() -> {
@@ -145,17 +187,23 @@ public class ChatList extends Fragment {
             requireActivity().runOnUiThread(this::subscribeToTopic);
         }).start();
     }
+
+
+
+    /**
+     * Subscribes to the MQTT topic for chat-related messages.
+     */
     private void subscribeToTopic(){
-        //String chatTopic = "chat/create/" + username + "/#"; // Tópico do chat específico
-        String chatTopic2 = "chat/#"; // Tópico para todos os chats
-        //System.out.println("Subscribing to topic " + chatTopic);
+        String chatTopic2 = "cmchatteste/#";
         System.out.println("Subscribing to topic " + chatTopic2);
-        //mqttHelper.subscribe(chatTopic);
-        mqttHelper.subscribe(chatTopic2);
+        mqttHelper.subscribe(chatTopic2); // Subscribe to all topics under "cmchatteste"
     }
 
 
 
+    /**
+     * Called when the fragment is first created.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -170,29 +218,27 @@ public class ChatList extends Fragment {
         titleTextView.setTextColor(getResources().getColor(android.R.color.black));
         titleTextView.setTextSize(30);
 
-
         Toolbar.LayoutParams layoutParams = new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.MATCH_PARENT);
         layoutParams.gravity = Gravity.CENTER;
         titleTextView.setLayoutParams(layoutParams);
-
-
         toolbar.addView(titleTextView);
 
         loadMessagesFromDatabase(username);
-
         listView = view.findViewById(R.id.list_view);
 
         adapter = new AdapterConversations(requireContext(), conversations, username, databaseHelper);
         listView.setAdapter(adapter);
-
+        // Enter into a Chat
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                viewModelChat.setContactName((String) listView.getItemAtPosition(position));
+
+                chatViewModel.setContactName((String) listView.getItemAtPosition(position));
+
                 ((MainActivity) requireActivity()).switchToChat();
             }
         });
-
+        // Delete a conversation
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -202,15 +248,9 @@ public class ChatList extends Fragment {
                         .setTitle("Delete Conversation")
                         .setMessage("Are you sure you want to delete this conversation?")
                         .setPositiveButton("Yes", (dialog, which) -> {
-                            // 1. Apagar conversa e mensagens no banco de dados
                             databaseHelper.deleteConversation(username, contactToDelete);
-
-
-                            // 3. Recarregar a lista de conversas
                             loadMessagesFromDatabase(username);
                             adapter.notifyDataSetChanged();
-
-                            // 4. Feedback ao usuário
                             Toast.makeText(requireContext(), "Conversation deleted", Toast.LENGTH_SHORT).show();
                         })
                         .setNegativeButton("No", null)
@@ -218,7 +258,6 @@ public class ChatList extends Fragment {
                 return true;
             }
         });
-
 
         view.findViewById(R.id.new_conversation_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -228,10 +267,10 @@ public class ChatList extends Fragment {
             }
         });
 
-
         view.findViewById(R.id.arduino_config_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 ((MainActivity) requireActivity()).switchToArduinoConfigs();
 
             }
@@ -240,26 +279,32 @@ public class ChatList extends Fragment {
         return view;
     }
 
-    private void loadMessagesFromDatabase(String username) {
 
+    /**
+     * This method is responsible for loading messages from the database related to a specific username.
+     * @param username - Username logged
+     */
+    private void loadMessagesFromDatabase(String username) {
         ArrayList<String> dbMessages = databaseHelper.getContactsWithUser(username);
         conversations.clear();
-        System.out.println(dbMessages);
         conversations.addAll(dbMessages);
-
-        System.out.println(conversations);
-        System.out.println(" LOADDINGGGG  ");
-
-
     }
 
 
 
+    /**
+     * This method returns the current date and time in the format dd/MM/yyyy HH:mm:ss.
+     */
     private String getCurrentTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         return sdf.format(new Date());
     }
 
+
+
+    /**
+     * Displays a dialog to start a new conversation.
+     */
     private void showNewConversationDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
@@ -272,22 +317,46 @@ public class ChatList extends Fragment {
 
         builder.setPositiveButton("Start", (dialog, which) -> {
             String contact = input.getText().toString().trim();
-            if (!contact.isEmpty()) {
-                viewModelChat.setContactName(contact);
+
+            if (!contact.isEmpty()) {// check if input is empty
+                //guarda no view model o contacto com quem estamos a falar
+                chatViewModel.setContactName(contact);
+
                 ((MainActivity) requireActivity()).switchToChat();
             } else {
                 Toast.makeText(requireContext(), "Username cannot be empty", Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-
         // Show the dialog
         builder.show();
     }
 
 
 
+    /**
+     * It displays a notification to the user.
+     * @param title - Could be "New Conversation" or "New Message"
+     * @param message - The content of message "Sender : Content"
+     */
+    private void showNotification(String title,String message) {
+        String channelId = "chat_notifications";
+
+        // Build the notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), channelId)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
 
 
+        NotificationManager notificationManager = (NotificationManager) requireContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
+        if (notificationManager != null) {
+            notificationManager.notify(1, builder.build());
+        } else {
+            Log.e("Notification", "NotificationManager is null");
+        }
+    }
 }

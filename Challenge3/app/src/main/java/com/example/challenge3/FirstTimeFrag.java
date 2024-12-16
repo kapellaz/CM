@@ -14,17 +14,21 @@ import android.widget.Toast;
 
 public class FirstTimeFrag extends Fragment {
 
-    private ViewModelChat viewModelChat;
+    private ModelView chatViewModel;
 
 
     public FirstTimeFrag() {
         // Required empty public constructor
     }
 
-
+    /**
+     * Initializes the fragment asking by username input
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        chatViewModel = new ViewModelProvider(requireActivity()).get(ModelView.class);
 
         View view = inflater.inflate(R.layout.fragment_first_time, container, false);
 
@@ -39,9 +43,11 @@ public class FirstTimeFrag extends Fragment {
 
                 String username = usernameInput.getText().toString().trim();
 
-                // Verifica se o campo está vazio
+                // check if input is empty
                 if (!username.isEmpty()) {
-                    viewModelChat.setUsername(username);
+
+                    chatViewModel.setUsername(username);
+
                     ((MainActivity) requireActivity()).switchToChatList();
                     Toast.makeText(getActivity(), "Username: " + username, Toast.LENGTH_SHORT).show();
                 } else {
