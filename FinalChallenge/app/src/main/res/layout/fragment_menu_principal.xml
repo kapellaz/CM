@@ -6,9 +6,6 @@
     tools:context=".menu_principal">
 
     <!-- Toolbar -->
-
-    <!-- Perfil Section -->
-
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar3"
         android:layout_width="409dp"
@@ -24,6 +21,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Profile Section -->
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="0dp"
@@ -32,7 +30,6 @@
         android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-
         app:layout_constraintTop_toBottomOf="@id/toolbar3">
 
         <!-- Image View for Profile Picture -->
@@ -74,10 +71,21 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- History Section -->
+    <!-- Loading ProgressBar -->
 
 
-    <!-- Floating Action Button (FAB) for searching users -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="137dp"
+        android:layout_height="157dp"
+        android:layout_centerInParent="true"
+    android:indeterminate="true"
+    android:visibility="gone"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"/>
+
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
@@ -100,6 +108,7 @@
 
     </LinearLayout>
 
+    <!-- Floating Action Button (FAB) for searching users -->
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/fab_search_user"
         android:layout_width="56dp"
@@ -113,7 +122,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-
+    <!-- Other Image Buttons for the toolbar -->
     <ImageButton
         android:id="@+id/logout"
         android:layout_width="51dp"
@@ -158,6 +167,7 @@
         app:layout_constraintTop_toTopOf="@+id/toolbar3"
         app:layout_constraintVertical_bias="0.428" />
 
+    <!-- ListView to display user data -->
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
@@ -170,6 +180,5 @@
         android:scrollbars="vertical"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
         tools:layout_editor_absoluteX="16dp" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

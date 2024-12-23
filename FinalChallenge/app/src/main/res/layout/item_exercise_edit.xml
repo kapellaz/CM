@@ -1,0 +1,23 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/exercise_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nome do Exercício"
+        android:textSize="16sp"
+        android:padding="4dp" />
+
+    <TextView
+        android:id="@+id/exercise_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Detalhes do Exercício"
+        android:textSize="14sp"
+        android:padding="4dp" />
+</LinearLayout>

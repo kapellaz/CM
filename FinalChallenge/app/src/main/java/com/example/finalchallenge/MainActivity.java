@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, new login_register(), "LOGIN")
+                .replace(R.id.main, new menu_principal(), "LOGIN")
                 .commit();
         }
 
@@ -39,6 +39,14 @@ public class MainActivity extends AppCompatActivity {
     public void switchtoStats() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new Exercise_List(),"Stats")
+                .addToBackStack(null)
+                .commit();
+    }
+
+
+    public void switchtoEdit() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main, new train_edit_exercise(),"Train_Edit")
                 .addToBackStack(null)
                 .commit();
     }

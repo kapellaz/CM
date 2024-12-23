@@ -87,10 +87,40 @@
         android:layout_marginStart="3dp"
         android:layout_marginTop="32dp"
         android:text="List of Exercise:"
-
+        android:textStyle="bold"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar3" />
+
+    <!-- Botão para adicionar exercício -->
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/helpButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="16dp"
+
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/round_button"
+        android:contentDescription="Adicionar Exercício"
+        android:src="@android:drawable/ic_menu_help"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/stats" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="137dp"
+        android:layout_height="157dp"
+        android:layout_centerInParent="true"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
 
     <ListView
         android:id="@+id/listView"
@@ -190,7 +220,42 @@
                 android:textSize="16sp" />
         </RelativeLayout>
 
+        <!-- Botões Stop e Finish (centralizados lado a lado) -->
+        <LinearLayout
+            android:id="@+id/linearLayoutStopFinish"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:gravity="center">
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <ImageButton
+                    android:id="@+id/finish"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:background="@drawable/button_end"
+                    android:contentDescription="Finish Button" />
+
+                <TextView
+                    android:id="@+id/finish_"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="Finish"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+        </LinearLayout>
+
     </LinearLayout>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

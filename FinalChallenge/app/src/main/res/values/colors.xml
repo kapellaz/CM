@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="green_confirm">#4CAF50</color> <!-- Verde -->
+    <color name="red_cancel">#F44336</color> <!-- Vermelho -->
+
 </resources>

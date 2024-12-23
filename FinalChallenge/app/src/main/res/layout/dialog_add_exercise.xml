@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Campo para o nome do exercício -->
+
+    <Spinner
+        android:id="@+id/exerciseNameSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="43dp"
+        android:background="@drawable/spinner_background"
+        android:spinnerMode="dropdown" />
+
+
+    <!-- Campo para séries -->
+    <EditText
+        android:id="@+id/seriesEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Séries"
+        android:inputType="number" />
+
+    <!-- Campo para repetições -->
+    <EditText
+        android:id="@+id/repetitionsEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Repetições"
+        android:inputType="number" />
+</LinearLayout>

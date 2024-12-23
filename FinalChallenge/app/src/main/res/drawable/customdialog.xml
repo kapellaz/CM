@@ -1,0 +1,13 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Cor de fundo (branco com opacidade) -->
+    <solid android:color="#FFFFFF"/>
+
+    <!-- Borda arredondada -->
+    <corners android:radius="20dp"/>
+
+    <!-- Sombras para dar um efeito de profundidade -->
+    <padding android:left="10dp" android:right="10dp" android:top="10dp" android:bottom="10dp"/>
+
+    <!-- Definindo a cor da borda -->
+    <stroke android:color="#DDDDDD" android:width="1dp"/>
+</shape>
