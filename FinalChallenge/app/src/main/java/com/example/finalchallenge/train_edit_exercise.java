@@ -11,7 +11,9 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -95,6 +97,7 @@ public class train_edit_exercise extends Fragment {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
 
+
         // Configuração do ItemTouchHelper
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
@@ -132,12 +135,42 @@ public class train_edit_exercise extends Fragment {
                 // Notificar o adaptador sobre a remoção do item
                 adapter.notifyItemRemoved(position);
             }
+            @Override
+            public boolean isItemViewSwipeEnabled() {
+                return true;
+            }
+
+            @Override
+            public boolean isLongPressDragEnabled() {
+                return true; // Habilita o drag and drop com long press
+            }
 
         };
+
 
 // Vincular o ItemTouchHelper ao RecyclerView
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
+        // Configurar o listener de clique no RecyclerView
+        recyclerView.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
+            GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    View child = recyclerView.findChildViewUnder(e.getX(), e.getY());
+                    if (child != null) {
+                        int position = recyclerView.getChildAdapterPosition(child);
+                        showEditExerciseDialog(position); // Chama o diálogo de edição
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            @Override
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                return gestureDetector.onTouchEvent(e); // Passa os eventos para o GestureDetector
+            }
+        });
 
 
         // Configurar o botão de adicionar exercício
@@ -170,6 +203,66 @@ public class train_edit_exercise extends Fragment {
 
     private void handleStatsClick() {
         ((MainActivity) requireActivity()).switchtoStats();
+    }
+
+    private void showEditExerciseDialog(int position) {
+        final Dialog dialog = new Dialog(requireContext());
+        dialog.setContentView(R.layout.dialog_edit_exercise);
+
+        // Personaliza o fundo do diálogo (usando o drawable com bordas arredondadas)
+        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawableResource(android.R.color.transparent);
+
+
+
+
+        Exercise exercise = exerciseList.get(position);
+
+
+        EditText inputRepetitions = dialog.findViewById(R.id.inputRepeticoes);
+        EditText inputSeries = dialog.findViewById(R.id.inputSeries);
+
+        Button create = dialog.findViewById(R.id.create_button);
+        Button cancelar = dialog.findViewById(R.id.cancel_button);
+
+        // Preencher os campos com os valores atuais
+        inputRepetitions.setText(String.valueOf(exercise.getRepetitions()));
+        inputSeries.setText(String.valueOf(exercise.getSeries()));
+
+        cancelar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        create.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String repetitionsString = inputRepetitions.getText().toString();
+                String seriesString = inputSeries.getText().toString();
+
+                if (!repetitionsString.isEmpty() && !seriesString.isEmpty()) {
+                    int newRepetitions = Integer.parseInt(repetitionsString);
+                    int newSeries = Integer.parseInt(seriesString);
+
+                    // Atualizar os dados do exercício
+                    exercise.setRepetitions(newRepetitions);
+                    exercise.setSeries(newSeries);
+
+                    // Atualizar no banco de dados
+
+
+                    // Atualizar na lista e notificar o adaptador
+                    exerciseList.set(position, exercise);
+                    updateExerciseInfoInDB();
+                    adapter.notifyItemChanged(position);
+                }
+                dialog.dismiss(); // Fecha o diálogo
+            }
+        });
+
+
+        dialog.show();
     }
 
     // Método para exibir o diálogo de adicionar exercício
@@ -272,6 +365,7 @@ public class train_edit_exercise extends Fragment {
     private static class ExerciseAdapter extends RecyclerView.Adapter<ExerciseAdapter.ExerciseViewHolder> {
         private List<Exercise> exerciseList;
 
+
         public ExerciseAdapter(List<Exercise> exerciseList) {
             this.exerciseList = exerciseList;
         }
@@ -344,6 +438,25 @@ public class train_edit_exercise extends Fragment {
 
                 // Atualiza a ordem dos exercícios no banco de dados
                 databaseHelper.updateExerciseOrderInPlan(treinoId, exerciseList);
+            }
+        });
+    }
+
+    private void updateExerciseInfoInDB() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+
+        // Executa a tarefa de busca dos treinos em segundo plano
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                // Obtém o id do treino atual
+                int treinoId = treinoPlano.getId();
+                System.out.println("A ATUALIZAR ORDERS");
+                System.out.println(exerciseList);
+
+                // Atualiza a ordem dos exercícios no banco de dados
+                databaseHelper.updateExerciseDetailsInPlan(treinoId, exerciseList);
             }
         });
     }

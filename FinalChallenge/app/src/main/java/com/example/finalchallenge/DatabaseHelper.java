@@ -446,6 +446,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void updateExerciseDetailsInPlan(int treinoId, List<Exercise> exerciseList) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+
+        try {
+            for (Exercise exercise : exerciseList) {
+                // Atualizar séries e repetições no banco de dados
+                ContentValues values = new ContentValues();
+                values.put("series", exercise.getSeries()); // Atualiza o número de séries
+                values.put("repeticoes", exercise.getRepetitions()); // Atualiza o número de repetições
+
+                db.update(TABLE_TREINO_EXERCICIO_PLANO, values, "exercicio_id = ? AND treino_id = ?",
+                        new String[]{String.valueOf(exercise.getId()), String.valueOf(treinoId)});
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+
 
 
 

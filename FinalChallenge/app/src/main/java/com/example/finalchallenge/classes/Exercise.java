@@ -29,6 +29,9 @@ public class Exercise {
     public int getRepetitions() {
         return repetitions;
     }
+    public void setRepetitions(int repetitions) {
+        this.repetitions = repetitions;
+    }
 
 
     public void setSeries(int series) {
