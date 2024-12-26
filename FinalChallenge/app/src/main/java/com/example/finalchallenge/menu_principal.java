@@ -1,9 +1,12 @@
 package com.example.finalchallenge;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -12,12 +15,16 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.finalchallenge.classes.ExerciseDetailed;
 import com.example.finalchallenge.classes.TreinoExec;
+import com.example.finalchallenge.classes.TreinosDetails;
+import com.example.finalchallenge.classes.TreinosDone;
 
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;public class menu_principal extends Fragment {
@@ -29,7 +36,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
     private TextView Username;
     private TextView treinos_completos;
     private DatabaseHelper databaseHelper;
-    private List<TreinoExec> treinosExec = new ArrayList<>();
+    private List<TreinosDone> treinosExec = new ArrayList<>();
     private ProgressBar progressBar; // ProgressBar
     public menu_principal() {
         // Required empty public constructor
@@ -40,7 +47,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
         super.onCreate(savedInstanceState);
         databaseHelper = new DatabaseHelper(getContext());
 
-        //databaseHelper.inserirPlanosTreino2(); // - SE FOR A PRIMEIRA VEZ A CORRER ESTA MERDA
+        databaseHelper.inserirPlanosTreino2(); // - SE FOR A PRIMEIRA VEZ A CORRER ESTA MERDA
         Integer id = 2;
 
     }
@@ -64,7 +71,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
             @Override
             public void run() {
 
-                List<TreinoExec> treinos = databaseHelper.getAllTreinosByUserId(id);
+                List<TreinosDone> treinos = databaseHelper.getAllTreinosDone();
 
 
                 requireActivity().runOnUiThread(new Runnable() {
@@ -90,13 +97,14 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
         // Atualiza o ListView com os dados obtidos
         int treinos = treinosExec.size();
         ListView listView = getView().findViewById(R.id.listView);
-        ArrayAdapter<TreinoExec> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, treinosExec);
+        ArrayAdapter<TreinosDone> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, treinosExec);
         listView.setAdapter(adapter);
 
         treinos_completos.setText("Treinos Completos: " + treinos);
 
-
     }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -109,7 +117,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
 
         // Inicializa o ListView e outros botões
         ListView listView = view.findViewById(R.id.listView);
-        ArrayAdapter<TreinoExec> adapter = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_list_item_1, treinosExec);
+        ArrayAdapter<TreinosDone> adapter = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_list_item_1, treinosExec);
         listView.setAdapter(adapter);
         Username = view.findViewById(R.id.textView2);
         treinos_completos = view.findViewById(R.id.textView3);
@@ -131,7 +139,42 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
         getTreinos(id,treinos_completos);
 
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Retrieve the selected training
+                TreinosDone selectedTraining = treinosExec.get(position);
 
+                TreinosDetails selectedTrainingDetails = databaseHelper.getTreinoDetails(selectedTraining);
+                // Get the details (assuming ExerciseDetailed is a field in TreinosDone)
+                TreinosDetails details = selectedTrainingDetails;
+
+                // Prepare details to show in the dialog
+                StringBuilder detailsText = new StringBuilder();
+                for (ExerciseDetailed exercise : details.getExercise()) {
+                    detailsText.append(exercise);
+                    detailsText.append("Series Information:\n");
+
+                    // Iterate over the series map to display the data
+                    for (Map.Entry<Integer, Integer> entry : exercise.getSeriesMap().entrySet()) {
+                        detailsText.append("Set ").append(entry.getKey())
+                                .append(": ").append(entry.getValue()).append(" kilos\n");
+                    }
+                }
+
+                // Show details in an AlertDialog
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
+                dialogBuilder.setTitle("Training Details");
+                dialogBuilder.setMessage(detailsText.toString());
+                dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                dialogBuilder.create().show();
+            }
+        });
         return view;
     }
 

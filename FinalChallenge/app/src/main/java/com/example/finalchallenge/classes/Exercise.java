@@ -44,6 +44,7 @@ public class Exercise {
     public String toString() {
         return name  +
                 " | Séries: " + series +
-                " | Repetições: " + repetitions ;
+                " | Repetições: " + repetitions +
+                "| ID: " + id;
     }
 }

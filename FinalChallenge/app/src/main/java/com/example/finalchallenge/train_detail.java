@@ -3,6 +3,7 @@ package com.example.finalchallenge;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -29,7 +30,9 @@ import com.example.finalchallenge.classes.TreinoPlano;
 import com.example.finalchallenge.classes.viewModel;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,6 +44,7 @@ public class train_detail extends Fragment {
     private ImageButton halterButton;
     private ImageButton perfilButton;
     private ImageButton statsButton;
+    private ImageButton finishButton;
     private viewModel modelview;
     private TreinoPlano treinoExec;
     private DatabaseHelper databaseHelper;
@@ -50,7 +54,7 @@ public class train_detail extends Fragment {
     private ImageButton helpbutton;
 
     private ArrayAdapter<Exercise> adapter;
-
+    private int exec;
     private ImageButton editImageButton;
     private TextView buttonDelete;
 
@@ -151,6 +155,16 @@ public class train_detail extends Fragment {
 
     }
 
+    private boolean areAllExercisesCompleted() {
+        for (Exercise exercise : treinosExec) {
+            if (exercise.getSeries() != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -226,6 +240,32 @@ public class train_detail extends Fragment {
 
         editImageButton = view.findViewById(R.id.editButton);
         stopFinishLayout = view.findViewById(R.id.linearLayoutStopFinish);
+
+        finishButton = view.findViewById(R.id.finish);
+
+
+
+
+
+        finishButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (areAllExercisesCompleted()) {
+                    try {
+                        exec = databaseHelper.get_training_execs(treinoExec.getId()) + 1;
+                    } catch (Exception e) {
+                        exec = 1;
+                        System.out.println("Erro");
+                    }
+                    Toast.makeText(getContext(), "Treino concluído com sucesso!", Toast.LENGTH_SHORT).show();
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                    String currentDate = sdf.format(new Date());
+                    databaseHelper.inserttreinodone(treinoExec.getId(), currentDate, exec);
+                } else {
+                    Toast.makeText(getContext(), "Complete todos os exercícios antes de finalizar.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         deleteImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -382,8 +422,16 @@ public class train_detail extends Fragment {
                 String weight = input.getText().toString();
                 if (!weight.isEmpty()) {
                     // Atualiza a quantidade de séries
-                    treinosExec.get(position).setSeries(treinosExec.get(position).getSeries() - 1);
+                    try {
+                        exec = databaseHelper.get_training_execs(treinoExec.getId()) + 1;
+                    } catch (Exception e) {
+                        exec = 1;
+                        System.out.println("Erro");
+                    }
+                    int series = treinosExec.get(position).getSeries();
+                    treinosExec.get(position).setSeries(series - 1);
                     updateListView(treinosExec); // Atualiza a lista
+                    databaseHelper.insertSeries(Integer.parseInt(weight), series,treinosExec.get(position).getId(), treinoExec.getId(), exec);
 
                     adapter.notifyDataSetChanged(); // Notifica o adaptador de que os dados mudaram
                     dialog.dismiss();
