@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,15 +14,20 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.finalchallenge.classes.viewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import org.w3c.dom.Text;
 
-public class login_register extends Fragment {
+import com.example.finalchallenge.classes.Utilizador;
+
+public class register extends Fragment {
     private FirebaseAuth mAuth;
+    private viewModel modelview;
+    private Utilizador user;
+    private DatabaseHelper databaseHelper;
     TextView status;
 
-    public login_register() {
+    public register() {
         // Required empty public constructor
     }
 
@@ -30,7 +36,8 @@ public class login_register extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
+        user = null;
     }
 
     @SuppressLint("SetTextI18n")
@@ -38,28 +45,13 @@ public class login_register extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_login_register, container, false);
+        View view = inflater.inflate(R.layout.fragment_login, container, false);
         EditText usernameEditText = view.findViewById(R.id.editName);
         EditText passwordEditText = view.findViewById(R.id.editPass);
         Button loginButton = view.findViewById(R.id.loginButton);
         Button registerButton = view.findViewById(R.id.registerButton);
         status = view.findViewById(R.id.statusText);
         mAuth = FirebaseAuth.getInstance();
-
-
-        // login
-        loginButton.setOnClickListener(v -> {
-            String name = usernameEditText.getText().toString();
-            String password = passwordEditText.getText().toString();
-            if(name.isEmpty() || password.isEmpty()){
-                status.setText("Please fill all fields!");
-            }else {
-                loginUser(name, password);
-
-            }
-
-
-        });
 
         // Register
         registerButton.setOnClickListener(v -> {
@@ -73,31 +65,17 @@ public class login_register extends Fragment {
                 }else {
                     registerUser(name, password);
                 }
-
             }
         });
-
         return view;
-
     }
 
-    // Método para realizar login
-    private void loginUser(String email, String password) {
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(getActivity(), task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(getContext(), "Login Sucessful", Toast.LENGTH_SHORT).show();
-                        ((MainActivity) requireActivity()).switchMenu();
-
-                    } else {
-                        status.setText("Name or password incorrect!");
-                    }
-                });
-    }
-
-    // Método para registrar usuário
     private void registerUser(String email, String password) {
+        //ver se já existe na FB
+
+        //Escrever na DB local
+
+        //Escrever na FB
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(getActivity(), task -> {
                     if (task.isSuccessful()) {

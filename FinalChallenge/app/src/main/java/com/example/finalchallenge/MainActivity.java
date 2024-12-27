@@ -1,14 +1,9 @@
 package com.example.finalchallenge;
 
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.fragment.app.Fragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,14 +14,14 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         //inicializar o login
-        //login_register login = new login_register();
+        login login = new login();
 
 
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, new menu_principal(), "LOGIN")
+                .replace(R.id.main, login, "LOGIN")
                 .commit();
-        }
+    }
 
 
     public void switchMenu() {
@@ -60,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void switchLogin() {
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, new login_register(),"Login")
+                .replace(R.id.main, new login(),"Login")
                 .addToBackStack(null)
                 .commit();
     }

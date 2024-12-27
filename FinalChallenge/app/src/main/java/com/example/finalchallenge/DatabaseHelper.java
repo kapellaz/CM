@@ -14,6 +14,7 @@ import com.example.finalchallenge.classes.ExerciseDetailed;
 import com.example.finalchallenge.classes.TreinoPlano;
 import com.example.finalchallenge.classes.TreinosDetails;
 import com.example.finalchallenge.classes.TreinosDone;
+import com.example.finalchallenge.classes.Utilizador;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,10 +40,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Create Table Statements
     private static final String CREATE_TABLE_UTILIZADOR = "CREATE TABLE " + TABLE_UTILIZADOR + "(" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "id TEXT, " +
             "username TEXT, " +
-            "role TEXT, " +
-            "created_at TEXT);";
+            "password TEXT); ";
 
     private static final String CREATE_TABLE_TREINO_EXEC = "CREATE TABLE " + TABLE_TREINO_EXEC + "(" +
             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -520,6 +520,58 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+    public Utilizador loginUser(String username, String password) {
+        Utilizador user = new Utilizador();
+        SQLiteDatabase db = this.getReadableDatabase(); // Assuming you are working in a SQLiteOpenHelper class
+
+        // Query to fetch the user by username
+        String query = "SELECT id, username FROM " + TABLE_UTILIZADOR + " WHERE username = ? AND password = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{username,password});
+
+        if (cursor.moveToFirst()) {
+            // Retrieve the data from the cursor
+            user.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
+            user.setUsername(cursor.getString(cursor.getColumnIndexOrThrow("username")));
+        }else{
+            user=null;
+        }
+        cursor.close();
+        db.close();
+        return user;
+    }
+
+    public void addUser(Utilizador user, String password){
+        SQLiteDatabase db = this.getWritableDatabase(); // Use getWritableDatabase for inserting data
+
+        // Insert query to add a new user
+        String query = "INSERT INTO " + TABLE_UTILIZADOR +  "(id, username, password) VALUES (?, ?, ?)";
+
+        // Execute the query to insert a new user
+        db.execSQL(query, new Object[]{user.getId(), user.getUsername(), password});
+
+        db.close(); // Close the database connection
+    }
+
+
+    public Utilizador registerUser(String username) {
+        Utilizador user = new Utilizador();
+        SQLiteDatabase db = this.getReadableDatabase(); // Assuming you are working in a SQLiteOpenHelper class
+
+        // Query to fetch the user by username
+        String query = "SELECT id, username FROM " + TABLE_UTILIZADOR + " WHERE username = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{username});
+
+        if (cursor.moveToFirst()) {
+            // Retrieve the data from the cursor
+            user.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
+            user.setUsername(cursor.getString(cursor.getColumnIndexOrThrow("username")));
+        }else{
+            user=null;
+        }
+        cursor.close();
+        db.close();
+        return user;
+    }
 
 
 

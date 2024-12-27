@@ -10,9 +10,12 @@ public class viewModel extends ViewModel {
 
     private final MutableLiveData<List<Exercise>> Exercises = new MutableLiveData<>();
 
+    private final MutableLiveData<Utilizador> user = new MutableLiveData<>();
+
     public MutableLiveData<TreinoPlano> getSelectedPlan() {
         return selectedData;
     }
+
     public void setSelectedPlan(TreinoPlano treinoExec) {
         this.selectedData.setValue(treinoExec);
     }
@@ -20,8 +23,17 @@ public class viewModel extends ViewModel {
     public MutableLiveData<List<Exercise>> getExercises() {
         return Exercises;
     }
+
     public void setExercises(List<Exercise> exercises) {
-        System.out.println(exercises);
         this.Exercises.setValue(exercises);
     }
+
+    public MutableLiveData<Utilizador> getUser() {
+        return user;
+    }
+
+    public void setUser(Utilizador user) {
+        this.user.setValue(user);
+    }
+
 }

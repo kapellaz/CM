@@ -114,6 +114,7 @@ public class train_detail extends Fragment {
             }
         });
     }
+
     private ArrayAdapter<Exercise> createAdapter() {
         return new ArrayAdapter<Exercise>(requireActivity(), R.layout.item_exercise_start, R.id.exerciseName, treinosExec) {
             @Override

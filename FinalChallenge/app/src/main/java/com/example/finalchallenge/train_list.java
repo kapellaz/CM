@@ -106,9 +106,6 @@ public class train_list extends Fragment {
         ListView listView = getView().findViewById(R.id.list_view);
         ArrayAdapter<TreinoPlano> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, treinos);
         listView.setAdapter(adapter);
-
-
-
     }
 
     @Override
