@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".train_go">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar3"
+        android:layout_width="match_parent"
+        android:layout_height="66dp"
+        android:background="@drawable/border"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Centered LinearLayout for the Toolbar buttons -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_gravity="center">
+
+            <!-- Logout Button -->
+            <ImageButton
+                android:id="@+id/logout"
+                android:layout_width="51dp"
+                android:layout_height="55dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/baseline_logout_24" />
+
+            <!-- Halter Button -->
+            <ImageButton
+                android:id="@+id/halter"
+                android:layout_width="63dp"
+                android:layout_height="62dp"
+                android:layout_marginStart="8dp"
+                android:background="@mipmap/halter_foreground" />
+
+            <!-- Perfil Button -->
+            <ImageButton
+                android:id="@+id/perfil"
+                android:layout_width="63dp"
+                android:layout_height="62dp"
+                android:layout_marginStart="8dp"
+                android:background="@mipmap/perfil_foreground" />
+
+            <!-- Stats Button -->
+            <ImageButton
+                android:id="@+id/stats"
+                android:layout_width="55dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/baseline_query_stats_24" />
+
+        </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <TextView
+        android:id="@+id/exerciseName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Traning Name"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar3" />
+
+    <ListView
+        android:id="@+id/list_view"
+        android:layout_width="719dp"
+        android:layout_height="247dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/exerciseName"
+        app:layout_constraintVertical_bias="0.086" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/list_view">
+
+        <!-- ImageButton (Fundo do botão) -->
+        <ImageButton
+            android:id="@+id/button5"
+            android:layout_width="146dp"
+            android:layout_height="48dp"
+            android:background="@drawable/button_end"
+            android:contentDescription="End Training Button"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
+
+        <!-- TextView (Texto sobre o botão) -->
+        <TextView
+            android:id="@+id/butto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="End Training"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_centerInParent="true" />
+
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

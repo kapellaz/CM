@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="501dp"
+        android:layout_height="219dp"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="30dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="30dp"
+        android:background="@drawable/customdialog"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/confirmation_message"
+            android:layout_width="399dp"
+            android:layout_height="99dp"
+            android:paddingBottom="20dp"
+            android:text="Você tem certeza que deseja excluir este plano?"
+            android:textAlignment="center"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            android:gravity="center"/>
+
+        <LinearLayout
+            android:layout_width="469dp"
+            android:layout_height="65dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/confirm_delete"
+                android:layout_width="120dp"
+                android:layout_height="50dp"
+                android:background="@drawable/button_popup"
+                android:text="Sim"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/cancel_delete"
+                android:layout_width="120dp"
+                android:layout_height="50dp"
+                android:layout_marginLeft="16dp"
+                android:background="@drawable/button_popup"
+                android:text="Não"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

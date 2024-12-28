@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/customdialog"
+        android:padding="16dp"
+        android:layout_margin="16dp"
+        android:layout_centerInParent="true">
+
+        <TextView
+            android:id="@+id/dialog_titl2e"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Repetições"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            android:gravity="center" />
+
+        <EditText
+            android:id="@+id/inputRepeticoes"
+            android:layout_width="240dp"
+            android:layout_height="56dp"
+            android:hint="Repetições"
+            android:inputType="number" />
+
+        <TextView
+            android:id="@+id/dialog_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Séries"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            android:gravity="center" />
+
+        <EditText
+            android:id="@+id/inputSeries"
+            android:layout_width="242dp"
+            android:layout_height="56dp"
+            android:hint="Séries"
+            android:inputType="number" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_alignParentBottom="true">
+
+            <!-- Botão de Cancelar -->
+            <Button
+                android:id="@+id/cancel_button"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:text="Cancelar" />
+
+            <!-- Botão de Criar -->
+            <Button
+                android:id="@+id/create_button"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:text="Criar" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
