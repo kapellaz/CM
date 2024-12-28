@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.example.finalchallenge.classes.Execution;
 import com.example.finalchallenge.classes.Exercicio;
 import com.example.finalchallenge.classes.Exercise;
 import com.example.finalchallenge.classes.ExerciseDetailed;
@@ -24,7 +25,7 @@ import java.util.Map;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "fitness.db";
-    private static final int DATABASE_VERSION = 13;
+    private static final int DATABASE_VERSION = 16;
 
     // Table Names
     private static final String TABLE_UTILIZADOR = "utilizador";
@@ -70,6 +71,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "treino_id INTEGER, " +
             "data TEXT, " +
             "exec INTEGER, " +
+            "user_id TEXT, " +
             "FOREIGN KEY(treino_id) REFERENCES " + TABLE_TREINO_EXEC + "(id));";
 
 
@@ -161,12 +163,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return exec;
     }
 
-    public void inserttreinodone(int treino_id, String data, int exec) {
+    public void inserttreinodone(int treino_id, String data, int exec,String user_id) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("treino_id", treino_id);
         values.put("data", data);
         values.put("exec", exec);
+        values.put("user_id",user_id);
         db.insert(TABLE_TREINO_DONE, null, values);
         db.close();
     }
@@ -571,7 +574,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             if (cursor.moveToFirst()) {
                 do {
                     // Obtém o id e nome do exercício
-                    @SuppressLint("Range") long id = cursor.getLong(cursor.getColumnIndex("id"));
+                    @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
                     @SuppressLint("Range") String nome = cursor.getString(cursor.getColumnIndex("nome"));
 
 
@@ -648,14 +651,106 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
+    //getExerciseExecutionsOverTime
+    public Map<String, List<Integer>> getExecucoesPorExercicio(String userId, int exercicioId) {
+        Map<String, List<Integer>> execucoesMap = new HashMap<>();
+
+        // Passo 1: Buscar todos os treinos feitos por este usuário
+        List<TreinosDone> treinosDone = getAllTreinosDoneForUser(userId);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        for (TreinosDone treinoDone : treinosDone) {
+            int treinoId = treinoDone.getTreino_id();
+            int execucao = treinoDone.getExec();
+            String data = treinoDone.getData();
+
+            // Passo 2: Verificar se o exercício está presente neste treino
+            List<Exercise> exercises = getExercisesForTraining(treinoId);
+            for (Exercise exercise : exercises) {
+                if (exercise.getId() == exercicioId) {
+                    // Passo 3: Buscar execuções para o exercício específico neste treino
+                    Map<Integer, Integer> seriesMap = getExecucoesForExercicio(db, treinoId, exercicioId, execucao);
+                    System.out.println("yah" + seriesMap);
+
+                    // Passo 4: Associar a data e os pesos no Map
+                    if (!seriesMap.isEmpty()) {
+                        // Se já existe uma lista de pesos para a data, apenas adicionamos os novos pesos
+                        if (!execucoesMap.containsKey(data)) {
+                            execucoesMap.put(data, new ArrayList<>());
+                        }
+
+                        // Adiciona todos os pesos das séries encontradas ao mapa de execução
+                        execucoesMap.get(data).addAll(seriesMap.values());
+                    }
+                }
+            }
+        }
+
+        db.close();
+        return execucoesMap;
+    }
+
+    // Função para buscar as execuções de um exercício em um treino
+    public Map<Integer, Integer> getExecucoesForExercicio(SQLiteDatabase db, int treinoId, int exercicioId, int execucao) {
+        Map<Integer, Integer> seriesMap = new HashMap<>();
+
+        Cursor cursor = db.query(
+                TABLE_SERIES,
+                new String[] {"peso", "numero_serie"},
+                "treino_exercicio_id = ? AND plano_id = ? AND exec = ?", // Filtra pelo treino_exercicio_id e plano_id
+                new String[] {String.valueOf(exercicioId), String.valueOf(treinoId), String.valueOf(execucao)}, // Passa os valores
+                null, null, null
+        );
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") int peso = cursor.getInt(cursor.getColumnIndex("peso"));
+                    @SuppressLint("Range") int numeroSerie = cursor.getInt(cursor.getColumnIndex("numero_serie"));
+                    seriesMap.put(numeroSerie, peso); // Adiciona a série ao mapa
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
 
 
 
+        return seriesMap;
+    }
 
 
 
+    // Função para buscar os treinos feitos por um usuário específico
+    public List<TreinosDone> getAllTreinosDoneForUser(String userId) {
+        List<TreinosDone> treinos = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
 
+        Cursor cursor = db.query(
+                TABLE_TREINO_DONE,
+                new String[] {"id", "treino_id", "data", "exec", "user_id"},
+                "user_id = ?", // Filtra pelo user_id
+                new String[] {String.valueOf(userId)},
+                null, null, "data"
+        );
 
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
+                    @SuppressLint("Range") int treino_id = cursor.getInt(cursor.getColumnIndex("treino_id"));
+                    @SuppressLint("Range") String data = cursor.getString(cursor.getColumnIndex("data"));
+                    @SuppressLint("Range") int exec = cursor.getInt(cursor.getColumnIndex("exec"));
+                    TreinosDone treino = new TreinosDone(id, treino_id, data, exec);
+                    treinos.add(treino);
+                    System.out.println("DEUUUUU");
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
 
+        db.close();
+        return treinos;
+    }
 
 }

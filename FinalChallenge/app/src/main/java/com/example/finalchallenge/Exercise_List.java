@@ -3,6 +3,7 @@ package com.example.finalchallenge;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
+import com.example.finalchallenge.classes.Exercicio;
+import com.example.finalchallenge.classes.viewModel;
+
+import java.util.List;
+
 
 public class Exercise_List extends Fragment {
 
@@ -19,6 +25,10 @@ public class Exercise_List extends Fragment {
     private ImageButton halterButton;
     private ImageButton perfilButton;
     private ImageButton statsButton;
+
+    private List<Exercicio> list_of_exercises;
+    private DatabaseHelper databaseHelper;
+    private viewModel modelview;
 
     public Exercise_List() {
         // Required empty public constructor
@@ -28,6 +38,9 @@ public class Exercise_List extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        databaseHelper = new DatabaseHelper(getContext());
+        list_of_exercises = databaseHelper.getAllExercicios();
+        modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
 
     }
 
@@ -45,7 +58,8 @@ public class Exercise_List extends Fragment {
         String[] items = {"Exercise 1", "Exercise 2", "Exercise 3", "Exercise 4", "Exercise 5"};
 
         // Criando o Adapter para a lista (pode ser um ArrayAdapter ou CustomAdapter)
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_list_item_1, items);
+        // Criando o Adapter para a lista (pode ser um ArrayAdapter ou CustomAdapter)
+        ArrayAdapter<Exercicio> adapter = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_list_item_1, list_of_exercises);
 
         // Definindo o Adapter para o ListView
         listView.setAdapter(adapter);
@@ -58,8 +72,9 @@ public class Exercise_List extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Ação ao clicar em um item da lista
-                String selectedItem = (String) parent.getItemAtPosition(position);
-                handleItemClick(selectedItem);
+                Exercicio selectedItem = (Exercicio) parent.getItemAtPosition(position);
+                modelview.setExercicio(selectedItem);
+                handleItemClick(selectedItem.getNome());
             }
         });
 

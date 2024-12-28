@@ -12,6 +12,8 @@ public class viewModel extends ViewModel {
 
     private final MutableLiveData<Utilizador> user = new MutableLiveData<>();
 
+    private final MutableLiveData<Exercicio> exercicioMutableLiveData = new MutableLiveData<>();
+
     public MutableLiveData<TreinoPlano> getSelectedPlan() {
         return selectedData;
     }
@@ -34,6 +36,14 @@ public class viewModel extends ViewModel {
 
     public void setUser(Utilizador user) {
         this.user.setValue(user);
+    }
+
+    public void setExercicio(Exercicio exercicio) {
+        this.exercicioMutableLiveData.setValue(exercicio);
+    }
+
+    public MutableLiveData<Exercicio> getExercicio() {
+        return exercicioMutableLiveData;
     }
 
 }

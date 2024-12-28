@@ -12,7 +12,10 @@ import android.widget.Spinner;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.example.finalchallenge.classes.Execution;
+import com.example.finalchallenge.classes.viewModel;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
@@ -20,9 +23,15 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 
 public class exercise_detail extends Fragment {
 
@@ -32,6 +41,11 @@ public class exercise_detail extends Fragment {
     private ImageButton halterButton;
     private ImageButton perfilButton;
     private ImageButton statsButton;
+
+    private DatabaseHelper databaseHelper;
+    private List<Execution> executions;
+    private Map<String, List<Integer>> execucoesPorDia;
+    private viewModel modelview;
     public exercise_detail() {
         // Required empty public constructor
     }
@@ -48,6 +62,16 @@ public class exercise_detail extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        databaseHelper = new DatabaseHelper(getContext());
+
+        modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
+
+        // Obtém o mapa com as execuções agrupadas por data (de pesos por dia)
+        execucoesPorDia = databaseHelper.getExecucoesPorExercicio(
+                Objects.requireNonNull(modelview.getUser().getValue()).getId(),
+                modelview.getExercicio().getValue().getId()
+        );
+        //executions = databaseHelper.getExerciseExecutionsOverTime(Objects.requireNonNull(modelview.getExercicio().getValue()).getId(), Objects.requireNonNull(modelview.getUser().getValue()).getId());
 
         // Localiza o Spinner
         exerciseSpinner = view.findViewById(R.id.spinner);
@@ -127,76 +151,156 @@ public class exercise_detail extends Fragment {
 
 
 
-    // Exemplo de método para exibir gráfico de média de pesos
     private void showWeightAverageGraph() {
-        // Dados fictícios para gráfico (média de pesos)
+
+        if (execucoesPorDia.isEmpty()) {
+            return;
+        }
+
+
         List<Entry> entries = new ArrayList<>();
-        entries.add(new Entry(0, 50));  // Dia 0, Peso 50kg
-        entries.add(new Entry(1, 52));  // Dia 1, Peso 52kg
-        entries.add(new Entry(2, 51));  // Dia 2, Peso 51kg
-        entries.add(new Entry(3, 53));  // Dia 3, Peso 53kg
-        entries.add(new Entry(4, 54));  // Dia 4, Peso 54kg
-        entries.add(new Entry(5, 55));  // Dia 5, Peso 55kg
+        List<String> dates = new ArrayList<>();
+
+
+        Map<String, List<Integer>> groupedExecucoes = new HashMap<>();
+
+        for (Map.Entry<String, List<Integer>> entry : execucoesPorDia.entrySet()) {
+            String day = extractDate(entry.getKey());  // Extrai a data da chave
+            List<Integer> pesos = entry.getValue();  // Lista de pesos associados à data
+
+            // Se a data já existir no mapa agrupado, adiciona os pesos
+            if (groupedExecucoes.containsKey(day)) {
+                groupedExecucoes.get(day).addAll(pesos);
+            } else {
+                // Caso contrário, cria uma nova lista para a data
+                groupedExecucoes.put(day, new ArrayList<>(pesos));
+            }
+        }
+
+
+        Map<String, List<Integer>> sortedGroupedExecucoes = new TreeMap<>(groupedExecucoes);
+
+
+        int dayIndex = 0;
+        for (Map.Entry<String, List<Integer>> entry : sortedGroupedExecucoes.entrySet()) {
+            String day = entry.getKey();
+            List<Integer> pesos = entry.getValue();
+
+
+            float totalWeight = 0;
+            for (Integer peso : pesos) {
+                totalWeight += peso;
+            }
+
+            float averageWeight = totalWeight / pesos.size();
+
+            entries.add(new Entry(dayIndex, averageWeight));
+            dayIndex++;
+            dates.add(day);
+        }
 
 
         LineDataSet dataSet = new LineDataSet(entries, "Média de Pesos");
-        dataSet.setColor(ColorTemplate.MATERIAL_COLORS[0]);  // Cor do gráfico
-        dataSet.setValueTextColor(ColorTemplate.MATERIAL_COLORS[3]);  // Cor do texto dos valores
+        dataSet.setColor(ColorTemplate.MATERIAL_COLORS[0]);
+        dataSet.setValueTextColor(ColorTemplate.MATERIAL_COLORS[3]);
         LineData lineData = new LineData(dataSet);
+
 
         lineChart.setData(lineData);
         lineChart.invalidate();
-        // Personalização do gráfico: adicionar título e eixos
+
+
         lineChart.getDescription().setText("Evolução do Peso ao Longo do Tempo");
         lineChart.getDescription().setTextSize(12f);
 
-        // Personalizar os eixos
+
         lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {
-                // Converte o valor do eixo X (tempo) para formato de dia ou tempo adequado
-                return String.valueOf((int) value); // Remove os decimais, apenas números inteiros
+
+                int index = (int) value;
+                if (index < dates.size() && index >= 0) {
+                    return dates.get(index);
+                }
+                return "";
             }
         });
-        // Garantir que o eixo X tenha um passo de 1 para garantir números inteiros
-        lineChart.getXAxis().setGranularity(1f); // A granularidade ajuda a evitar valores decimais
 
+
+        lineChart.getXAxis().setGranularity(1f);
     }
 
-    // Exemplo de método para exibir gráfico de peso máximo
+
+
     private void showMaxWeightGraph() {
-        // Dados fictícios para gráfico (peso máximo)
+
+        if (execucoesPorDia.isEmpty()) {
+            return;
+        }
+
+
         List<Entry> entries = new ArrayList<>();
-        entries.add(new Entry(0, 100));  // Dia 0, Peso máximo 100kg
-        entries.add(new Entry(1, 110));  // Dia 1, Peso máximo 110kg
-        entries.add(new Entry(2, 120));  // Dia 2, Peso máximo 120kg
-        entries.add(new Entry(3, 130));  // Dia 3, Peso máximo 130kg
-        entries.add(new Entry(4, 140));  // Dia 4, Peso máximo 140kg
-        entries.add(new Entry(5, 150));  // Dia 5, Peso máximo 150kg
+        List<String> dates = new ArrayList<>();
+
+
+        Map<String, List<Integer>> groupedExecucoes = new HashMap<>();
+
+        for (Map.Entry<String, List<Integer>> entry : execucoesPorDia.entrySet()) {
+            String day = extractDate(entry.getKey());
+            List<Integer> pesos = entry.getValue();
+
+            // Se a data já existir no mapa agrupado, adiciona os pesos
+            if (groupedExecucoes.containsKey(day)) {
+                groupedExecucoes.get(day).addAll(pesos);
+            } else {
+                // Caso contrário, cria uma nova lista para a data
+                groupedExecucoes.put(day, new ArrayList<>(pesos));
+            }
+        }
+
+        Map<String, List<Integer>> sortedGroupedExecucoes = new TreeMap<>(groupedExecucoes);
+
+
+        int dayIndex = 0;
+        for (Map.Entry<String, List<Integer>> entry : sortedGroupedExecucoes.entrySet()) {
+            String day = entry.getKey();  // Data
+            List<Integer> pesos = entry.getValue();
+            int maiorNumero = Collections.max(pesos);
+
+            entries.add(new Entry(dayIndex, maiorNumero));
+            dayIndex++;
+            dates.add(day);
+        }
+
 
         LineDataSet dataSet = new LineDataSet(entries, "Peso Máximo");
-        dataSet.setColor(ColorTemplate.MATERIAL_COLORS[2]);  // Cor do gráfico
-        dataSet.setValueTextColor(ColorTemplate.MATERIAL_COLORS[3]);  // Cor do texto dos valores
+        dataSet.setColor(ColorTemplate.MATERIAL_COLORS[2]);
+        dataSet.setValueTextColor(ColorTemplate.MATERIAL_COLORS[3]);
         LineData lineData = new LineData(dataSet);
 
-        lineChart.setData(lineData);
-        lineChart.invalidate();  // Atualiza o gráfico
 
-        // Personalização do gráfico: adicionar título e eixos
-        lineChart.getDescription().setText("Evolução do Peso Máximo ao Longo do Tempo");
+        lineChart.setData(lineData);
+        lineChart.invalidate();
+
+
+        lineChart.getDescription().setText("Evolução do Peso ao Longo do Tempo");
         lineChart.getDescription().setTextSize(12f);
 
-        // Personalizar os eixos
+
         lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {
-                // Converte o valor do eixo X (tempo) para formato de dia ou tempo adequado
-                return String.valueOf((int) value); // Remove os decimais, apenas números inteiros
+                // Converter o valor do eixo X (índice do dia) para a data correspondente
+                int index = (int) value;  // Índice do dia
+                if (index < dates.size() && index >= 0) {
+                    return dates.get(index);  // Retorna a data correspondente ao índice
+                }
+                return "";
             }
         });
 
-        // Garantir que o eixo X tenha um passo de 1 para garantir números inteiros
-        lineChart.getXAxis().setGranularity(1f); // A granularidade ajuda a evitar valores decimais
+
+        lineChart.getXAxis().setGranularity(1f);
     }
 
     private void handleLogoutClick() {
@@ -217,6 +321,25 @@ public class exercise_detail extends Fragment {
 
     private void handleItemClick(String item) {
         ((MainActivity) requireActivity()).switchDetailsTrain();
+    }
+
+    private String extractDate(String fullDate) {
+        try {
+            // Define o formato da data original
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            // Converte a string para um objeto Date
+            Date date = inputFormat.parse(fullDate);
+
+            // Define o formato para a data desejada (sem horas)
+            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+            // Retorna a data formatada
+            return outputFormat.format(date);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";  // Retorna uma string vazia em caso de erro
+        }
     }
 
 

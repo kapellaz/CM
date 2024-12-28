@@ -261,7 +261,7 @@ public class train_detail extends Fragment {
                     Toast.makeText(getContext(), "Treino concluído com sucesso!", Toast.LENGTH_SHORT).show();
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
                     String currentDate = sdf.format(new Date());
-                    databaseHelper.inserttreinodone(treinoExec.getId(), currentDate, exec);
+                    databaseHelper.inserttreinodone(treinoExec.getId(), currentDate, exec,modelview.getUser().getValue().getId());
                 } else {
                     Toast.makeText(getContext(), "Complete todos os exercícios antes de finalizar.", Toast.LENGTH_SHORT).show();
                 }
