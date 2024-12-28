@@ -390,7 +390,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    public List<TreinoPlano> getAllTreinosPlanoByUserId(int userId) {
+    public List<TreinoPlano> getAllTreinosPlanoByUserId(String userId) {
         List<TreinoPlano> treinosPlano = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -619,7 +619,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
 
-    public long createPlan(String planName, int userId) {
+    public long createPlan(String planName, String userId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 

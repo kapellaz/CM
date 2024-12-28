@@ -291,18 +291,24 @@ public class train_detail extends Fragment {
         });
 
         startButton.setOnClickListener(v -> {
+            // if there are no exercises in the list
+            if (treinosExec.size() == 0) {
+                Toast.makeText(getContext(), "Não há exercícios para este treino.", Toast.LENGTH_SHORT).show();
+
+            }else {
+
                 startButton.setVisibility(View.GONE);  // Esconde o Start
                 editImageButton.setVisibility(View.GONE);   // Esconde o Edit
                 deleteImageButton.setVisibility(View.GONE); // Esconde o Delete
                 stopFinishLayout.setVisibility(View.VISIBLE); // Exibe o Stop e Finish
 
-            // Habilitar a interação com a lista
-            listView.setEnabled(true);
-            // Mostrar os botões Stop e Finish
-            stopFinishLayout.setVisibility(View.VISIBLE);
-            // Desabilitar o botão Start
-            startButton.setEnabled(false);
-
+                // Habilitar a interação com a lista
+                listView.setEnabled(true);
+                // Mostrar os botões Stop e Finish
+                stopFinishLayout.setVisibility(View.VISIBLE);
+                // Desabilitar o botão Start
+                startButton.setEnabled(false);
+            }
         });
 
         helpbutton = view.findViewById(R.id.helpButton);

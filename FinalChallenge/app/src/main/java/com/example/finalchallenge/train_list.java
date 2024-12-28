@@ -60,7 +60,7 @@ public class train_list extends Fragment {
     }
 
 
-    private void getTreinos(Integer id) {
+    private void getTreinos(String id) {
         // Cria um ExecutorService para rodar a consulta em uma thread separada
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -164,7 +164,7 @@ public class train_list extends Fragment {
                 handleStatsClick();
             }
         });
-        Integer id = 1;
+        String id = modelview.getUser().getValue().getId();
         getTreinos(id);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -225,7 +225,7 @@ public class train_list extends Fragment {
 
     // Método para criar o treino
     private void createWorkout(String workoutName) {
-        long id = databaseHelper.createPlan(workoutName,1);
+        long id = databaseHelper.createPlan(workoutName,modelview.getUser().getValue().getId());
         TreinoPlano plan = new TreinoPlano((int) id,workoutName,1);
         handleItemClick(plan);
     }
