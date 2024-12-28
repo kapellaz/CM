@@ -553,28 +553,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    public Utilizador registerUser(String username) {
-        Utilizador user = new Utilizador();
-        SQLiteDatabase db = this.getReadableDatabase(); // Assuming you are working in a SQLiteOpenHelper class
-
-        // Query to fetch the user by username
-        String query = "SELECT id, username FROM " + TABLE_UTILIZADOR + " WHERE username = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{username});
-
-        if (cursor.moveToFirst()) {
-            // Retrieve the data from the cursor
-            user.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
-            user.setUsername(cursor.getString(cursor.getColumnIndexOrThrow("username")));
-        }else{
-            user=null;
-        }
-        cursor.close();
-        db.close();
-        return user;
-    }
-
-
-
 
     public List<Exercicio> getAllExercicios() {
         List<Exercicio> exercicios = new ArrayList<>();

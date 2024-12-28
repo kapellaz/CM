@@ -1,9 +1,8 @@
 {
   "project_info": {
     "project_number": "757461367692",
-    "firebase_url": "https://cm-finalchallenge.firebaseio.com",
     "project_id": "cm-finalchallenge",
-    "storage_bucket": "cm-finalchallenge.appspot.com"
+    "storage_bucket": "cm-finalchallenge.firebasestorage.app"
   },
   "client": [
     {
@@ -13,12 +12,7 @@
           "package_name": "com.example.finalchallenge"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "757461367692-xxxxxxxxxx.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
           "current_key": "AIzaSyAdKuL66RFzb9c0oniEHn-iVBPoqife3Oo"
@@ -26,12 +20,7 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "757461367692-yyyyyyyyyy.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

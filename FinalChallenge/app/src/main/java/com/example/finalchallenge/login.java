@@ -21,13 +21,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import com.example.finalchallenge.classes.Utilizador;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class login extends Fragment {
-    private FirebaseAuth mAuth;
     private viewModel modelview;
-    private Utilizador user;
     private DatabaseHelper databaseHelper;
     TextView status;
 
@@ -42,7 +43,6 @@ public class login extends Fragment {
         super.onCreate(savedInstanceState);
         databaseHelper = new DatabaseHelper(getContext());
         modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
-        user = null;
     }
 
     @SuppressLint("SetTextI18n")
@@ -56,7 +56,6 @@ public class login extends Fragment {
         Button loginButton = view.findViewById(R.id.loginButton);
         Button registerButton = view.findViewById(R.id.registerButton);
         status = view.findViewById(R.id.statusText);
-        mAuth = FirebaseAuth.getInstance();
 
         // login
         loginButton.setOnClickListener(v -> {
@@ -71,12 +70,18 @@ public class login extends Fragment {
 
         // Register
         registerButton.setOnClickListener(v -> {
-            //mudar o screen
+            String username = usernameEditText.getText().toString();
+            String password = passwordEditText.getText().toString();
+            if(username.isEmpty() || password.isEmpty()){
+                status.setText("Please fill all fields!");
+            }else {
+                registerUser(username, password);
+            }
         });
         return view;
     }
 
-    // Método para realizar login
+
     private void loginUser(String username, String password) {
         //procurar na DB local
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -111,17 +116,16 @@ public class login extends Fragment {
                                     DocumentSnapshot document = task.getResult().getDocuments().get(0);
                                     //colocar o documento obtido em um utilizador
                                     Utilizador userprov = new Utilizador(document.getString("username"), document.getId());
-
+                                    //add user to local DB
+                                    databaseHelper.addUser(userprov,document.getString("password"));
                                     requireActivity().runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
                                             modelview.setUser(userprov);
-                                            Toast.makeText(getContext(), "Login Sucessful", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getContext(), "Login Successful", Toast.LENGTH_SHORT).show();
                                             ((MainActivity) requireActivity()).switchMenu();
                                         }
                                     });
-                                    //add user to local DB
-                                    databaseHelper.addUser(userprov,document.getString("password"));
                                 } else {
                                     // User not found in Firebase
                                     requireActivity().runOnUiThread(new Runnable() {
@@ -145,23 +149,63 @@ public class login extends Fragment {
         });
     }
 
-    // Método para registrar usuário
-    private void registerUser(String email, String password) {
-        //ver se já existe na FB
 
-        //Escrever na DB local
+    private void registerUser(String username, String password) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                //ver se já existe na FB
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                db.collection("users")
+                        .whereEqualTo("username", username)
+                        .get()
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                if (!task.getResult().isEmpty()) {
+                                    requireActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getContext(), "Username already used", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }else {
+                                    //add to user to FB
+                                    Map<String, Object> newUser = new HashMap<>();
+                                    newUser.put("username", username);
+                                    newUser.put("password", password);
 
-        //Escrever na FB
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(getActivity(), task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(getContext(), "Register Sucessful", Toast.LENGTH_SHORT).show();
-                        ((MainActivity) requireActivity()).switchMenu();
-
-                    } else {
-                        status.setText("Registration failed: " + task.getException().getMessage());
-                    }
-                });
+                                    db.collection("users")
+                                            .add(newUser)
+                                            .addOnSuccessListener(documentReference -> {
+                                                //add user to local DB
+                                                String docId = documentReference.getId();
+                                                Utilizador userprov =  new Utilizador(username,docId);
+                                                databaseHelper.addUser(userprov,password);
+                                                requireActivity().runOnUiThread(() -> {
+                                                    modelview.setUser(userprov);
+                                                    Toast.makeText(getContext(), "Register Successful!!", Toast.LENGTH_SHORT).show();
+                                                });
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                requireActivity().runOnUiThread(() -> {
+                                                    Toast.makeText(getContext(), "Error adding user", Toast.LENGTH_SHORT).show();
+                                                });
+                                            });
+                                }
+                            } else {
+                                // Error retrieving data from Firebase
+                                requireActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getContext(), "No wifi connection", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        });
+                //Escrever na FB
+                //Escrever na DB local
+            }
+        });
     }
 }

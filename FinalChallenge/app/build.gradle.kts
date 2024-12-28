@@ -1,7 +1,6 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.application")
     id("com.google.gms.google-services")
-
 }
 
 android {
@@ -34,7 +33,8 @@ android {
 }
 
 dependencies {
-    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -44,8 +44,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-
-
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-bom:33.5.1")
+    implementation("com.google.firebase:firebase-auth:23.1.0")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }
