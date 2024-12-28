@@ -1,21 +1,21 @@
 package com.example.finalchallenge.classes;
 
 public class Exercicio {
-    private long id;
+    private int id;
     private String nome;
 
     // Construtor
-    public Exercicio(long id, String nome) {
+    public Exercicio(int id, String nome) {
         this.id = id;
         this.nome = nome;
     }
 
     // Getters e Setters
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
