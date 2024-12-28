@@ -265,6 +265,8 @@ public class train_detail extends Fragment {
                 } else {
                     Toast.makeText(getContext(), "Complete todos os exercícios antes de finalizar.", Toast.LENGTH_SHORT).show();
                 }
+                //after the finish click redirect to menu_principal
+                handleHalterClick();
             }
         });
 

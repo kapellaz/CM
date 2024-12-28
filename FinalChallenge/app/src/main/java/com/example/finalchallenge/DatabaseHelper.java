@@ -262,6 +262,34 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return treinos;
     }
 
+    public List<TreinosDone> getAllTreinosDoneByUserId(String userId) {
+        List<TreinosDone> treinos = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_TREINO_DONE,
+                new String[] {"id", "treino_id", "data", "exec"},
+                "user_id = ?", // Filtra pelo user_id
+                new String[] {String.valueOf(userId)}, // Passa o user_id como parâmetro
+                null, null, null);
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
+                    @SuppressLint("Range") int treino_id = cursor.getInt(cursor.getColumnIndex("treino_id"));
+                    @SuppressLint("Range") String data = cursor.getString(cursor.getColumnIndex("data"));
+                    @SuppressLint("Range") int exec = cursor.getInt(cursor.getColumnIndex("exec"));
+                    TreinosDone treino = new TreinosDone(id, treino_id, data, exec);
+                    treinos.add(treino);
+                } while (cursor.moveToNext());
+                }
+                cursor.close();
+                }
+
+                db.close();
+                return treinos;
+                }
+
+
 
 
 

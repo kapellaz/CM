@@ -1,5 +1,6 @@
 package com.example.finalchallenge;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -14,11 +15,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.finalchallenge.classes.ExerciseDetailed;
 import com.example.finalchallenge.classes.TreinoExec;
 import com.example.finalchallenge.classes.TreinosDetails;
 import com.example.finalchallenge.classes.TreinosDone;
+import com.example.finalchallenge.classes.viewModel;
 
 import org.w3c.dom.Text;
 
@@ -38,6 +41,8 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
     private DatabaseHelper databaseHelper;
     private List<TreinosDone> treinosExec = new ArrayList<>();
     private ProgressBar progressBar; // ProgressBar
+    private viewModel modelview;
+
     public menu_principal() {
         // Required empty public constructor
     }
@@ -46,6 +51,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         databaseHelper = new DatabaseHelper(getContext());
+        modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
 
         databaseHelper.inserirPlanosTreino2(); // - SE FOR A PRIMEIRA VEZ A CORRER ESTA MERDA
         Integer id = 2;
@@ -71,7 +77,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
             @Override
             public void run() {
 
-                List<TreinosDone> treinos = databaseHelper.getAllTreinosDone();
+                List<TreinosDone> treinos = databaseHelper.getAllTreinosDoneByUserId(modelview.getUser().getValue().getId());
 
 
                 requireActivity().runOnUiThread(new Runnable() {
@@ -106,6 +112,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
 
 
 
+    @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -121,7 +128,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
         listView.setAdapter(adapter);
         Username = view.findViewById(R.id.textView2);
         treinos_completos = view.findViewById(R.id.textView3);
-        Username.setText("Username: Bruno");
+        Username.setText("Username: " + modelview.getUser().getValue().getUsername());
         // Inicializa os botões
         logoutButton = view.findViewById(R.id.logout);
         halterButton = view.findViewById(R.id.halter);
