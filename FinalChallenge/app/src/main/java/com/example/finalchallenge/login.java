@@ -1,8 +1,9 @@
 package com.example.finalchallenge;
 
+import static androidx.core.content.ContextCompat.getSystemService;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
-
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -13,7 +14,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import com.example.finalchallenge.classes.viewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -151,6 +153,18 @@ public class login extends Fragment {
 
 
     private void registerUser(String username, String password) {
+        //check if we have wifi
+        // Check if we have internet connection
+        ConnectivityManager cm = (ConnectivityManager) requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            if (activeNetwork == null || !activeNetwork.isConnected()) {
+                requireActivity().runOnUiThread(() ->
+                        Toast.makeText(getContext(), "No internet connection", Toast.LENGTH_SHORT).show()
+                );
+                return;
+            }
+        }
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(new Runnable() {
             @Override
@@ -208,4 +222,5 @@ public class login extends Fragment {
             }
         });
     }
+
 }

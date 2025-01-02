@@ -64,7 +64,7 @@ public class train_go extends Fragment {
         View view = inflater.inflate(R.layout.fragment_train_go, container, false);
 
         // Inicializando o ListView
-        ListView listView = view.findViewById(R.id.listView);
+        ListView listView = view.findViewById(R.id.list_view);
 
         // Criando uma lista de itens (exemplo de treino ou lista de usuários)
         String[] items = {"Exercise 1", "Exercise 2", "Exercise 3", "Exercise 4", "Exercise 5","Exercise 1", "Exercise 2", "Exercise 3", "Exercise 4", "Exercise 5","Exercise 1", "Exercise 2", "Exercise 3", "Exercise 4", "Exercise 5","Exercise 1", "Exercise 2", "Exercise 3", "Exercise 4", "Exercise 5"};
