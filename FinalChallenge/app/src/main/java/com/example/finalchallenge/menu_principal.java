@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
     private ImageButton halterButton;
     private ImageButton perfilButton;
     private ImageButton statsButton;
+    private androidx.appcompat.widget.AppCompatImageButton friendsButton;
     private TextView Username;
     private TextView treinos_completos;
     private DatabaseHelper databaseHelper;
@@ -134,14 +135,14 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
         halterButton = view.findViewById(R.id.halter);
         perfilButton = view.findViewById(R.id.perfil);
         statsButton = view.findViewById(R.id.stats);
+        friendsButton = view.findViewById(R.id.friend_list);
 
         // Configura os listeners para os botões
         logoutButton.setOnClickListener(v -> handleLogoutClick());
         halterButton.setOnClickListener(v -> handleHalterClick());
         perfilButton.setOnClickListener(v -> handlePerfilClick());
         statsButton.setOnClickListener(v -> handleStatsClick());
-
-
+        friendsButton.setOnClickListener(v -> handleFriendsClick());
         Integer id = 2;
         getTreinos(id,treinos_completos);
 
@@ -199,5 +200,9 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
 
     private void handleStatsClick() {
         ((MainActivity) requireActivity()).switchtoStats();
+    }
+
+    private void handleFriendsClick() {
+        ((MainActivity) requireActivity()).switchtoFriends();
     }
 }

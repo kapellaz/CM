@@ -68,6 +68,20 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+    public void switchtoFriends(){
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main, new FriendsList(),"FriendsList")
+                .addToBackStack(null)
+                .commit();
+    }
+
+    public void switchtoRequests(){
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main, new OnHoldList(),"RequestList")
+                .addToBackStack(null)
+                .commit();
+    }
+
     public void switchDetailsExercise() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new exercise_detail(),"Train Details")

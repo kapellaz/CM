@@ -110,7 +110,7 @@
 
     <!-- Floating Action Button (FAB) for searching users -->
     <androidx.appcompat.widget.AppCompatImageButton
-        android:id="@+id/fab_search_user"
+        android:id="@+id/friend_list"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_gravity="end|bottom"
