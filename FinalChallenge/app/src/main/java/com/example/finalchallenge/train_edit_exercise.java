@@ -259,7 +259,7 @@ public class train_edit_exercise extends Fragment {
 
 
                     // Atualizar na lista e notificar o adaptador
-                    exerciseList.set(position, exercise);
+
                     updateExerciseInfoInDB();
                     adapter.notifyItemChanged(position);
                 }
@@ -446,14 +446,14 @@ public class train_edit_exercise extends Fragment {
 
                 // Atualiza a ordem dos exercícios no banco de dados
                 databaseHelper.updateExerciseOrderInPlan(treinoId, exerciseList);
-                firebaseFirestorehelper.updateExerciseOrdersInPlan(treinoPlano.getId(),exerciseList);
+            //    firebaseFirestorehelper.updateExerciseOrdersInPlan(treinoPlano.getId(),exerciseList);
             }
         });
     }
 
     private void updateExerciseInfoInDB() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        firebaseFirestorehelper.updateExerciseDetailsInPlan(treinoPlano.getId(),exerciseList);
+        //firebaseFirestorehelper.updateExerciseDetailsInPlan(treinoPlano.getId(),exerciseList);
 
         // Executa a tarefa de busca dos treinos em segundo plano
         executor.execute(new Runnable() {
@@ -461,7 +461,7 @@ public class train_edit_exercise extends Fragment {
             public void run() {
                 // Obtém o id do treino atual
                 int treinoId = treinoPlano.getId();
-                System.out.println("A ATUALIZAR ORDERS");
+
                 System.out.println(exerciseList);
 
                 // Atualiza a ordem dos exercícios no banco de dados

@@ -444,7 +444,8 @@ public class train_detail extends Fragment {
                     int series = treinosExec.get(position).getSeries();
                     treinosExec.get(position).setSeries(series - 1);
                     updateListView(treinosExec); // Atualiza a lista
-                    System.out.println(treinosExec.get(position).getId());
+                    System.out.println(treinosExec.get(position).getId() +  " e o plano id é " + treinoExec.getId());
+
                     databaseHelper.insertSeries(Integer.parseInt(weight), series,treinosExec.get(position).getId(), treinoExec.getId(), exec);
                     firebaseFirestorehelper.insertSeries(Integer.parseInt(weight),series,treinosExec.get(position).getId(),treinoExec.getId(),exec,modelview.getUser().getValue().getId());
                     adapter.notifyDataSetChanged(); // Notifica o adaptador de que os dados mudaram

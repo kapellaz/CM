@@ -45,6 +45,6 @@ public class Exercise {
         return name  +
                 " | Séries: " + series +
                 " | Repetições: " + repetitions +
-                "| ID: " + id;
+                "| " + order;
     }
 }
