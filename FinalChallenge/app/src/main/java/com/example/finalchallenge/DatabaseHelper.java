@@ -448,20 +448,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    public void deleteExercicioFromPlano(int treinoPlanoId, int exerciseId) {
+    public void deleteExercicioFromPlano(int treinoPlanoId, Exercise exerciseId,String user_id) {
         SQLiteDatabase db = this.getWritableDatabase();
 
+        System.out.println("BD: " + exerciseId);
 
         db.beginTransaction();
         try {
 
             Log.d("DeleteExercicio", "TreinoPlanoId: " + treinoPlanoId + ", ExerciseId: " + exerciseId);
 
-            String deleteExercicioPlanoSql = "DELETE FROM " + TABLE_TREINO_EXERCICIO_PLANO + " WHERE treino_id = ? AND exercicio_id = ?";
+            String deleteExercicioPlanoSql = "DELETE FROM " + TABLE_TREINO_EXERCICIO_PLANO + " WHERE id = ? and treino_id= ?";
             Log.d("DeleteExercicio", "SQL: " + deleteExercicioPlanoSql);
 
 
-            db.execSQL(deleteExercicioPlanoSql, new Object[]{treinoPlanoId, exerciseId});
+            db.execSQL(deleteExercicioPlanoSql, new Object[]{exerciseId.getId(),treinoPlanoId});
 
             db.setTransactionSuccessful();
 
@@ -477,7 +478,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    public void insertExercicioFromPlano(int treinoPlanoId, int exerciseId,int series, int repeticoes,int order) {
+
+    public long insertExercicioFromPlano(int treinoPlanoId, int exerciseId,int series, int repeticoes,int order) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues treinoExercicioValues = new ContentValues();
         treinoExercicioValues.put("exercicio_id", exerciseId);
@@ -487,7 +489,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         treinoExercicioValues.put("order_id", order);
 
         // Inserir na tabela de associação
-        db.insert(TABLE_TREINO_EXERCICIO_PLANO, null, treinoExercicioValues);
+        return db.insert(TABLE_TREINO_EXERCICIO_PLANO, null, treinoExercicioValues);
     }
 
     @SuppressLint("Range")
@@ -651,7 +653,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 // Atualizar a ordem do exercício no banco de dados
                 ContentValues values = new ContentValues();
                 values.put("order_id", i); // A nova ordem é a posição no list (índice)
-                db.update(TABLE_TREINO_EXERCICIO_PLANO, values, "exercicio_id = ? AND treino_id = ?",
+                db.update(TABLE_TREINO_EXERCICIO_PLANO, values, "id = ? AND treino_id = ?",
                         new String[]{String.valueOf(exercise.getId()), String.valueOf(treinoId)});
             }
             db.setTransactionSuccessful();
@@ -670,8 +672,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 ContentValues values = new ContentValues();
                 values.put("series", exercise.getSeries()); // Atualiza o número de séries
                 values.put("repeticoes", exercise.getRepetitions()); // Atualiza o número de repetições
-
-                db.update(TABLE_TREINO_EXERCICIO_PLANO, values, "exercicio_id = ? AND treino_id = ?",
+                System.out.println("O ID do EXE: " + exercise.getId());
+                db.update(TABLE_TREINO_EXERCICIO_PLANO, values, "id = ? AND treino_id = ?",
                         new String[]{String.valueOf(exercise.getId()), String.valueOf(treinoId)});
             }
             db.setTransactionSuccessful();
@@ -695,7 +697,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             // Passo 2: Verificar se o exercício está presente neste treino
             List<Exercise> exercises = getExercisesForTraining(treinoId);
+          
             for (Exercise exercise : exercises) {
+                System.out.println(exercicioId + "   " + exercise.getId());
                 if (exercise.getId() == exercicioId) {
                     // Passo 3: Buscar execuções para o exercício específico neste treino
                     Map<Integer, Integer> seriesMap = getExecucoesForExercicio(db, treinoId, exercicioId, execucao);

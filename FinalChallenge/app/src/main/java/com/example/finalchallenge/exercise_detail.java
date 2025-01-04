@@ -71,6 +71,7 @@ public class exercise_detail extends Fragment {
                 Objects.requireNonNull(modelview.getUser().getValue()).getId(),
                 modelview.getExercicio().getValue().getId()
         );
+        System.out.println("O EX é: " + modelview.getExercicio().getValue().getId());
         //executions = databaseHelper.getExerciseExecutionsOverTime(Objects.requireNonNull(modelview.getExercicio().getValue()).getId(), Objects.requireNonNull(modelview.getUser().getValue()).getId());
         spinner_friends = view.findViewById(R.id.spinner_friends);
         // Localiza o Spinner

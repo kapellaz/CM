@@ -3,9 +3,12 @@ import android.util.Log;
 
 import com.example.finalchallenge.classes.Exercise;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +38,12 @@ public class FirebaseFirestorehelper {
                 });
     }
 
-    public void insertExercicioFromPlano(Integer treinoPlanoId, int exerciseId, int series, int repeticoes, int order,String user_id) {
+    public void insertExercicioFromPlano(Integer treinoPlanoId, int exerciseId, int series, int repeticoes, int order,String user_id,int id) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // Prepare the data to be added
         Map<String, Object> exerciseData = new HashMap<>();
+        exerciseData.put("id",id);
         exerciseData.put("exercicio_id", exerciseId);
         exerciseData.put("treino_id", treinoPlanoId);  // Use the treino_plano ID
         exerciseData.put("series", series);           // Number of series
@@ -115,15 +119,19 @@ public class FirebaseFirestorehelper {
 
     public void deleteExercicioFromPlano(int treinoPlanoId, int exerciseId,String user_id) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-
+        System.out.println(exerciseId);
         // Query the treino_exercicios_plano collection to find the document to delete
         db.collection("treino_exercicios_plano")
                 .whereEqualTo("treino_id", treinoPlanoId)
-                .whereEqualTo("exercicio_id", exerciseId)
+                .whereEqualTo("id", exerciseId)
                 .whereEqualTo("user_id", user_id)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
+                        // List to store the documents to update
+                        List<DocumentSnapshot> remainingDocuments = new ArrayList<>();
+
+                        // First, delete the documents
                         queryDocumentSnapshots.getDocuments().forEach(document -> {
                             // Delete the document
                             db.collection("treino_exercicios_plano").document(document.getId())
@@ -135,6 +143,40 @@ public class FirebaseFirestorehelper {
                                             Log.e("DatabaseError", "Erro ao deletar exercício", e)
                                     );
                         });
+
+                        // After deletion, query the remaining documents
+                        db.collection("treino_exercicios_plano")
+                                .whereEqualTo("treino_id", treinoPlanoId)
+                                .whereEqualTo("user_id", user_id)
+                                .get()
+                                .addOnSuccessListener(updatedQuerySnapshot -> {
+                                    if (!updatedQuerySnapshot.isEmpty()) {
+                                        // Sort the remaining documents by some criteria to get the correct order (e.g., by "order_id" or any other field)
+                                        List<DocumentSnapshot> sortedDocuments = updatedQuerySnapshot.getDocuments();
+                                        // Here, you might want to sort by "order_id" or any other field as needed
+                                        Collections.sort(sortedDocuments, (doc1, doc2) -> {
+                                            // Adjust sorting logic based on your needs
+                                            return Integer.compare(doc1.getLong("order_id").intValue(), doc2.getLong("order_id").intValue());
+                                        });
+
+                                        // Now update the "order_id" of the remaining documents
+                                        for (int i = 0; i < sortedDocuments.size(); i++) {
+                                            DocumentSnapshot doc = sortedDocuments.get(i);
+                                            int finalI = i;
+                                            db.collection("treino_exercicios_plano").document(doc.getId())
+                                                    .update("order_id", i + 1) // Adjust the order_id as per your logic
+                                                    .addOnSuccessListener(aVoid ->
+                                                            Log.d("DatabaseSuccess", "Order ID atualizado para " + (finalI + 1))
+                                                    )
+                                                    .addOnFailureListener(e ->
+                                                            Log.e("DatabaseError", "Erro ao atualizar order_id", e)
+                                                    );
+                                        }
+                                    } else {
+                                        Log.d("DatabaseInfo", "Nenhum exercício encontrado após a exclusão.");
+                                    }
+                                })
+                                .addOnFailureListener(e -> Log.e("DatabaseError", "Erro ao buscar documentos restantes", e));
                     } else {
                         Log.d("DatabaseInfo", "Nenhum exercício encontrado com os IDs especificados.");
                     }
@@ -155,7 +197,7 @@ public class FirebaseFirestorehelper {
 
             db.collection("treino_exercicios_plano")
                     .whereEqualTo("treino_id", treinoId)
-                    .whereEqualTo("exercicio_id", exercise.getId())
+                    .whereEqualTo("id", exercise.getId())
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         if (!queryDocumentSnapshots.isEmpty()) {
@@ -188,10 +230,12 @@ public class FirebaseFirestorehelper {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         for (Exercise exercise : exerciseList) {
+            System.out.println(exerciseList.size() + " DETAILS " +  treinoId + " " + exercise.getId());
+
             // Consulta para encontrar o documento do exercício específico no plano
             db.collection("treino_exercicios_plano")
                     .whereEqualTo("treino_id", treinoId)
-                    .whereEqualTo("exercicio_id", exercise.getId())
+                    .whereEqualTo("id", exercise.getId())
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         if (!queryDocumentSnapshots.isEmpty()) {

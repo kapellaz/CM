@@ -129,7 +129,7 @@ public class train_edit_exercise extends Fragment {
                 int position = viewHolder.getAdapterPosition();
 
                 // Remover o exercício da lista e do banco de dados
-                databaseHelper.deleteExercicioFromPlano(treinoPlano.getId(), exerciseList.get(position).getId());
+                databaseHelper.deleteExercicioFromPlano(treinoPlano.getId(), exerciseList.get(position),modelview.getUser().getValue().getId());
                 firebaseFirestorehelper.deleteExercicioFromPlano(treinoPlano.getId(),exerciseList.get(position).getId(),modelview.getUser().getValue().getId());
 
                 exerciseList.remove(position);
@@ -422,8 +422,8 @@ public class train_edit_exercise extends Fragment {
             public void run() {
                 // Chama o método do databaseHelper para pegar os treinos
                 int id = databaseHelper.getExerciseIdByName(name);
-                databaseHelper.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order);
-                firebaseFirestorehelper.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order,modelview.getUser().getValue().getId());
+                long t = databaseHelper.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order);
+                firebaseFirestorehelper.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order,modelview.getUser().getValue().getId(),(int) t);
 
 
 
@@ -446,14 +446,14 @@ public class train_edit_exercise extends Fragment {
 
                 // Atualiza a ordem dos exercícios no banco de dados
                 databaseHelper.updateExerciseOrderInPlan(treinoId, exerciseList);
-            //    firebaseFirestorehelper.updateExerciseOrdersInPlan(treinoPlano.getId(),exerciseList);
+                firebaseFirestorehelper.updateExerciseOrdersInPlan(treinoPlano.getId(),exerciseList);
             }
         });
     }
 
     private void updateExerciseInfoInDB() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        //firebaseFirestorehelper.updateExerciseDetailsInPlan(treinoPlano.getId(),exerciseList);
+        firebaseFirestorehelper.updateExerciseDetailsInPlan(treinoPlano.getId(),exerciseList);
 
         // Executa a tarefa de busca dos treinos em segundo plano
         executor.execute(new Runnable() {
