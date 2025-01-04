@@ -57,6 +57,8 @@ public class train_edit_exercise extends Fragment {
     private List<Exercicio> exercicios;
     private DatabaseHelper databaseHelper;
     private TreinoPlano treinoPlano;
+
+    private FirebaseFirestorehelper firebaseFirestorehelper;
     public train_edit_exercise() {
         // Required empty public constructor
     }
@@ -69,6 +71,7 @@ public class train_edit_exercise extends Fragment {
         databaseHelper = new DatabaseHelper(getContext());
         exerciseList = modelview.getExercises().getValue();
         treinoPlano = modelview.getSelectedPlan().getValue();
+        firebaseFirestorehelper = new FirebaseFirestorehelper();
         exercicios = databaseHelper.getAllExercicios();
     }
 
@@ -127,10 +130,13 @@ public class train_edit_exercise extends Fragment {
 
                 // Remover o exercício da lista e do banco de dados
                 databaseHelper.deleteExercicioFromPlano(treinoPlano.getId(), exerciseList.get(position).getId());
+                firebaseFirestorehelper.deleteExercicioFromPlano(treinoPlano.getId(),exerciseList.get(position).getId(),modelview.getUser().getValue().getId());
+
                 exerciseList.remove(position);
 
                 // Atualizar a lista no ViewModel
                 modelview.getExercises().setValue(exerciseList);
+
 
                 // Notificar o adaptador sobre a remoção do item
                 adapter.notifyItemRemoved(position);
@@ -417,6 +423,8 @@ public class train_edit_exercise extends Fragment {
                 // Chama o método do databaseHelper para pegar os treinos
                 int id = databaseHelper.getExerciseIdByName(name);
                 databaseHelper.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order);
+                firebaseFirestorehelper.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order,modelview.getUser().getValue().getId());
+
 
 
             }
@@ -438,13 +446,14 @@ public class train_edit_exercise extends Fragment {
 
                 // Atualiza a ordem dos exercícios no banco de dados
                 databaseHelper.updateExerciseOrderInPlan(treinoId, exerciseList);
+                firebaseFirestorehelper.updateExerciseOrdersInPlan(treinoPlano.getId(),exerciseList);
             }
         });
     }
 
     private void updateExerciseInfoInDB() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
-
+        firebaseFirestorehelper.updateExerciseDetailsInPlan(treinoPlano.getId(),exerciseList);
 
         // Executa a tarefa de busca dos treinos em segundo plano
         executor.execute(new Runnable() {

@@ -34,7 +34,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 
 public class exercise_detail extends Fragment {
-
+    private Spinner spinner_friends;
     private Spinner exerciseSpinner;
     private LineChart lineChart;
     private ImageButton logoutButton;
@@ -72,7 +72,7 @@ public class exercise_detail extends Fragment {
                 modelview.getExercicio().getValue().getId()
         );
         //executions = databaseHelper.getExerciseExecutionsOverTime(Objects.requireNonNull(modelview.getExercicio().getValue()).getId(), Objects.requireNonNull(modelview.getUser().getValue()).getId());
-
+        spinner_friends = view.findViewById(R.id.spinner_friends);
         // Localiza o Spinner
         exerciseSpinner = view.findViewById(R.id.spinner);
         lineChart = view.findViewById(R.id.activity_main_linechart);
@@ -143,6 +143,38 @@ public class exercise_detail extends Fragment {
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
                 // Nenhuma seleção
+            }
+        });
+
+        // Dados para exibir no Spinner de amigos
+        List<String> friendsList = new ArrayList<>();
+        friendsList.add("John Doe");
+        friendsList.add("Jane Smith");
+        friendsList.add("Alice Johnson");
+        friendsList.add("Bob Brown");
+
+// Configura o Adapter para o Spinner de amigos
+        ArrayAdapter<String> friendsAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item, // Layout padrão para itens no Spinner
+                friendsList // Lista de amigos
+        );
+
+        friendsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner_friends.setAdapter(friendsAdapter);
+
+// Listener para o Spinner de amigos
+        spinner_friends.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                String selectedFriend = friendsList.get(position);
+                // Faça algo com o amigo selecionado, por exemplo:
+                System.out.println("Amigo selecionado: " + selectedFriend);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // Nenhuma seleção feita
             }
         });
 
