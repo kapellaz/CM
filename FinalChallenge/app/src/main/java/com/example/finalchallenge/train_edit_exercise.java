@@ -296,6 +296,7 @@ public class train_edit_exercise extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 selected[0] = parentView.getItemAtPosition(position).toString();
+
                 // Faça algo com o nome do exercício selecionado
             }
 
@@ -315,7 +316,13 @@ public class train_edit_exercise extends Fragment {
             if (!nome.isEmpty() && !seriesString.isEmpty() && !repetitionsString.isEmpty()) {
                 int series = Integer.parseInt(seriesString);
                 int repetitions = Integer.parseInt(repetitionsString);
-                addExercise(nome, series, repetitions);
+                int id_exe = 0;
+                for(Exercicio i:exercicios){
+                    if (Objects.equals(i.getNome(), nome)){
+                        id_exe = i.getId();
+                    }
+                }
+                addExercise(nome,id_exe, series, repetitions);
             }
 
         });
@@ -353,10 +360,10 @@ public class train_edit_exercise extends Fragment {
 
 
     // Método para adicionar exercício à lista
-    private void addExercise(String exerciseName, int series, int repetitions) {
+    private void addExercise(String exerciseName, int id_exercicio,int series, int repetitions) {
         // Adicionando um novo exercício com um ID gerado
         int newId = exerciseList.size() + 1; // Exemplo de ID simples
-        Exercise newExercise = new Exercise(newId, exerciseName, series, repetitions,exerciseList.size() + 1);
+        Exercise newExercise = new Exercise(newId, id_exercicio,exerciseName, series, repetitions,exerciseList.size() + 1);
         exerciseList.add(newExercise);
 
         // Atualizar a lista no ViewModel
