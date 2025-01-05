@@ -265,18 +265,8 @@ public class train_detail extends Fragment {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
                     String currentDate = sdf.format(new Date());
 
-
-
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(new Date()); // Define a data atual
-
-// Adiciona 1 dia
-                    calendar.add(Calendar.DAY_OF_MONTH, 2);
-
-// Formata a nova data (com 1 dia a mais)
-                    String futureDate = sdf.format(calendar.getTime());
-                    databaseHelper.inserttreinodone(treinoExec.getId(), futureDate, exec,modelview.getUser().getValue().getId());
-                    firebaseFirestorehelper.insertTreinoDone(treinoExec.getId(),futureDate,exec,modelview.getUser().getValue().getId());
+                    databaseHelper.inserttreinodone(treinoExec.getId(), currentDate, exec,modelview.getUser().getValue().getId());
+                    firebaseFirestorehelper.insertTreinoDone(treinoExec.getId(),currentDate,exec,modelview.getUser().getValue().getId());
                 } else {
                     Toast.makeText(getContext(), "Complete todos os exercícios antes de finalizar.", Toast.LENGTH_SHORT).show();
                 }
