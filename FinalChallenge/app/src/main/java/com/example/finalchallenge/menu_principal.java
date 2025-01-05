@@ -54,7 +54,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
         databaseHelper = new DatabaseHelper(getContext());
         modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
 
-        //databaseHelper.inserirPlanosTreino2(); // - SE FOR A PRIMEIRA VEZ A CORRER ESTA MERDA
+        databaseHelper.inserirPlanosTreino2(); // - SE FOR A PRIMEIRA VEZ A CORRER ESTA MERDA
         Integer id = 2;
 
     }
