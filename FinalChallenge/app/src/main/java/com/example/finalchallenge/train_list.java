@@ -45,6 +45,7 @@ public class train_list extends Fragment {
     private viewModel modelview;
     private List<TreinoPlano> treinosExec = new ArrayList<>();
     private ProgressBar progressBar; // ProgressBar
+    private FirebaseFirestorehelper firebaseFirestorehelper;
     public train_list() {
         // Required empty public constructor
     }
@@ -54,6 +55,7 @@ public class train_list extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         databaseHelper = new DatabaseHelper(getContext());
+        firebaseFirestorehelper = new FirebaseFirestorehelper();
         System.out.println(databaseHelper.getAllExercicios());
 
         modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
@@ -227,6 +229,7 @@ public class train_list extends Fragment {
     private void createWorkout(String workoutName) {
         long id = databaseHelper.createPlan(workoutName,modelview.getUser().getValue().getId());
         TreinoPlano plan = new TreinoPlano((int) id,workoutName,1);
+        firebaseFirestorehelper.createPlan((int)id,workoutName,modelview.getUser().getValue().getId());
         handleItemClick(plan);
     }
 

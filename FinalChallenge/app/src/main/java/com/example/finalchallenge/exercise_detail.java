@@ -1,5 +1,6 @@
 package com.example.finalchallenge;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
@@ -32,20 +34,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class exercise_detail extends Fragment {
-
+    private Spinner spinner_friends;
     private Spinner exerciseSpinner;
     private LineChart lineChart;
     private ImageButton logoutButton;
     private ImageButton halterButton;
     private ImageButton perfilButton;
     private ImageButton statsButton;
-
+    private boolean threads = true;
+    private ProgressBar progressBar; // ProgressBar
     private DatabaseHelper databaseHelper;
     private List<Execution> executions;
-    private Map<String, List<Integer>> execucoesPorDia;
+    private Map<String, List<Integer>> execucoesPorDia = new HashMap<>();
     private viewModel modelview;
+    private String selectedFriend;
     public exercise_detail() {
         // Required empty public constructor
     }
@@ -55,6 +61,7 @@ public class exercise_detail extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_exercise_detail, container, false);
     }
@@ -63,19 +70,16 @@ public class exercise_detail extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         databaseHelper = new DatabaseHelper(getContext());
-
+        progressBar = view.findViewById(R.id.progressBar);
         modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
 
         // Obtém o mapa com as execuções agrupadas por data (de pesos por dia)
-        execucoesPorDia = databaseHelper.getExecucoesPorExercicio(
-                Objects.requireNonNull(modelview.getUser().getValue()).getId(),
-                modelview.getExercicio().getValue().getId()
-        );
-        //executions = databaseHelper.getExerciseExecutionsOverTime(Objects.requireNonNull(modelview.getExercicio().getValue()).getId(), Objects.requireNonNull(modelview.getUser().getValue()).getId());
-
+        get();
+        spinner_friends = view.findViewById(R.id.spinner_friends);
         // Localiza o Spinner
         exerciseSpinner = view.findViewById(R.id.spinner);
         lineChart = view.findViewById(R.id.activity_main_linechart);
+        lineChart.setVisibility(View.INVISIBLE);
         // Inicializa os botões
         logoutButton = view.findViewById(R.id.logout);
         halterButton = view.findViewById(R.id.halter);
@@ -133,16 +137,61 @@ public class exercise_detail extends Fragment {
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 if (position == 0) {
                     // Exibe a média de pesos no gráfico
-                    showWeightAverageGraph();
+                    if(threads == false){
+                        showWeightAverageGraph();
+                    }
+
                 } else if (position == 1) {
                     // Exibe o peso máximo no gráfico
-                    showMaxWeightGraph();
+                    if(threads == false){
+                        showMaxWeightGraph();
+                    }
+
                 }
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
                 // Nenhuma seleção
+            }
+        });
+
+        // Dados para exibir no Spinner de amigos
+        List<String> friendsList = new ArrayList<>();
+        friendsList.add("Selecione o seu amigo");
+        friendsList.add("John Doe");
+        friendsList.add("Jane Smith");
+        friendsList.add("Alice Johnson");
+        friendsList.add("Bob Brown");
+
+// Configura o Adapter para o Spinner de amigos
+        ArrayAdapter<String> friendsAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item, // Layout padrão para itens no Spinner
+                friendsList // Lista de amigos
+        );
+
+        friendsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner_friends.setAdapter(friendsAdapter);
+
+// Listener para o Spinner de amigos
+        spinner_friends.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                if (position != 0) {
+                    selectedFriend = friendsList.get(position);
+                    // Faça algo com o amigo selecionado, por exemplo:
+                    System.out.println("Amigo selecionado: " + selectedFriend);
+                    showWeightAverageGraphForBothUsers(); // Ou qualquer outra função necessária
+                } else {
+                    showWeightAverageGraph();
+                    selectedFriend = null; // Nenhum amigo selecionado ainda
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // Nenhuma seleção feita
             }
         });
 
@@ -202,16 +251,28 @@ public class exercise_detail extends Fragment {
 
         LineDataSet dataSet = new LineDataSet(entries, "Média de Pesos");
         dataSet.setColor(ColorTemplate.MATERIAL_COLORS[0]);
-        dataSet.setValueTextColor(ColorTemplate.MATERIAL_COLORS[3]);
+        dataSet.setValueTextColor(ColorTemplate.MATERIAL_COLORS[0]);
         LineData lineData = new LineData(dataSet);
-
+        dataSet.setCircleRadius(6f);  // Aumenta o raio dos pontos para 6 (valor padrão é 4f)
+        dataSet.setCircleColor(ColorTemplate.MATERIAL_COLORS[1]);  // Cor dos círculos
+        dataSet.setCircleHoleColor(Color.WHITE);
 
         lineChart.setData(lineData);
         lineChart.invalidate();
 
 
         lineChart.getDescription().setText("Evolução do Peso ao Longo do Tempo");
-        lineChart.getDescription().setTextSize(12f);
+        lineChart.getDescription().setTextSize(14f); // Aumenta o tamanho do texto da descrição
+        dataSet.setValueTextSize(11f);  // Aumenta o tamanho da fonte dos números associados aos pontos
+
+// Aumenta o tamanho dos números no eixo Y
+        lineChart.getAxisLeft().setTextSize(12f); // Para os números do eixo Y à esquerda
+        lineChart.getAxisRight().setTextSize(12f); // Para os números do eixo Y à direita
+
+// Aumenta o tamanho dos números no eixo X
+        lineChart.getXAxis().setTextSize(12f);
+        // Rotaciona os rótulos do eixo X para ficar vertical
+        lineChart.getXAxis().setLabelRotationAngle(90f); // Rotaciona os rótulos do eixo X para 90 graus
 
 
         lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
@@ -258,6 +319,7 @@ public class exercise_detail extends Fragment {
             }
         }
 
+
         Map<String, List<Integer>> sortedGroupedExecucoes = new TreeMap<>(groupedExecucoes);
 
 
@@ -272,19 +334,30 @@ public class exercise_detail extends Fragment {
             dates.add(day);
         }
 
-
         LineDataSet dataSet = new LineDataSet(entries, "Peso Máximo");
         dataSet.setColor(ColorTemplate.MATERIAL_COLORS[2]);
-        dataSet.setValueTextColor(ColorTemplate.MATERIAL_COLORS[3]);
+        dataSet.setValueTextColor(ColorTemplate.MATERIAL_COLORS[2]);
         LineData lineData = new LineData(dataSet);
-
+        dataSet.setCircleRadius(6f);  // Aumenta o raio dos pontos para 6 (valor padrão é 4f)
+        dataSet.setCircleColor(ColorTemplate.MATERIAL_COLORS[1]);  // Cor dos círculos
+        dataSet.setCircleHoleColor(Color.WHITE);
 
         lineChart.setData(lineData);
         lineChart.invalidate();
 
 
         lineChart.getDescription().setText("Evolução do Peso ao Longo do Tempo");
-        lineChart.getDescription().setTextSize(12f);
+        lineChart.getDescription().setTextSize(14f); // Aumenta o tamanho do texto da descrição
+        dataSet.setValueTextSize(11f);  // Aumenta o tamanho da fonte dos números associados aos pontos
+
+// Aumenta o tamanho dos números no eixo Y
+        lineChart.getAxisLeft().setTextSize(12f); // Para os números do eixo Y à esquerda
+        lineChart.getAxisRight().setTextSize(12f); // Para os números do eixo Y à direita
+
+// Aumenta o tamanho dos números no eixo X
+        lineChart.getXAxis().setTextSize(12f);
+        // Rotaciona os rótulos do eixo X para ficar vertical
+      //  lineChart.getXAxis().setLabelRotationAngle(90f); // Rotaciona os rótulos do eixo X para 90 graus
 
 
         lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
@@ -300,7 +373,7 @@ public class exercise_detail extends Fragment {
         });
 
 
-        lineChart.getXAxis().setGranularity(1f);
+        lineChart.getXAxis().setGranularity(10f);
     }
 
     private void handleLogoutClick() {
@@ -340,6 +413,181 @@ public class exercise_detail extends Fragment {
             e.printStackTrace();
             return "";  // Retorna uma string vazia em caso de erro
         }
+    }
+
+    private void showWeightAverageGraphForBothUsers() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+
+                if (execucoesPorDia.isEmpty()) {
+                return;
+                }
+
+            // Listas para armazenar os pontos do gráfico
+            List<Entry> entriesUser1 = new ArrayList<>();
+            List<Entry> entriesUser2 = new ArrayList<>();
+            List<String> dates = new ArrayList<>();
+
+            // Mapas para agrupar as execuções por data para dois usuários
+            Map<String, List<Integer>> groupedExecucoesUser1 = new HashMap<>();
+            Map<String, List<Integer>> groupedExecucoesUser2 = new HashMap<>();
+
+            // Supondo que `execucoesPorDia` contenha dados de execuções de 2 usuários
+            // Vamos simular para dois usuários, com dados diferentes para cada um
+
+            for (Map.Entry<String, List<Integer>> entry : execucoesPorDia.entrySet()) {
+                String day = extractDate(entry.getKey());  // Extrai a data da chave
+                List<Integer> pesos = entry.getValue();  // Lista de pesos associados à data
+
+                // Simulando pesos diferentes para os dois usuários
+                List<Integer> pesosUser1 = new ArrayList<>(pesos);  // Para o User 1
+                List<Integer> pesosUser2 = new ArrayList<>(pesos);  // Para o User 2
+
+                // Ajustando os pesos para simular dados diferentes para os dois usuários
+                for (int i = 0; i < pesosUser1.size(); i++) {
+                    pesosUser1.set(i, pesosUser1.get(i) + 5000);  // Simula aumento para o User 1
+                    pesosUser2.set(i, pesosUser2.get(i) - 4000);   // Simula redução para o User 2
+                }
+
+                // Agrupando as execuções por data para os dois usuários
+                if (groupedExecucoesUser1.containsKey(day)) {
+                    groupedExecucoesUser1.get(day).addAll(pesosUser1);
+                } else {
+                    groupedExecucoesUser1.put(day, new ArrayList<>(pesosUser1));
+                }
+
+                if (groupedExecucoesUser2.containsKey(day)) {
+                    groupedExecucoesUser2.get(day).addAll(pesosUser2);
+                } else {
+                    groupedExecucoesUser2.put(day, new ArrayList<>(pesosUser2));
+                }
+            }
+
+            // Ordena os mapas para garantir que as datas sejam exibidas de forma crescente
+            Map<String, List<Integer>> sortedGroupedExecucoesUser1 = new TreeMap<>(groupedExecucoesUser1);
+            Map<String, List<Integer>> sortedGroupedExecucoesUser2 = new TreeMap<>(groupedExecucoesUser2);
+
+            int dayIndex = 0;
+
+            // Calcula a média de pesos para o primeiro usuário
+            for (Map.Entry<String, List<Integer>> entry : sortedGroupedExecucoesUser1.entrySet()) {
+                String day = entry.getKey();
+                List<Integer> pesosUser1 = entry.getValue();
+
+                float totalWeightUser1 = 0;
+                for (Integer peso : pesosUser1) {
+                    totalWeightUser1 += peso;
+                }
+
+                float averageWeightUser1 = totalWeightUser1 / pesosUser1.size();
+                entriesUser1.add(new Entry(dayIndex, averageWeightUser1));
+                dayIndex++;
+                dates.add(day);  // Adiciona a data à lista
+            }
+
+            dayIndex = 0;
+
+            // Calcula a média de pesos para o segundo usuário
+            for (Map.Entry<String, List<Integer>> entry : sortedGroupedExecucoesUser2.entrySet()) {
+                String day = entry.getKey();
+                List<Integer> pesosUser2 = entry.getValue();
+
+                float totalWeightUser2 = 0;
+                for (Integer peso : pesosUser2) {
+                    totalWeightUser2 += peso;
+                }
+
+                float averageWeightUser2 = totalWeightUser2 / pesosUser2.size();
+                entriesUser2.add(new Entry(dayIndex, averageWeightUser2));
+                dayIndex++;
+            }
+        // Atualiza a interface na thread principal (UI thread)
+        requireActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+        // Cria os conjuntos de dados para os dois usuários
+                    LineDataSet dataSetUser1 = new LineDataSet(entriesUser1, "Média de Pesos - " + modelview.getUser().getValue().getUsername());
+                    dataSetUser1.setColor(ColorTemplate.MATERIAL_COLORS[0]);  // Cor para o Usuário 1
+                    dataSetUser1.setValueTextColor(ColorTemplate.MATERIAL_COLORS[0]);  // Cor dos números para o Usuário 1
+                    dataSetUser1.setCircleRadius(6f);  // Tamanho do círculo
+                    dataSetUser1.setCircleColor(ColorTemplate.MATERIAL_COLORS[1]);  // Cor do círculo
+                    dataSetUser1.setCircleHoleColor(Color.WHITE);  // Cor do centro do círculo
+                    dataSetUser1.setValueTextSize(11f);  // Tamanho do texto dos valores
+
+                    LineDataSet dataSetUser2 = new LineDataSet(entriesUser2, "Média de Pesos - " + selectedFriend);
+                    dataSetUser2.setColor(ColorTemplate.MATERIAL_COLORS[2]);  // Cor para o Usuário 2
+                    dataSetUser2.setValueTextColor(ColorTemplate.MATERIAL_COLORS[2]);  // Cor dos números para o Usuário 2
+                    dataSetUser2.setCircleRadius(6f);  // Tamanho do círculo
+                    dataSetUser2.setCircleColor(ColorTemplate.MATERIAL_COLORS[3]);  // Cor do círculo
+                    dataSetUser2.setCircleHoleColor(Color.WHITE);  // Cor do centro do círculo
+                    dataSetUser2.setValueTextSize(11f);  // Tamanho do texto dos valores
+
+                    // Cria o conjunto de dados para o gráfico
+                    LineData lineData = new LineData(dataSetUser1, dataSetUser2);
+
+                    // Atualiza o gráfico
+                    lineChart.setData(lineData);
+                    lineChart.invalidate();
+
+                    // Título do gráfico
+                    lineChart.getDescription().setText("Evolução do Peso ao Longo do Tempo");
+                    lineChart.getDescription().setTextSize(14f); // Tamanho do texto da descrição
+
+                    // Ajusta o tamanho do texto dos números nos eixos
+                    lineChart.getAxisLeft().setTextSize(12f);  // Eixo Y à esquerda
+                    lineChart.getAxisRight().setTextSize(12f); // Eixo Y à direita
+                    lineChart.getXAxis().setTextSize(12f);  // Eixo X
+                    lineChart.getXAxis().setLabelRotationAngle(90f); // Rotaciona os rótulos do eixo X para 90 graus
+
+                    // Configura a exibição das datas nos eixos
+                    lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
+                        @Override
+                        public String getFormattedValue(float value) {
+                            int index = (int) value;
+                            if (index < dates.size() && index >= 0) {
+                                return dates.get(index);
+                            }
+                            return "";
+                        }
+                    });
+            }
+            });
+            }
+        });
+    }
+
+
+    public void get(){
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.VISIBLE);  // Mostrar o ProgressBar
+                }
+
+                execucoesPorDia = databaseHelper.getExecucoesPorExercicio(
+                        Objects.requireNonNull(modelview.getUser().getValue()).getId(),
+                        modelview.getExercicio().getValue().getId()
+                );
+                // Atualize a UI na thread principal
+                lineChart.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressBar.setVisibility(View.INVISIBLE);
+                        lineChart.setVisibility(View.VISIBLE);
+
+                        showWeightAverageGraph(); // Atualize o gráfico
+                    }
+                });
+
+                threads = false;
+            }}
+        );
+
     }
 
 

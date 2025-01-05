@@ -57,6 +57,8 @@ public class train_edit_exercise extends Fragment {
     private List<Exercicio> exercicios;
     private DatabaseHelper databaseHelper;
     private TreinoPlano treinoPlano;
+
+    private FirebaseFirestorehelper firebaseFirestorehelper;
     public train_edit_exercise() {
         // Required empty public constructor
     }
@@ -69,6 +71,7 @@ public class train_edit_exercise extends Fragment {
         databaseHelper = new DatabaseHelper(getContext());
         exerciseList = modelview.getExercises().getValue();
         treinoPlano = modelview.getSelectedPlan().getValue();
+        firebaseFirestorehelper = new FirebaseFirestorehelper();
         exercicios = databaseHelper.getAllExercicios();
     }
 
@@ -126,11 +129,14 @@ public class train_edit_exercise extends Fragment {
                 int position = viewHolder.getAdapterPosition();
 
                 // Remover o exercício da lista e do banco de dados
-                databaseHelper.deleteExercicioFromPlano(treinoPlano.getId(), exerciseList.get(position).getId());
+                databaseHelper.deleteExercicioFromPlano(treinoPlano.getId(), exerciseList.get(position),modelview.getUser().getValue().getId());
+                firebaseFirestorehelper.deleteExercicioFromPlano(treinoPlano.getId(),exerciseList.get(position).getId(),modelview.getUser().getValue().getId());
+
                 exerciseList.remove(position);
 
                 // Atualizar a lista no ViewModel
                 modelview.getExercises().setValue(exerciseList);
+
 
                 // Notificar o adaptador sobre a remoção do item
                 adapter.notifyItemRemoved(position);
@@ -253,7 +259,7 @@ public class train_edit_exercise extends Fragment {
 
 
                     // Atualizar na lista e notificar o adaptador
-                    exerciseList.set(position, exercise);
+
                     updateExerciseInfoInDB();
                     adapter.notifyItemChanged(position);
                 }
@@ -290,6 +296,7 @@ public class train_edit_exercise extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 selected[0] = parentView.getItemAtPosition(position).toString();
+
                 // Faça algo com o nome do exercício selecionado
             }
 
@@ -309,7 +316,13 @@ public class train_edit_exercise extends Fragment {
             if (!nome.isEmpty() && !seriesString.isEmpty() && !repetitionsString.isEmpty()) {
                 int series = Integer.parseInt(seriesString);
                 int repetitions = Integer.parseInt(repetitionsString);
-                addExercise(nome, series, repetitions);
+                int id_exe = 0;
+                for(Exercicio i:exercicios){
+                    if (Objects.equals(i.getNome(), nome)){
+                        id_exe = i.getId();
+                    }
+                }
+                addExercise(nome,id_exe, series, repetitions);
             }
 
         });
@@ -347,10 +360,10 @@ public class train_edit_exercise extends Fragment {
 
 
     // Método para adicionar exercício à lista
-    private void addExercise(String exerciseName, int series, int repetitions) {
+    private void addExercise(String exerciseName, int id_exercicio,int series, int repetitions) {
         // Adicionando um novo exercício com um ID gerado
         int newId = exerciseList.size() + 1; // Exemplo de ID simples
-        Exercise newExercise = new Exercise(newId, exerciseName, series, repetitions,exerciseList.size() + 1);
+        Exercise newExercise = new Exercise(newId, id_exercicio,exerciseName, series, repetitions,exerciseList.size() + 1);
         exerciseList.add(newExercise);
 
         // Atualizar a lista no ViewModel
@@ -416,7 +429,9 @@ public class train_edit_exercise extends Fragment {
             public void run() {
                 // Chama o método do databaseHelper para pegar os treinos
                 int id = databaseHelper.getExerciseIdByName(name);
-                databaseHelper.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order);
+                long t = databaseHelper.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order);
+                firebaseFirestorehelper.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order,modelview.getUser().getValue().getId(),(int) t);
+
 
 
             }
@@ -438,13 +453,14 @@ public class train_edit_exercise extends Fragment {
 
                 // Atualiza a ordem dos exercícios no banco de dados
                 databaseHelper.updateExerciseOrderInPlan(treinoId, exerciseList);
+                firebaseFirestorehelper.updateExerciseOrdersInPlan(treinoPlano.getId(),exerciseList);
             }
         });
     }
 
     private void updateExerciseInfoInDB() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
-
+        firebaseFirestorehelper.updateExerciseDetailsInPlan(treinoPlano.getId(),exerciseList);
 
         // Executa a tarefa de busca dos treinos em segundo plano
         executor.execute(new Runnable() {
@@ -452,7 +468,7 @@ public class train_edit_exercise extends Fragment {
             public void run() {
                 // Obtém o id do treino atual
                 int treinoId = treinoPlano.getId();
-                System.out.println("A ATUALIZAR ORDERS");
+
                 System.out.println(exerciseList);
 
                 // Atualiza a ordem dos exercícios no banco de dados

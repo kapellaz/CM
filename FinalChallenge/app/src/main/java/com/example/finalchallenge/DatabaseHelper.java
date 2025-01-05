@@ -25,7 +25,7 @@ import java.util.Map;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "fitness.db";
-    private static final int DATABASE_VERSION = 16;
+    private static final int DATABASE_VERSION = 17;
 
     // Table Names
     private static final String TABLE_UTILIZADOR = "utilizador";
@@ -357,7 +357,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         // Query para obter os exercícios associados ao treino
-        String query = "SELECT te.id, e.nome, te.series, te.repeticoes, te.order_id " +
+        String query = "SELECT te.id, e.nome, te.series, te.repeticoes, te.order_id, te.exercicio_id " +
                 "FROM " + TABLE_EXERCICIO + " e " +
                 "INNER JOIN " + TABLE_TREINO_EXERCICIO_PLANO + " te ON e.id = te.exercicio_id " +
                 "WHERE te.treino_id = ? order by te.order_id ASC";
@@ -373,9 +373,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     int series = cursor.getInt(cursor.getColumnIndexOrThrow("series"));
                     int repetitions = cursor.getInt(cursor.getColumnIndexOrThrow("repeticoes"));
                     int order = cursor.getInt(cursor.getColumnIndexOrThrow("order_id"));
+                    int id_exercicio = cursor.getInt(cursor.getColumnIndexOrThrow("exercicio_id"));
 
-                    Exercise exercise = new Exercise(id, name, series, repetitions,order);
+                    Exercise exercise = new Exercise(id,id_exercicio, name, series, repetitions,order);
                     exercises.add(exercise);
+                    System.out.println(exercise);
                 }
             } finally {
                 // Garantir que o cursor seja fechado corretamente
@@ -448,20 +450,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    public void deleteExercicioFromPlano(int treinoPlanoId, int exerciseId) {
+    public void deleteExercicioFromPlano(int treinoPlanoId, Exercise exerciseId,String user_id) {
         SQLiteDatabase db = this.getWritableDatabase();
 
+        System.out.println("BD: " + exerciseId);
 
         db.beginTransaction();
         try {
 
             Log.d("DeleteExercicio", "TreinoPlanoId: " + treinoPlanoId + ", ExerciseId: " + exerciseId);
 
-            String deleteExercicioPlanoSql = "DELETE FROM " + TABLE_TREINO_EXERCICIO_PLANO + " WHERE treino_id = ? AND exercicio_id = ?";
+            String deleteExercicioPlanoSql = "DELETE FROM " + TABLE_TREINO_EXERCICIO_PLANO + " WHERE id = ? and treino_id= ?";
             Log.d("DeleteExercicio", "SQL: " + deleteExercicioPlanoSql);
 
 
-            db.execSQL(deleteExercicioPlanoSql, new Object[]{treinoPlanoId, exerciseId});
+            db.execSQL(deleteExercicioPlanoSql, new Object[]{exerciseId.getId(),treinoPlanoId});
 
             db.setTransactionSuccessful();
 
@@ -477,7 +480,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    public void insertExercicioFromPlano(int treinoPlanoId, int exerciseId,int series, int repeticoes,int order) {
+
+    public long insertExercicioFromPlano(int treinoPlanoId, int exerciseId,int series, int repeticoes,int order) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues treinoExercicioValues = new ContentValues();
         treinoExercicioValues.put("exercicio_id", exerciseId);
@@ -487,7 +491,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         treinoExercicioValues.put("order_id", order);
 
         // Inserir na tabela de associação
-        db.insert(TABLE_TREINO_EXERCICIO_PLANO, null, treinoExercicioValues);
+        return db.insert(TABLE_TREINO_EXERCICIO_PLANO, null, treinoExercicioValues);
     }
 
     @SuppressLint("Range")
@@ -651,7 +655,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 // Atualizar a ordem do exercício no banco de dados
                 ContentValues values = new ContentValues();
                 values.put("order_id", i); // A nova ordem é a posição no list (índice)
-                db.update(TABLE_TREINO_EXERCICIO_PLANO, values, "exercicio_id = ? AND treino_id = ?",
+                db.update(TABLE_TREINO_EXERCICIO_PLANO, values, "id = ? AND treino_id = ?",
                         new String[]{String.valueOf(exercise.getId()), String.valueOf(treinoId)});
             }
             db.setTransactionSuccessful();
@@ -666,12 +670,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         try {
             for (Exercise exercise : exerciseList) {
-                // Atualizar séries e repetições no banco de dados
                 ContentValues values = new ContentValues();
-                values.put("series", exercise.getSeries()); // Atualiza o número de séries
-                values.put("repeticoes", exercise.getRepetitions()); // Atualiza o número de repetições
-
-                db.update(TABLE_TREINO_EXERCICIO_PLANO, values, "exercicio_id = ? AND treino_id = ?",
+                values.put("series", exercise.getSeries());
+                values.put("repeticoes", exercise.getRepetitions());
+                db.update(TABLE_TREINO_EXERCICIO_PLANO, values, "id = ? AND treino_id = ?",
                         new String[]{String.valueOf(exercise.getId()), String.valueOf(treinoId)});
             }
             db.setTransactionSuccessful();
@@ -695,10 +697,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             // Passo 2: Verificar se o exercício está presente neste treino
             List<Exercise> exercises = getExercisesForTraining(treinoId);
+          
             for (Exercise exercise : exercises) {
-                if (exercise.getId() == exercicioId) {
-                    // Passo 3: Buscar execuções para o exercício específico neste treino
-                    Map<Integer, Integer> seriesMap = getExecucoesForExercicio(db, treinoId, exercicioId, execucao);
+                System.out.println(exercicioId + "   " + exercise.getId());
+                if (exercise.getId_exercicio() == exercicioId) {
+                    // Passo 3: execuções para o exercício específico neste treino
+                    Map<Integer, Integer> seriesMap = getExecucoesForExercicio(db, treinoId, exercise.getId(), execucao);
                     System.out.println("yah" + seriesMap);
 
                     // Passo 4: Associar a data e os pesos no Map
@@ -707,8 +711,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         if (!execucoesMap.containsKey(data)) {
                             execucoesMap.put(data, new ArrayList<>());
                         }
-
-                        // Adiciona todos os pesos das séries encontradas ao mapa de execução
                         execucoesMap.get(data).addAll(seriesMap.values());
                     }
                 }

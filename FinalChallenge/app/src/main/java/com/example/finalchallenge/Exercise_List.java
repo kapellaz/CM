@@ -73,6 +73,7 @@ public class Exercise_List extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Ação ao clicar em um item da lista
                 Exercicio selectedItem = (Exercicio) parent.getItemAtPosition(position);
+                System.out.println(selectedItem.getId() + " O ID do " + selectedItem.getNome());
                 modelview.setExercicio(selectedItem);
                 handleItemClick(selectedItem.getNome());
             }

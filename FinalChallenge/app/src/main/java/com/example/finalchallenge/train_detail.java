@@ -30,6 +30,7 @@ import com.example.finalchallenge.classes.TreinoPlano;
 import com.example.finalchallenge.classes.viewModel;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -52,6 +53,7 @@ public class train_detail extends Fragment {
     private List<Exercise> treinosExec = new ArrayList<>();
     private ImageButton deleteImageButton;
     private ImageButton helpbutton;
+    private FirebaseFirestorehelper firebaseFirestorehelper;
 
     private ArrayAdapter<Exercise> adapter;
     private int exec;
@@ -69,6 +71,7 @@ public class train_detail extends Fragment {
         super.onCreate(savedInstanceState);
         modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
         databaseHelper = new DatabaseHelper(getContext());
+        firebaseFirestorehelper = new FirebaseFirestorehelper();
 
         treinoExec = modelview.getSelectedPlan().getValue();
 
@@ -261,7 +264,9 @@ public class train_detail extends Fragment {
                     Toast.makeText(getContext(), "Treino concluído com sucesso!", Toast.LENGTH_SHORT).show();
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
                     String currentDate = sdf.format(new Date());
+
                     databaseHelper.inserttreinodone(treinoExec.getId(), currentDate, exec,modelview.getUser().getValue().getId());
+                    firebaseFirestorehelper.insertTreinoDone(treinoExec.getId(),currentDate,exec,modelview.getUser().getValue().getId());
                 } else {
                     Toast.makeText(getContext(), "Complete todos os exercícios antes de finalizar.", Toast.LENGTH_SHORT).show();
                 }
@@ -391,6 +396,7 @@ public class train_detail extends Fragment {
             public void onClick(View v) {
                 // Lógica para deletar o item
                 DeleteTrainig(treinoExec.getId());
+                firebaseFirestorehelper.deletePlanAndExercises(treinoExec.getId(), Objects.requireNonNull(modelview.getUser().getValue()).getId());
                 dialog.dismiss();  // Fecha o diálogo
             }
         });
@@ -440,8 +446,10 @@ public class train_detail extends Fragment {
                     int series = treinosExec.get(position).getSeries();
                     treinosExec.get(position).setSeries(series - 1);
                     updateListView(treinosExec); // Atualiza a lista
-                    databaseHelper.insertSeries(Integer.parseInt(weight), series,treinosExec.get(position).getId(), treinoExec.getId(), exec);
+                    System.out.println(treinosExec.get(position).getId() +  " e o plano id é " + treinoExec.getId());
 
+                    databaseHelper.insertSeries(Integer.parseInt(weight), series,treinosExec.get(position).getId(), treinoExec.getId(), exec);
+                    firebaseFirestorehelper.insertSeries(Integer.parseInt(weight),series,treinosExec.get(position).getId(),treinoExec.getId(),exec,modelview.getUser().getValue().getId());
                     adapter.notifyDataSetChanged(); // Notifica o adaptador de que os dados mudaram
                     dialog.dismiss();
                     Toast.makeText(getContext(), "Weight for " + treinosExec.get(position).getName() + " set to " + weight, Toast.LENGTH_SHORT).show();
