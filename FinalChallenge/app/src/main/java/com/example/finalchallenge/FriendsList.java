@@ -2,10 +2,13 @@ package com.example.finalchallenge;
 
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -39,22 +42,31 @@ public class FriendsList extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_friends_list, container, false);
 
-        progressBar = rootView.findViewById(R.id.progressBar);
-        listView = rootView.findViewById(R.id.list_view);
-        logoutButton = rootView.findViewById(R.id.logout);
-        halterButton = rootView.findViewById(R.id.halter);
-        perfilButton = rootView.findViewById(R.id.perfil);
-        statsButton = rootView.findViewById(R.id.stats);
-        requestButton = rootView.findViewById(R.id.requests);
-
-        logoutButton.setOnClickListener(v -> handleLogoutClick());
-        halterButton.setOnClickListener(v -> handleHalterClick());
-        perfilButton.setOnClickListener(v -> handlePerfilClick());
-        statsButton.setOnClickListener(v -> handleStatsClick());
-        requestButton.setOnClickListener(v -> handleRequestsClick());
+        Toolbar toolbar = rootView.findViewById(R.id.toolbar);
+        ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
         // Additional setup for ListView can go here
 
         return rootView;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_back:
+                // User chooses the "Settings" item. Show the app settings UI.
+                return true;
+
+            case R.id.action_search:
+                // User chooses the "Favorite" action. Mark the current item as a
+                // favorite.
+                return true;
+
+            default:
+                // The user's action isn't recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     private void handleLogoutClick() {
