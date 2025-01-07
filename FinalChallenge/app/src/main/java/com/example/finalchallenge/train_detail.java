@@ -1,9 +1,14 @@
 package com.example.finalchallenge;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.icu.text.SimpleDateFormat;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -54,6 +59,8 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 public class train_detail extends Fragment {
     private Dialog dialogWeight;
 
+    private Boolean InternetOn;
+
     private LinearLayout stopFinishLayout;
     private ImageButton startButton;
     private ImageButton logoutButton;
@@ -101,9 +108,27 @@ public class train_detail extends Fragment {
         treinoExec = modelview.getSelectedPlan().getValue();
         mqttHelper = new MQTThelper();
         clientId = modelview.getUser().getValue().getUsername();
+
+        // Verificar a conexão com a Internet
+        InternetOn = isNetworkConnected();
+
+
         connectToMqtt();
 
     }
+
+    private boolean isNetworkConnected() {
+        // Obtenção do ConnectivityManager com o Context correto
+        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (cm != null) {
+            // Obter a informação da rede ativa
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        }
+        return false;
+    }
+
 
     private void getExercises(Integer id) {
         // Cria um ExecutorService para rodar a consulta em uma thread separada
@@ -453,23 +478,28 @@ public class train_detail extends Fragment {
 
         // Referência ao EditText para captura do peso
         EditText input = dialogWeight.findViewById(R.id.weightInput);
+        LinearLayout text = dialogWeight.findViewById(R.id.linear);
 
         // Botões OK e Cancel
         Button btnOk = dialogWeight.findViewById(R.id.btnOk);
         Button btnCancel = dialogWeight.findViewById(R.id.btnCancel);
-
         Button btnTriggerArduino = dialogWeight.findViewById(R.id.btnTriggerArduino);
+        if(InternetOn) {
 
-        btnTriggerArduino.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                mqttHelper.publish("cmGymTrackerSend/"+ Objects.requireNonNull(modelview.getUser().getValue()).getUsername(), "INFO"); // Publica no tópico
-                System.out.println("Mensagem enviada para o tópico cmGymTrackerSend/bruno" + ": " + "INFO");
-                btnTriggerArduino.setVisibility(View.INVISIBLE);
+            btnTriggerArduino.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-            }
-        });
+                    mqttHelper.publish("cmGymTrackerSend/" + Objects.requireNonNull(modelview.getUser().getValue()).getUsername(), "INFO"); // Publica no tópico
+                    System.out.println("Mensagem enviada para o tópico cmGymTrackerSend/bruno" + ": " + "INFO");
+                    btnTriggerArduino.setVisibility(View.INVISIBLE);
+
+                }
+            });
+        }else{
+            text.setVisibility(View.INVISIBLE);
+        }
 
 
 
