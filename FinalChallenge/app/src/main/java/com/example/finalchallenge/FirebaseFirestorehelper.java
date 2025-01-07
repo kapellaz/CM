@@ -2,6 +2,8 @@ package com.example.finalchallenge;
 import android.util.Log;
 
 import com.example.finalchallenge.classes.Exercise;
+import com.example.finalchallenge.classes.TreinoExercicioPlano;
+import com.example.finalchallenge.classes.TreinoPlano;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -10,10 +12,13 @@ import com.google.firebase.firestore.Query;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class FirebaseFirestorehelper {
+    private DatabaseHelper databaseHelper;
 
     public void createPlan(Integer planID,String planName, String userId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -290,7 +295,7 @@ public class FirebaseFirestorehelper {
     }
 
 
-    public void insertSeries(int peso, int numeroSerie, int treinoExercicioId, int treinoId, int exec,String user_id) {
+    public void insertSeries(int peso, int numeroSerie, int treinoExercicioId, int treinoId, int exec,String user_id,int oxigenacao,int batimentos) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // Dados da série
@@ -301,6 +306,8 @@ public class FirebaseFirestorehelper {
         seriesData.put("plano_id", treinoId);
         seriesData.put("exec", exec);
         seriesData.put("user_id",user_id);
+        seriesData.put("oxigenacao",oxigenacao);
+        seriesData.put("batimentos",batimentos);
 
         // Inserir na coleção "series"
         db.collection("series")
@@ -312,6 +319,137 @@ public class FirebaseFirestorehelper {
                     Log.e("DatabaseError", "Erro ao inserir série na coleção series", e);
                 });
     }
+
+
+    public void syncTreinoPlanosFromFirebase(String id,DatabaseHelper dblocal) {
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        ArrayList<TreinoPlano> treinoPlanos = dblocal.getAllTreinoPlanos_sync();
+
+        db.collection("treino_planos")
+                .whereEqualTo("user_id", id)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        Set<Integer> firebaseIds = new HashSet<>();
+                        queryDocumentSnapshots.getDocuments().forEach(document -> {
+
+                            Long id_doc = document.getLong("id");
+                            String nome = document.getString("nome");
+                            String user_id = document.getString("user_id");
+
+                            boolean existsInLocalList = false;
+                            for (TreinoPlano plano : treinoPlanos) {
+                                if (plano.getId() == Math.toIntExact(id_doc)) {
+                                    existsInLocalList = true;
+                                    treinoPlanos.remove(plano); // Remove o plano do ArrayList
+                                    break; // Não há necessidade de continuar a busca, já encontrou
+                                }
+                            }
+
+                            // Se o documento não existir no ArrayList, apaga da Firebase
+                            if (!existsInLocalList) {
+                                db.collection("treino_planos")
+                                        .document(document.getId())
+                                        .delete()
+                                        .addOnSuccessListener(aVoid ->
+                                                Log.d("Sync", "Plano removido da Firebase: " + id_doc)
+                                        )
+                                        .addOnFailureListener(e ->
+                                                Log.e("Sync", "Erro ao remover plano da Firebase", e)
+                                        );
+                            }
+
+
+
+                        });
+                        // No final, qualquer item restante no ArrayList é um plano que não está na Firebase
+                        for (TreinoPlano plano : treinoPlanos) {
+                            // Adiciona os planos restantes da lista local para a Firebase
+                            db.collection("treino_planos")
+                                    .add(plano)
+                                    .addOnSuccessListener(documentReference ->
+                                            Log.d("Sync", "Plano adicionado à Firebase: " + plano.getId())
+                                    )
+                                    .addOnFailureListener(e ->
+                                            Log.e("Sync", "Erro ao adicionar plano à Firebase", e)
+                                    );
+                        }
+                    } else {
+                        Log.d("DatabaseInfo", "Nenhum exercício encontrado para atualizar.");
+                    }
+                })
+                .addOnFailureListener(e -> Log.e("DatabaseError", "Erro ao buscar exercício", e));
+
+    }
+
+    public void syncTreinoPlanosExercicioFromFirebase(String id, DatabaseHelper dblocal){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        ArrayList<TreinoExercicioPlano> treinoExercicioPlanos = dblocal.getAllTreinoExercicioPlanos_sync();
+
+        db.collection("treino_exercicios_plano")
+                .whereEqualTo("user_id", id)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        Set<Integer> firebaseIds = new HashSet<>();
+
+                        queryDocumentSnapshots.getDocuments().forEach(document -> {
+                            Long id_doc = document.getLong("id");
+                            Integer exercicio_id = document.getLong("exercicio_id").intValue();
+                            Integer treino_id = document.getLong("treino_id").intValue();
+                            Integer series = document.getLong("series").intValue();
+                            Integer repeticoes = document.getLong("repeticoes").intValue();
+                            Integer order_id = document.getLong("order_id").intValue();
+                            String user_id = document.getString("user_id");
+
+                            // Verifica se o plano de treino existe na lista local
+                            boolean existsInLocalList = false;
+                            for (TreinoExercicioPlano plano : treinoExercicioPlanos) {
+                                if (plano.getId() == Math.toIntExact(id_doc)) {
+                                    existsInLocalList = true;
+                                    treinoExercicioPlanos.remove(plano); // Remove o plano do ArrayList
+                                    break; // Não há necessidade de continuar a busca, já encontrou
+                                }
+                            }
+
+                            // Se o documento não existir no ArrayList, apaga da Firebase
+                            if (!existsInLocalList) {
+                                db.collection("treino_exercicios_plano")
+                                        .document(document.getId())
+                                        .delete()
+                                        .addOnSuccessListener(aVoid ->
+                                                Log.d("Sync", "Plano de exercício removido da Firebase: " + id_doc)
+                                        )
+                                        .addOnFailureListener(e ->
+                                                Log.e("Sync", "Erro ao remover plano de exercício da Firebase", e)
+                                        );
+                            }
+
+                            // Adiciona o id ao Set para manter controle
+                            firebaseIds.add(Math.toIntExact(id_doc));
+                        });
+
+                        // No final, qualquer item restante no ArrayList é um plano que não está na Firebase
+                        for (TreinoExercicioPlano plano : treinoExercicioPlanos) {
+                            // Adiciona os planos restantes da lista local para a Firebase
+                            db.collection("treino_exercicios_plano")
+                                    .add(plano)
+                                    .addOnSuccessListener(documentReference ->
+                                            Log.d("Sync", "Plano de exercício adicionado à Firebase: " + plano.getId())
+                                    )
+                                    .addOnFailureListener(e ->
+                                            Log.e("Sync", "Erro ao adicionar plano de exercício à Firebase", e)
+                                    );
+                        }
+                    } else {
+                        Log.d("DatabaseInfo", "Nenhum plano de exercício encontrado na Firebase.");
+                    }
+                })
+                .addOnFailureListener(e -> Log.e("DatabaseError", "Erro ao buscar planos de exercício na Firebase", e));
+
+    }
+
 
 
 

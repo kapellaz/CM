@@ -12,6 +12,7 @@ import com.example.finalchallenge.classes.Execution;
 import com.example.finalchallenge.classes.Exercicio;
 import com.example.finalchallenge.classes.Exercise;
 import com.example.finalchallenge.classes.ExerciseDetailed;
+import com.example.finalchallenge.classes.TreinoExercicioPlano;
 import com.example.finalchallenge.classes.TreinoPlano;
 import com.example.finalchallenge.classes.TreinosDetails;
 import com.example.finalchallenge.classes.TreinosDone;
@@ -25,7 +26,7 @@ import java.util.Map;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "fitness.db";
-    private static final int DATABASE_VERSION = 17;
+    private static final int DATABASE_VERSION = 18;
 
     // Table Names
     private static final String TABLE_UTILIZADOR = "utilizador";
@@ -97,6 +98,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "treino_exercicio_id INTEGER, " +
             "plano_id INTEGER, " +
             "exec INTEGER, " +
+            "oxigenacao INTEGER," +
+            "batimentos INTEGER," +
             "FOREIGN KEY(plano_id) REFERENCES " + TABLE_TREINO_PLANO + "(id), " +
             "FOREIGN KEY(treino_exercicio_id) REFERENCES " + TABLE_TREINO_EXERCICIO_PLANO + "(id));";
 
@@ -188,7 +191,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
     //funcao para dar update à tabela TABLE_SERIES
-    public void insertSeries(int peso, int numero_serie, int treino_exercicio_id, int treino_id, int exec) {
+    public void insertSeries(int peso, int numero_serie, int treino_exercicio_id, int treino_id, int exec,int oxigenacao,int batimentos) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("peso", peso);
@@ -196,6 +199,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("numero_serie", numero_serie);
         values.put("plano_id", treino_id);
         values.put("exec", exec);
+        values.put("oxigenacao",oxigenacao);
+        values.put("batimentos",batimentos);
         db.insert(TABLE_SERIES, null, values);
         db.close();
     }
@@ -410,7 +415,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     // Obtém os valores das colunas
                     @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
                     @SuppressLint("Range") String nome = cursor.getString(cursor.getColumnIndex("nome"));
-                    @SuppressLint("Range") int userIdFromDb = cursor.getInt(cursor.getColumnIndex("user_id"));
+                    @SuppressLint("Range") String userIdFromDb = cursor.getString(cursor.getColumnIndex("user_id"));
 
                     // Cria o objeto TreinoPlano e adiciona à lista
                     TreinoPlano treinoPlano = new TreinoPlano(id, nome, userIdFromDb);
@@ -682,8 +687,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
     //getExerciseExecutionsOverTime
-    public Map<String, List<Integer>> getExecucoesPorExercicio(String userId, int exercicioId) {
-        Map<String, List<Integer>> execucoesMap = new HashMap<>();
+    public Map<String, List<String>> getExecucoesPorExercicio(String userId, int exercicioId) {
+        Map<String, List<String>> execucoesMap = new HashMap<>();
 
         // Passo 1: Buscar todos os treinos feitos por este usuário
         List<TreinosDone> treinosDone = getAllTreinosDoneForUser(userId);
@@ -697,12 +702,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             // Passo 2: Verificar se o exercício está presente neste treino
             List<Exercise> exercises = getExercisesForTraining(treinoId);
-          
+
             for (Exercise exercise : exercises) {
                 System.out.println(exercicioId + "   " + exercise.getId());
                 if (exercise.getId_exercicio() == exercicioId) {
                     // Passo 3: execuções para o exercício específico neste treino
-                    Map<Integer, Integer> seriesMap = getExecucoesForExercicio(db, treinoId, exercise.getId(), execucao);
+                    Map<Integer, String> seriesMap = getExecucoesForExercicio(db, treinoId, exercise.getId(), execucao);
                     System.out.println("yah" + seriesMap);
 
                     // Passo 4: Associar a data e os pesos no Map
@@ -722,12 +727,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Função para buscar as execuções de um exercício em um treino
-    public Map<Integer, Integer> getExecucoesForExercicio(SQLiteDatabase db, int treinoId, int exercicioId, int execucao) {
-        Map<Integer, Integer> seriesMap = new HashMap<>();
+    public Map<Integer, String> getExecucoesForExercicio(SQLiteDatabase db, int treinoId, int exercicioId, int execucao) {
+        Map<Integer, String> seriesMap = new HashMap<>();
 
         Cursor cursor = db.query(
                 TABLE_SERIES,
-                new String[] {"peso", "numero_serie"},
+                new String[] {"peso", "numero_serie","batimentos","oxigenacao"},
                 "treino_exercicio_id = ? AND plano_id = ? AND exec = ?", // Filtra pelo treino_exercicio_id e plano_id
                 new String[] {String.valueOf(exercicioId), String.valueOf(treinoId), String.valueOf(execucao)}, // Passa os valores
                 null, null, null
@@ -738,7 +743,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 do {
                     @SuppressLint("Range") int peso = cursor.getInt(cursor.getColumnIndex("peso"));
                     @SuppressLint("Range") int numeroSerie = cursor.getInt(cursor.getColumnIndex("numero_serie"));
-                    seriesMap.put(numeroSerie, peso); // Adiciona a série ao mapa
+                    @SuppressLint("Range") int batimentos = cursor.getInt(cursor.getColumnIndex("batimentos"));
+                    @SuppressLint("Range") int oxigenacao = cursor.getInt(cursor.getColumnIndex("oxigenacao"));
+                    String info = peso + "|" + batimentos + "|" + oxigenacao;
+                    seriesMap.put(numeroSerie, info); // Adiciona a série ao mapa
                 } while (cursor.moveToNext());
             }
             cursor.close();
@@ -773,7 +781,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     @SuppressLint("Range") int exec = cursor.getInt(cursor.getColumnIndex("exec"));
                     TreinosDone treino = new TreinosDone(id, treino_id, data, exec);
                     treinos.add(treino);
-                    System.out.println("DEUUUUU");
                 } while (cursor.moveToNext());
             }
             cursor.close();
@@ -782,5 +789,84 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return treinos;
     }
+
+
+
+
+    public ArrayList<TreinoPlano> getAllTreinoPlanos_sync() {
+        ArrayList<TreinoPlano> treinoPlanosList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase(); // Ou `getWritableDatabase` dependendo da necessidade
+
+        String query = "SELECT * FROM " + TABLE_TREINO_PLANO;
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                // Obtém os valores de cada coluna
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                String nome = cursor.getString(cursor.getColumnIndexOrThrow("nome"));
+                String userId = cursor.getString(cursor.getColumnIndexOrThrow("user_id"));
+
+                // Cria um objeto TreinoPlano e adiciona à lista
+                TreinoPlano treinoPlano = new TreinoPlano(id, nome, userId);
+                treinoPlanosList.add(treinoPlano);
+            } while (cursor.moveToNext());
+        }
+
+        // Fecha o cursor e o banco de dados
+        cursor.close();
+        db.close();
+
+        return treinoPlanosList;
+    }
+    @SuppressLint("Range")
+    public ArrayList<TreinoExercicioPlano> getAllTreinoExercicioPlanos_sync() {
+        ArrayList<TreinoExercicioPlano> treinoExercicioPlanos = new ArrayList<>();
+
+        // Defina a consulta SQL para obter todos os planos de treino da tabela
+        String query = "SELECT tep.id, tep.exercicio_id, tep.treino_id, tep.series, tep.repeticoes, tep.order_id, tp.user_id " +
+                "FROM " + TABLE_TREINO_EXERCICIO_PLANO + " AS tep " +
+                "JOIN " + TABLE_TREINO_PLANO + " AS tp " +
+                "ON tep.treino_id = tp.id";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+
+        // Verifique se o cursor contém dados
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                try {
+                    // Verifique se as colunas existem no Cursor
+                    int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                    int exercicio_id = cursor.getInt(cursor.getColumnIndexOrThrow("exercicio_id"));
+                    int treino_id = cursor.getInt(cursor.getColumnIndexOrThrow("treino_id"));
+                    int series = cursor.getInt(cursor.getColumnIndexOrThrow("series"));
+                    int repeticoes = cursor.getInt(cursor.getColumnIndexOrThrow("repeticoes"));
+                    int order_id = cursor.getInt(cursor.getColumnIndexOrThrow("order_id"));
+                    String user_id = cursor.getString(cursor.getColumnIndexOrThrow("user_id"));
+
+                    // Cria o objeto TreinoExercicioPlano e adiciona na lista
+                    TreinoExercicioPlano plano = new TreinoExercicioPlano(id, exercicio_id, treino_id, series, repeticoes, order_id, user_id);
+                    treinoExercicioPlanos.add(plano);
+                } catch (IllegalArgumentException e) {
+                    // Trate o erro caso alguma coluna não seja encontrada
+                    Log.e("DatabaseError", "Coluna não encontrada no Cursor: " + e.getMessage());
+                }
+            } while (cursor.moveToNext());
+        } else {
+            Log.d("DatabaseInfo", "Nenhum dado encontrado na tabela.");
+        }
+
+        // Feche o cursor e o banco de dados
+        if (cursor != null) {
+            cursor.close();
+        }
+        db.close();
+
+        return treinoExercicioPlanos;
+    }
+
+
+
 
 }

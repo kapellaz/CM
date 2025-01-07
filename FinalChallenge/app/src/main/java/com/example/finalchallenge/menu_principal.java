@@ -43,7 +43,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
     private List<TreinosDone> treinosExec = new ArrayList<>();
     private ProgressBar progressBar; // ProgressBar
     private viewModel modelview;
-
+    private FirebaseFirestorehelper firebaseFirestorehelper;
     public menu_principal() {
         // Required empty public constructor
     }
@@ -53,8 +53,11 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
         super.onCreate(savedInstanceState);
         databaseHelper = new DatabaseHelper(getContext());
         modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
+        firebaseFirestorehelper = new FirebaseFirestorehelper();
 
-        databaseHelper.inserirPlanosTreino2(); // - SE FOR A PRIMEIRA VEZ A CORRER ESTA MERDA
+      //  firebaseFirestorehelper.syncTreinoPlanosFromFirebase(modelview.getUser().getValue().getId(),databaseHelper);
+        //firebaseFirestorehelper.syncTreinoPlanosExercicioFromFirebase(modelview.getUser().getValue().getId(),databaseHelper);
+       // databaseHelper.inserirPlanosTreino2(); // - SE FOR A PRIMEIRA VEZ A CORRER ESTA MERDA
         Integer id = 2;
 
     }

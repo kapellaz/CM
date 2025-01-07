@@ -3,10 +3,11 @@ package com.example.finalchallenge.classes;
 public class TreinoPlano {
     private int id;
     private String nome;
-    private int userId;
-
+    private String userId;
+    public TreinoPlano() {
+    }
     // Construtor
-    public TreinoPlano(int id, String nome, int userId) {
+    public TreinoPlano(int id, String nome, String userId) {
         this.id = id;
         this.nome = nome;
         this.userId = userId;
@@ -29,11 +30,11 @@ public class TreinoPlano {
         this.nome = nome;
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
