@@ -18,15 +18,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import com.example.finalchallenge.classes.Request;
 import com.example.finalchallenge.classes.RequestAdapter;
 import com.example.finalchallenge.classes.Utilizador;
 import com.example.finalchallenge.classes.UtilizadorAdapter;
 import com.example.finalchallenge.classes.viewModel;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class FriendsList extends Fragment {
     private DatabaseHelper databaseHelper;
@@ -66,14 +75,8 @@ public class FriendsList extends Fragment {
         UtilizadorAdapter adapterFriends = new UtilizadorAdapter(friends);
         listFriends.setAdapter(adapterFriends);
 
-        List<Request> reqs = new ArrayList<>();
-        reqs.add(new Request("Alice", "aaaa"));
-        reqs.add(new Request("Bob", "aaaa"));
-        reqs.add(new Request("Charlie", "aaaa"));
-
-        listRequests.setLayoutManager(new LinearLayoutManager(getContext()));
-        RequestAdapter adapterRequest = new RequestAdapter(reqs, "aaaa");
-        listRequests.setAdapter(adapterRequest);
+        //Set-up the Requests
+        setupRequestList(modelview.getUser().getValue().getId());
 
         // Additional setup for ListView can go here
         requireActivity().addMenuProvider(new MenuProvider() {
@@ -114,5 +117,79 @@ public class FriendsList extends Fragment {
         }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         return rootView;
+    }
+
+    private void setupRequestList(String userID) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(new Runnable() {
+            List<String> senderIDs = new ArrayList<>();
+            List<Request> requests = new ArrayList<>();
+            @Override
+            public void run() {
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                //coletar os pedidos de amizade
+                db.collection("pedido_amizade")
+                        .whereEqualTo("recebeu", userID)
+                        .get()
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                if (!task.getResult().isEmpty()) {
+
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                        senderIDs.add(document.getString("enviou"));
+                                    }
+
+                                    List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+
+                                    for (String senderID : senderIDs) {
+                                        tasks.add(db.collection("users").document(senderID).get());
+                                    }
+
+                                    //conseguir os users que enviaram os pedidos
+                                    Tasks.whenAllSuccess(tasks).addOnCompleteListener(task2 -> {
+                                        if (task2.isSuccessful()) {
+
+                                            int documentCount = task2.getResult().size();
+                                            System.out.println("Number of documents found: " + documentCount);
+
+                                            for (Task<DocumentSnapshot> t : tasks) {
+                                                DocumentSnapshot document = t.getResult();
+                                                Request request = new Request(document.getString("username"), document.getId());
+                                                requests.add(request);
+                                            }
+
+                                            requireActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Toast.makeText(getContext(), "viva", Toast.LENGTH_SHORT).show();
+                                                    listRequests.setLayoutManager(new LinearLayoutManager(getContext()));
+                                                    RequestAdapter requestAdapter = new RequestAdapter(requests);
+                                                    listRequests.setAdapter(requestAdapter);
+                                                }
+                                            });
+
+                                        }
+                                    });
+                                } else {
+                                    // User not found in Firebase
+                                    requireActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getContext(), "Nothing was found", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
+                            } else {
+                                // Error retrieving data from Firebase
+                                requireActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getContext(), "Error in Requests", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        });
+            }
+        });
     }
 }

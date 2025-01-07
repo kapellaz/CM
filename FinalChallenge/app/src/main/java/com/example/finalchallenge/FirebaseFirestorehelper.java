@@ -1,7 +1,10 @@
 package com.example.finalchallenge;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.finalchallenge.classes.Exercise;
+import com.example.finalchallenge.classes.Request;
+import com.example.finalchallenge.classes.Utilizador;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -312,8 +315,5 @@ public class FirebaseFirestorehelper {
                     Log.e("DatabaseError", "Erro ao inserir série na coleção series", e);
                 });
     }
-
-
-
 
 }

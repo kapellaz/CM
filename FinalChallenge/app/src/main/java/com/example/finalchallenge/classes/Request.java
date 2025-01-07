@@ -2,39 +2,45 @@ package com.example.finalchallenge.classes;
 
 public class Request {
 
-    private String sender;
-    private String reciever;
+    private String senderName;  // Corrected variable name
+    private String senderID;   // Corrected variable name to 'receiver'
 
-    public Request(){
-
+    // Default constructor
+    public Request() {
     }
 
-    public Request(String sender, String reciever){
-        this.sender=sender;
-        this.reciever=reciever;
+    // Constructor with parameters
+    public Request( String senderName, String senderID) {
+        this.senderName = senderName;  // Corrected variable names
+        this.senderID = senderID;
     }
 
-    public String getsender() {
-        return sender;
+    // Getter for senderName
+    public String getSenderName() {
+        return senderName;
     }
 
-    public void setsender(String sender) {
-        this.sender = sender;
+    // Setter for senderName
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
     }
 
-    public String getreciever() {
-        return reciever;
+    // Getter for senderID
+    public String getSenderID() {
+        return senderID;
     }
 
-    public void setreciever(String reciever) {
-        this.reciever = reciever;
+    // Setter for senderID
+    public void setSenderID(String senderID) {
+        this.senderID = senderID;
     }
+
 
     @Override
     public String toString() {
         return "Request{" +
-                "sender='" + sender + '\'' +
-                ", reciever=" + reciever +
+                ", senderName='" + senderName + '\'' +
+                ", senderID='" + senderID + '\'' +
                 '}';
     }
 }

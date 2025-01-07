@@ -18,17 +18,14 @@ import java.util.List;
 public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.ViewHolder> {
 
     private List<Request> requests;
-    private String filterId; // ID to filter
 
     // Constructor
-    public RequestAdapter( List<Request> requests, String filterId) {
+    public RequestAdapter( List<Request> requests) {
         this.requests = requests;
-        this.filterId = filterId;
     }
 
     // ViewHolder to hold references to views in the layout
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public ImageView ivProfilePic;
         public TextView tvName;
         public Button btnAccept, btnReject;
 
@@ -55,7 +52,7 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.ViewHold
         Request request = requests.get(position);
 
         // Bind the data to the views
-        holder.tvName.setText(request.getsender());
+        holder.tvName.setText(request.getSenderName());
 
         // Set button click listeners
         holder.btnAccept.setOnClickListener(v -> {
