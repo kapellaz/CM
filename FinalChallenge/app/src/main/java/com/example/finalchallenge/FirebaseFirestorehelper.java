@@ -290,7 +290,7 @@ public class FirebaseFirestorehelper {
     }
 
 
-    public void insertSeries(int peso, int numeroSerie, int treinoExercicioId, int treinoId, int exec,String user_id) {
+    public void insertSeries(int peso, int numeroSerie, int treinoExercicioId, int treinoId, int exec,String user_id,int oxigenacao,int batimentos) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // Dados da série
@@ -301,6 +301,8 @@ public class FirebaseFirestorehelper {
         seriesData.put("plano_id", treinoId);
         seriesData.put("exec", exec);
         seriesData.put("user_id",user_id);
+        seriesData.put("oxigenacao",oxigenacao);
+        seriesData.put("batimentos",batimentos);
 
         // Inserir na coleção "series"
         db.collection("series")

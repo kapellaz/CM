@@ -50,5 +50,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     // Outras dependências de bibliotecas externas
+    implementation("org.eclipse.paho:org.eclipse.paho.android.service:1.1.1")
+    implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

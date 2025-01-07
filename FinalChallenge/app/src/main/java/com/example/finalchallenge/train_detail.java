@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,9 +26,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.finalchallenge.classes.Exercise;
+import com.example.finalchallenge.classes.MQTThelper;
 import com.example.finalchallenge.classes.TreinoExec;
 import com.example.finalchallenge.classes.TreinoPlano;
 import com.example.finalchallenge.classes.viewModel;
+
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -38,7 +44,16 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
+
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 public class train_detail extends Fragment {
+    private Dialog dialogWeight;
+
     private LinearLayout stopFinishLayout;
     private ImageButton startButton;
     private ImageButton logoutButton;
@@ -54,7 +69,17 @@ public class train_detail extends Fragment {
     private ImageButton deleteImageButton;
     private ImageButton helpbutton;
     private FirebaseFirestorehelper firebaseFirestorehelper;
+    public MqttAndroidClient client;
+    private String clientId;
+    private String username;
 
+    private int oxigenacao;
+    private int batimentos;
+
+    private TextView oxygenInfo;
+    private TextView heartbeatInfo;
+    final String server = "tcp://test.mosquitto.org:1883";
+    private MQTThelper mqttHelper;
     private ArrayAdapter<Exercise> adapter;
     private int exec;
     private ImageButton editImageButton;
@@ -74,6 +99,9 @@ public class train_detail extends Fragment {
         firebaseFirestorehelper = new FirebaseFirestorehelper();
 
         treinoExec = modelview.getSelectedPlan().getValue();
+        mqttHelper = new MQTThelper();
+        clientId = modelview.getUser().getValue().getUsername();
+        connectToMqtt();
 
     }
 
@@ -416,26 +444,40 @@ public class train_detail extends Fragment {
 
     // Método para exibir o dialog de inserir peso
     private void showWeightDialog(int position) {
-        final Dialog dialog = new Dialog(requireContext());
-        dialog.setContentView(R.layout.dialog_weight);
+        dialogWeight = new Dialog(requireContext());
+        dialogWeight.setContentView(R.layout.dialog_weight);
 
         // Personaliza o fundo do diálogo (usando o drawable com bordas arredondadas)
-        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        dialogWeight.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
 
         // Referência ao EditText para captura do peso
-        EditText input = dialog.findViewById(R.id.weightInput);
+        EditText input = dialogWeight.findViewById(R.id.weightInput);
 
         // Botões OK e Cancel
-        Button btnOk = dialog.findViewById(R.id.btnOk);
-        Button btnCancel = dialog.findViewById(R.id.btnCancel);
+        Button btnOk = dialogWeight.findViewById(R.id.btnOk);
+        Button btnCancel = dialogWeight.findViewById(R.id.btnCancel);
+
+        Button btnTriggerArduino = dialogWeight.findViewById(R.id.btnTriggerArduino);
+
+        btnTriggerArduino.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mqttHelper.publish("cmGymTrackerSend/"+ Objects.requireNonNull(modelview.getUser().getValue()).getUsername(), "INFO"); // Publica no tópico
+                System.out.println("Mensagem enviada para o tópico cmGymTrackerSend/bruno" + ": " + "INFO");
+                btnTriggerArduino.setVisibility(View.INVISIBLE);
+
+            }
+        });
+
 
 
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String weight = input.getText().toString();
-                if (!weight.isEmpty()) {
+                if (!weight.isEmpty() && btnTriggerArduino.getVisibility() != View.VISIBLE) {
                     // Atualiza a quantidade de séries
                     try {
                         exec = databaseHelper.get_training_execs(treinoExec.getId()) + 1;
@@ -448,11 +490,17 @@ public class train_detail extends Fragment {
                     updateListView(treinosExec); // Atualiza a lista
                     System.out.println(treinosExec.get(position).getId() +  " e o plano id é " + treinoExec.getId());
 
-                    databaseHelper.insertSeries(Integer.parseInt(weight), series,treinosExec.get(position).getId(), treinoExec.getId(), exec);
-                    firebaseFirestorehelper.insertSeries(Integer.parseInt(weight),series,treinosExec.get(position).getId(),treinoExec.getId(),exec,modelview.getUser().getValue().getId());
+                    databaseHelper.insertSeries(Integer.parseInt(weight), series,treinosExec.get(position).getId(), treinoExec.getId(), exec,oxigenacao,batimentos);
+                    firebaseFirestorehelper.insertSeries(Integer.parseInt(weight),series,treinosExec.get(position).getId(),treinoExec.getId(),exec,modelview.getUser().getValue().getId(),oxigenacao,batimentos);
                     adapter.notifyDataSetChanged(); // Notifica o adaptador de que os dados mudaram
-                    dialog.dismiss();
+                    dialogWeight.dismiss();
+
                     Toast.makeText(getContext(), "Weight for " + treinosExec.get(position).getName() + " set to " + weight, Toast.LENGTH_SHORT).show();
+                } else if (weight.isEmpty()) {
+                    Toast.makeText(getContext(), "Coloque o peso!", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(getContext(), "Obtenha o rastreamento de saúde!", Toast.LENGTH_SHORT).show();
+
                 }
             }
         });
@@ -461,10 +509,10 @@ public class train_detail extends Fragment {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss();  // Fecha o diálogo
+                dialogWeight.dismiss();  // Fecha o diálogo
             }
         });
-        dialog.show();
+        dialogWeight.show();
 
     }
 
@@ -506,6 +554,103 @@ public class train_detail extends Fragment {
             }
         });
     }
+
+
+
+
+
+
+    private void connectToMqtt() {
+        new Thread(() -> {
+
+            // Set the callback inside the fragment itself
+            mqttHelper.connect(server, clientId, username, getContext(), new MqttCallbackExtended() {
+                @Override
+                public void connectComplete(boolean reconnect, String serverURI) {
+                    // Connection successful callback
+                    Log.d("MQTT", "Connected to: " + serverURI);
+                }
+
+                @Override
+                public void connectionLost(Throwable cause) {
+                    // Connection lost callback
+                    Log.d("MQTT", "Connection lost: " + cause.getMessage());
+
+
+                }
+
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    System.out.println("Topic:" + topic);
+                    // Handle incoming messages
+                    String[] topicParts = topic.split("/");
+                    if(topicParts[0].equals("cmGymTrackerReceive") && topicParts[1].equals(modelview.getUser().getValue().getUsername())){
+                        // Agora, você pode processar a mensagem e atualizar a UI
+                        // Vamos supor que a mensagem seja uma string com valores separados por vírgulas
+                        String messageContent = message.toString();
+                        String[] data = messageContent.split(",");
+
+                        String heartbeat = data[0]; // Exemplo de como você pode tratar os dados recebidos
+                        String oxygen = data[1];
+
+
+                        // Agora você quer atualizar a UI com esses dados, mas como estamos em uma thread diferente,
+                        // precisamos usar runOnUiThread para fazer isso na thread principal.
+
+                        requireActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                oxygenInfo = dialogWeight.findViewById(R.id.oxygenInfo);
+                                heartbeatInfo = dialogWeight.findViewById(R.id.heartbeatInfo);
+                                batimentos = Integer.parseInt(heartbeat);
+                                oxigenacao = Integer.parseInt(oxygen);
+                                // Atualizar os TextViews com os dados recebidos
+
+                                oxygenInfo.setText("Oxigenação: " + oxygen + " %");
+                                heartbeatInfo.setText("Batimentos Cardíacos: " + heartbeat + " bpm");
+
+                                // Tornar os TextViews visíveis
+
+                                oxygenInfo.setVisibility(View.VISIBLE);
+                                heartbeatInfo.setVisibility(View.VISIBLE);
+
+                                // Opcionalmente, você pode mostrar um Toast para confirmar que os dados foram recebidos
+                                Toast.makeText(getContext(), "Dados de saúde recebidos!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+
+
+
+
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+                    // Handle delivery confirmation
+                    Log.d("MQTT", "Message delivered: " + token.getMessageId());
+                }
+            });
+
+            requireActivity().runOnUiThread(this::subscribeToTopic);
+        }).start();
+    }
+
+    private void subscribeToTopic(){
+        String chatSend = "cmGymTrackerSend/"+ Objects.requireNonNull(modelview.getUser().getValue()).getUsername();
+        System.out.println("Subscribing to topic " + chatSend);
+
+        String chatReceive = "cmGymTrackerReceive/"+ Objects.requireNonNull(modelview.getUser().getValue()).getUsername();
+        System.out.println("Subscribing to topic " + chatReceive);
+
+        mqttHelper.subscribe(chatSend);
+        mqttHelper.subscribe(chatReceive);
+
+    }
+
+
 
 
 }
