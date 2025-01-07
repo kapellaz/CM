@@ -57,7 +57,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
 
       //  firebaseFirestorehelper.syncTreinoPlanosFromFirebase(modelview.getUser().getValue().getId(),databaseHelper);
         //firebaseFirestorehelper.syncTreinoPlanosExercicioFromFirebase(modelview.getUser().getValue().getId(),databaseHelper);
-       // databaseHelper.inserirPlanosTreino2(); // - SE FOR A PRIMEIRA VEZ A CORRER ESTA MERDA
+        databaseHelper.inserirPlanosTreino2(); // - SE FOR A PRIMEIRA VEZ A CORRER ESTA MERDA
         Integer id = 2;
 
     }
