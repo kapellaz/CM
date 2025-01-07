@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <!-- Search, should appear as action button -->
-    <item android:id="@+id/action_back"
-        android:icon="@drawable/baseline_arrow_back_24"
-        android:title="Back"
-        app:showAsAction="ifRoom"
-        app:actionViewClass="android.widget.SearchView"/>
 
     <item android:id="@+id/action_search"
         android:icon="@drawable/baseline_search_24"
         android:title="Search"
         app:showAsAction="ifRoom"
-        app:actionViewClass="android.widget.SearchView"/>
+        app:actionViewClass="android.widget.SearchView" />
+
+    <item android:id="@+id/action_back"
+        android:icon="@drawable/back_icon"
+        android:title="Back"
+        app:showAsAction="ifRoom" />
 
 </menu>

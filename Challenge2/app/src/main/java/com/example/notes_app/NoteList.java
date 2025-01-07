@@ -116,7 +116,7 @@ public class NoteList extends Fragment implements FileOperator.Callback {
                         return true;
                     }
                 });
-                // Set up the Create Note
+
                 MenuItem createItem = menu.findItem(R.id.action_create);
                 createItem.setOnMenuItemClickListener(item -> {
                     showCreateNoteDialog();

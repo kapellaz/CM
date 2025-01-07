@@ -2,30 +2,38 @@ package com.example.finalchallenge;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
-
+import androidx.recyclerview.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ListView;
+import java.util.ArrayList;
+import java.util.List;
+import androidx.recyclerview.widget.RecyclerView;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 
+import com.example.finalchallenge.classes.Request;
+import com.example.finalchallenge.classes.RequestAdapter;
+import com.example.finalchallenge.classes.Utilizador;
+import com.example.finalchallenge.classes.UtilizadorAdapter;
 import com.example.finalchallenge.classes.viewModel;
 
 public class FriendsList extends Fragment {
     private DatabaseHelper databaseHelper;
     private viewModel modelview;
 
-    private ProgressBar progressBar;
-    private ListView listView;
-    private ImageButton logoutButton, halterButton, perfilButton, statsButton;
-    private Button requestButton;
+    private RecyclerView listFriends, listRequests;
+
     public FriendsList() {
         // Required empty public constructor
     }
@@ -44,48 +52,67 @@ public class FriendsList extends Fragment {
 
         Toolbar toolbar = rootView.findViewById(R.id.toolbar);
         ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
+        listFriends = rootView.findViewById(R.id.rvFriends);
+        listRequests = rootView.findViewById(R.id.rvRequests);
+
+        // Create a list of friends
+        List<Utilizador> friends = new ArrayList<>();
+        friends.add(new Utilizador("Alice", "aaaa"));
+        friends.add(new Utilizador("Bob", "aaaa"));
+        friends.add(new Utilizador("Charlie", "aaaa"));
+
+        // Set up the adapter and ListView
+        listFriends.setLayoutManager(new LinearLayoutManager(getContext()));
+        UtilizadorAdapter adapterFriends = new UtilizadorAdapter(friends);
+        listFriends.setAdapter(adapterFriends);
+
+        List<Request> reqs = new ArrayList<>();
+        reqs.add(new Request("Alice", "aaaa"));
+        reqs.add(new Request("Bob", "aaaa"));
+        reqs.add(new Request("Charlie", "aaaa"));
+
+        listRequests.setLayoutManager(new LinearLayoutManager(getContext()));
+        RequestAdapter adapterRequest = new RequestAdapter(reqs, "aaaa");
+        listRequests.setAdapter(adapterRequest);
+
         // Additional setup for ListView can go here
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.list_friends, menu);
+                requireActivity().setTitle("Pesquisar");
+
+                MenuItem searchItem = menu.findItem(R.id.action_search);
+                SearchView searchView = (SearchView) searchItem.getActionView();
+                assert searchView != null;
+                searchView.setQueryHint("Type Here");
+
+                // Set up the search view listener
+                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        return true;
+                    }
+                });
+                // Set up the Create Note
+                MenuItem goBack = menu.findItem(R.id.action_back);
+                goBack.setOnMenuItemClickListener(item -> {
+                    requireActivity().getSupportFragmentManager().popBackStack();
+                    return true;
+                });
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem item) {
+                return false;
+            }
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         return rootView;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_back:
-                // User chooses the "Settings" item. Show the app settings UI.
-                return true;
-
-            case R.id.action_search:
-                // User chooses the "Favorite" action. Mark the current item as a
-                // favorite.
-                return true;
-
-            default:
-                // The user's action isn't recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
-
-        }
-    }
-
-    private void handleLogoutClick() {
-        ((MainActivity) requireActivity()).switchLogin();
-    }
-
-    private void handleHalterClick() {
-        ((MainActivity) requireActivity()).switchTrain();
-    }
-
-    private void handlePerfilClick() {
-        ((MainActivity) requireActivity()).switchMenu();
-    }
-
-    private void handleStatsClick() {
-        ((MainActivity) requireActivity()).switchtoStats();
-    }
-
-    private void handleRequestsClick() {
-        ((MainActivity) requireActivity()).switchtoRequests();
     }
 }

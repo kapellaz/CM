@@ -1,0 +1,35 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- Friend Name -->
+    <TextView
+        android:id="@+id/tvName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:gravity="center_vertical"
+        android:layout_weight="1"
+        android:text="Friend Name"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/btnAction1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="Accept"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@android:color/holo_green_dark" />
+
+    <Button
+        android:id="@+id/btnAction2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reject"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@android:color/holo_red_dark" />
+</LinearLayout>
