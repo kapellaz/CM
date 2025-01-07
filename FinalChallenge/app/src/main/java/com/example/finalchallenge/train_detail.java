@@ -1,11 +1,7 @@
 package com.example.finalchallenge;
 
-import static androidx.core.content.ContextCompat.getSystemService;
-
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.icu.text.SimpleDateFormat;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -14,7 +10,6 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,7 +27,7 @@ import android.widget.Toast;
 
 import com.example.finalchallenge.classes.Exercise;
 import com.example.finalchallenge.classes.MQTThelper;
-import com.example.finalchallenge.classes.TreinoExec;
+import com.example.finalchallenge.classes.SeriesInfo;
 import com.example.finalchallenge.classes.TreinoPlano;
 import com.example.finalchallenge.classes.viewModel;
 
@@ -41,7 +36,6 @@ import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -52,9 +46,6 @@ import java.util.concurrent.Executors;
 
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class train_detail extends Fragment {
     private Dialog dialogWeight;
@@ -82,6 +73,8 @@ public class train_detail extends Fragment {
 
     private int oxigenacao;
     private int batimentos;
+
+    private ArrayList<SeriesInfo> listofexecutionsseries = new ArrayList<>();
 
     private TextView oxygenInfo;
     private TextView heartbeatInfo;
@@ -248,7 +241,12 @@ public class train_detail extends Fragment {
             }
         });
 
+        startButton = view.findViewById(R.id.startbutton);
 
+        editImageButton = view.findViewById(R.id.editButton);
+        stopFinishLayout = view.findViewById(R.id.linearLayoutStopFinish);
+
+        finishButton = view.findViewById(R.id.finish);
         logoutButton = view.findViewById(R.id.logout);
         halterButton = view.findViewById(R.id.halter);
         perfilButton = view.findViewById(R.id.perfil);
@@ -258,7 +256,19 @@ public class train_detail extends Fragment {
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Ação ao clicar no botão de logout
+                if (startButton.getVisibility()==View.GONE) {
+                    // Passa a função de logout para o showCancelTraining
+                    showCancelTraining(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Lógica a ser executada quando o usuário confirmar o cancelamento do treino
+                            handleLogoutClick();  // Chama a função de logout
+                        }
+                    });
+                    return;
+                }
+
+                // Caso não esteja visível o finishButton, executa diretamente o logout
                 handleLogoutClick();
             }
         });
@@ -266,7 +276,19 @@ public class train_detail extends Fragment {
         halterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Ação ao clicar no botão de halter
+                if (startButton.getVisibility()==View.GONE) {
+                    // Passa a função de logout para o showCancelTraining
+                    showCancelTraining(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Lógica a ser executada quando o usuário confirmar o cancelamento do treino
+                            handleHalterClick();  // Chama a função de logout
+                        }
+                    });
+                    return;
+                }
+
+                // Caso não esteja visível o finishButton, executa diretamente o logout
                 handleHalterClick();
             }
         });
@@ -274,7 +296,19 @@ public class train_detail extends Fragment {
         perfilButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Ação ao clicar no botão de perfil
+                if (startButton.getVisibility()==View.GONE) {
+                    // Passa a função de logout para o showCancelTraining
+                    showCancelTraining(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Lógica a ser executada quando o usuário confirmar o cancelamento do treino
+                            handlePerfilClick();  // Chama a função de logout
+                        }
+                    });
+                    return;
+                }
+
+                // Caso não esteja visível o finishButton, executa diretamente o logout
                 handlePerfilClick();
             }
         });
@@ -282,23 +316,30 @@ public class train_detail extends Fragment {
         statsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Ação ao clicar no botão de estatísticas
+
+                  if (startButton.getVisibility()==View.GONE) {
+                    // Passa a função de logout para o showCancelTraining
+                    showCancelTraining(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Lógica a ser executada quando o usuário confirmar o cancelamento do treino
+                            handleLogoutClick();  // Chama a função de logout
+                        }
+                    });
+                    return;
+                }
+
+                // Caso não esteja visível o finishButton, executa diretamente o logout
                 handleStatsClick();
             }
         });
-
         System.out.println(treinoExec.getId());
         getExercises(treinoExec.getId());
 
         deleteImageButton = view.findViewById(R.id.delete_image);
         buttonDelete = view.findViewById(R.id.buttondelete);
 
-        startButton = view.findViewById(R.id.startbutton);
 
-        editImageButton = view.findViewById(R.id.editButton);
-        stopFinishLayout = view.findViewById(R.id.linearLayoutStopFinish);
-
-        finishButton = view.findViewById(R.id.finish);
 
 
 
@@ -317,14 +358,21 @@ public class train_detail extends Fragment {
                     Toast.makeText(getContext(), "Treino concluído com sucesso!", Toast.LENGTH_SHORT).show();
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
                     String currentDate = sdf.format(new Date());
+                    System.out.println(listofexecutionsseries.size());
+                    for(SeriesInfo serie :listofexecutionsseries){
+                        System.out.println("ENTROUUU");
+                        databaseHelper.insertSeries(serie.getPeso(),serie.getSeries(),serie.getExercicioId(),serie.getTreinoId(),serie.getExec(),serie.getOxigenacao(), serie.getBatimentos());
+                        firebaseFirestorehelper.insertSeries(serie.getPeso(),serie.getSeries(),serie.getExercicioId(),serie.getTreinoId(),serie.getExec(),modelview.getUser().getValue().getId(),serie.getOxigenacao(), serie.getBatimentos());
+                    }
 
                     databaseHelper.inserttreinodone(treinoExec.getId(), currentDate, exec,modelview.getUser().getValue().getId());
                     firebaseFirestorehelper.insertTreinoDone(treinoExec.getId(),currentDate,exec,modelview.getUser().getValue().getId());
+                    handleHalterClick();
                 } else {
                     Toast.makeText(getContext(), "Complete todos os exercícios antes de finalizar.", Toast.LENGTH_SHORT).show();
                 }
                 //after the finish click redirect to menu_principal
-                handleHalterClick();
+
             }
         });
 
@@ -375,6 +423,42 @@ public class train_detail extends Fragment {
 
 
         return view;
+    }
+
+
+    private void showCancelTraining(final Runnable onConfirmCancel) {
+        final Dialog dialog = new Dialog(requireContext());
+        dialog.setContentView(R.layout.dialog_custom);
+
+        // Personaliza o fundo do diálogo (usando o drawable com bordas arredondadas)
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        // Define os botões do diálogo
+        Button confirmDeleteButton = dialog.findViewById(R.id.confirm_delete);
+        Button cancelDeleteButton = dialog.findViewById(R.id.cancel_delete);
+        TextView conf = dialog.findViewById(R.id.confirmation_message);
+        conf.setText("Tem a certeza que deseja cancelar o treino?\n(Perderá todo o progresso)");
+
+        // Ação para confirmar a exclusão
+        confirmDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Lógica para deletar o item
+                onConfirmCancel.run();
+                dialog.dismiss();  // Fecha o diálogo
+            }
+        });
+
+        // Ação para cancelar a exclusão
+        cancelDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();  // Fecha o diálogo
+            }
+        });
+
+        // Exibe o diálogo
+        dialog.show();
     }
 
 
@@ -508,20 +592,18 @@ public class train_detail extends Fragment {
             public void onClick(View v) {
                 String weight = input.getText().toString();
                 if (!weight.isEmpty() && btnTriggerArduino.getVisibility() != View.VISIBLE) {
-                    // Atualiza a quantidade de séries
                     try {
                         exec = databaseHelper.get_training_execs(treinoExec.getId()) + 1;
                     } catch (Exception e) {
                         exec = 1;
-                        System.out.println("Erro");
+
                     }
                     int series = treinosExec.get(position).getSeries();
                     treinosExec.get(position).setSeries(series - 1);
                     updateListView(treinosExec); // Atualiza a lista
                     System.out.println(treinosExec.get(position).getId() +  " e o plano id é " + treinoExec.getId());
-
-                    databaseHelper.insertSeries(Integer.parseInt(weight), series,treinosExec.get(position).getId(), treinoExec.getId(), exec,oxigenacao,batimentos);
-                    firebaseFirestorehelper.insertSeries(Integer.parseInt(weight),series,treinosExec.get(position).getId(),treinoExec.getId(),exec,modelview.getUser().getValue().getId(),oxigenacao,batimentos);
+                    SeriesInfo seriesInfo = new SeriesInfo(Integer.parseInt(weight), series,treinosExec.get(position).getId(), treinoExec.getId(), exec,oxigenacao,batimentos);
+                    listofexecutionsseries.add(seriesInfo);
                     adapter.notifyDataSetChanged(); // Notifica o adaptador de que os dados mudaram
                     dialogWeight.dismiss();
 

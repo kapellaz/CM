@@ -12,6 +12,7 @@ import com.example.finalchallenge.classes.Execution;
 import com.example.finalchallenge.classes.Exercicio;
 import com.example.finalchallenge.classes.Exercise;
 import com.example.finalchallenge.classes.ExerciseDetailed;
+import com.example.finalchallenge.classes.TreinoExercicioPlano;
 import com.example.finalchallenge.classes.TreinoPlano;
 import com.example.finalchallenge.classes.TreinosDetails;
 import com.example.finalchallenge.classes.TreinosDone;
@@ -414,7 +415,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     // Obtém os valores das colunas
                     @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
                     @SuppressLint("Range") String nome = cursor.getString(cursor.getColumnIndex("nome"));
-                    @SuppressLint("Range") int userIdFromDb = cursor.getInt(cursor.getColumnIndex("user_id"));
+                    @SuppressLint("Range") String userIdFromDb = cursor.getString(cursor.getColumnIndex("user_id"));
 
                     // Cria o objeto TreinoPlano e adiciona à lista
                     TreinoPlano treinoPlano = new TreinoPlano(id, nome, userIdFromDb);
@@ -788,5 +789,84 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return treinos;
     }
+
+
+
+
+    public ArrayList<TreinoPlano> getAllTreinoPlanos_sync() {
+        ArrayList<TreinoPlano> treinoPlanosList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase(); // Ou `getWritableDatabase` dependendo da necessidade
+
+        String query = "SELECT * FROM " + TABLE_TREINO_PLANO;
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                // Obtém os valores de cada coluna
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                String nome = cursor.getString(cursor.getColumnIndexOrThrow("nome"));
+                String userId = cursor.getString(cursor.getColumnIndexOrThrow("user_id"));
+
+                // Cria um objeto TreinoPlano e adiciona à lista
+                TreinoPlano treinoPlano = new TreinoPlano(id, nome, userId);
+                treinoPlanosList.add(treinoPlano);
+            } while (cursor.moveToNext());
+        }
+
+        // Fecha o cursor e o banco de dados
+        cursor.close();
+        db.close();
+
+        return treinoPlanosList;
+    }
+    @SuppressLint("Range")
+    public ArrayList<TreinoExercicioPlano> getAllTreinoExercicioPlanos_sync() {
+        ArrayList<TreinoExercicioPlano> treinoExercicioPlanos = new ArrayList<>();
+
+        // Defina a consulta SQL para obter todos os planos de treino da tabela
+        String query = "SELECT tep.id, tep.exercicio_id, tep.treino_id, tep.series, tep.repeticoes, tep.order_id, tp.user_id " +
+                "FROM " + TABLE_TREINO_EXERCICIO_PLANO + " AS tep " +
+                "JOIN " + TABLE_TREINO_PLANO + " AS tp " +
+                "ON tep.treino_id = tp.id";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+
+        // Verifique se o cursor contém dados
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                try {
+                    // Verifique se as colunas existem no Cursor
+                    int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                    int exercicio_id = cursor.getInt(cursor.getColumnIndexOrThrow("exercicio_id"));
+                    int treino_id = cursor.getInt(cursor.getColumnIndexOrThrow("treino_id"));
+                    int series = cursor.getInt(cursor.getColumnIndexOrThrow("series"));
+                    int repeticoes = cursor.getInt(cursor.getColumnIndexOrThrow("repeticoes"));
+                    int order_id = cursor.getInt(cursor.getColumnIndexOrThrow("order_id"));
+                    String user_id = cursor.getString(cursor.getColumnIndexOrThrow("user_id"));
+
+                    // Cria o objeto TreinoExercicioPlano e adiciona na lista
+                    TreinoExercicioPlano plano = new TreinoExercicioPlano(id, exercicio_id, treino_id, series, repeticoes, order_id, user_id);
+                    treinoExercicioPlanos.add(plano);
+                } catch (IllegalArgumentException e) {
+                    // Trate o erro caso alguma coluna não seja encontrada
+                    Log.e("DatabaseError", "Coluna não encontrada no Cursor: " + e.getMessage());
+                }
+            } while (cursor.moveToNext());
+        } else {
+            Log.d("DatabaseInfo", "Nenhum dado encontrado na tabela.");
+        }
+
+        // Feche o cursor e o banco de dados
+        if (cursor != null) {
+            cursor.close();
+        }
+        db.close();
+
+        return treinoExercicioPlanos;
+    }
+
+
+
 
 }
