@@ -50,7 +50,7 @@ public class exercise_detail extends Fragment {
     private ImageButton perfilButton;
     private ImageButton statsButton;
     private TextView oxygenInfo;
-    private TextView heartbeatInfo;
+
     private boolean threads = true;
     private ProgressBar progressBar; // ProgressBar
     private DatabaseHelper databaseHelper;
@@ -94,7 +94,6 @@ public class exercise_detail extends Fragment {
         perfilButton = view.findViewById(R.id.perfil);
         statsButton = view.findViewById(R.id.stats);
         oxygenInfo = view.findViewById(R.id.oxygenInfo);
-        heartbeatInfo = view.findViewById(R.id.heartbeatInfo);
 
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -251,8 +250,8 @@ public class exercise_detail extends Fragment {
             dates.add(day);
         }
 
-        oxygenInfo.setText("Oxigenação: " + CalculateMean(oxigen) + " %");
-        heartbeatInfo.setText("Batimentos Cardíacos: " + CalculateMean(bati) + " bpm");
+
+        oxygenInfo.setText("Oxigenação: " + CalculateMean(oxigen) + " %\nBatimentos Cardíacos: " + CalculateMean(bati) + " bpm");
 
         LineDataSet dataSet = new LineDataSet(entries, "Média de Pesos");
         dataSet.setColor(ColorTemplate.MATERIAL_COLORS[0]);
@@ -345,8 +344,8 @@ public class exercise_detail extends Fragment {
             dates.add(day);
         }
 
-        oxygenInfo.setText("Oxigenação: " + calcularMaiorValor(groupedExecucoesOxigenacao) + " %");
-        heartbeatInfo.setText("Batimentos Cardíacos: " + calcularMaiorValor(groupedExecucoesBatimentos) + " bpm");
+        oxygenInfo.setText("Oxigenação: " + calcularMaiorValor(groupedExecucoesOxigenacao) + " %\nBatimentos Cardíacos: " + calcularMaiorValor(groupedExecucoesBatimentos) + " bpm");
+
 
         LineDataSet dataSet = new LineDataSet(entries, "Peso Máximo");
         dataSet.setColor(ColorTemplate.MATERIAL_COLORS[2]);

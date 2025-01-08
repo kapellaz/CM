@@ -1,5 +1,8 @@
 package com.example.finalchallenge.classes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TreinoExercicioPlano {
     private int id;               // ID do plano de exercício
     private int exercicio_id;     // ID do exercício
@@ -75,6 +78,18 @@ public class TreinoExercicioPlano {
 
     public void setUser_id(String user_id) {
         this.user_id = user_id;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", id);
+        map.put("exercicio_id",exercicio_id);
+        map.put("treino_id",treino_id);
+        map.put("series",series);
+        map.put("repeticoes",repeticoes);
+        map.put("order_id",order_id);
+        map.put("user_id", user_id);
+        return map;
     }
 
 

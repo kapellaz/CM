@@ -1,5 +1,8 @@
 package com.example.finalchallenge.classes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TreinosDone {
     private int id;
     private int treino_id;
@@ -45,6 +48,15 @@ public class TreinosDone {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public Map<String, Object> toMap(String user_id) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("treino_id", treino_id);
+        map.put("data", data);
+        map.put("exec", exec);
+        map.put("user_id",user_id);
+        return map;
     }
 
     @Override

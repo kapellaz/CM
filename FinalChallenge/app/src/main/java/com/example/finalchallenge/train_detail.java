@@ -168,11 +168,13 @@ public class train_detail extends Fragment {
         return new ArrayAdapter<Exercise>(requireActivity(), R.layout.item_exercise_start, R.id.exerciseName, treinosExec) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
+                // Verifica se a view pode ser reutilizada
                 if (convertView == null) {
+                    // Infla o layout se não for possível reutilizar a view
                     convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_exercise_start, parent, false);
                 }
 
-                // Obtém o ícone de check e o nome do exercício
+                // Obtém as referências dos elementos da view
                 ImageView checkMarkIcon = convertView.findViewById(R.id.checkMarkIcon);
                 TextView exerciseName = convertView.findViewById(R.id.exerciseName);
 
@@ -182,17 +184,21 @@ public class train_detail extends Fragment {
                 // Configura o nome do exercício
                 exerciseName.setText(exercise.toString());
 
-                // Se o exercício foi completado (séries = 0), exibe o ícone de check
+                // Verifica se o exercício foi completado (séries = 0)
                 if (exercise.getSeries() == 0) {
+                    // Se o exercício foi completado, exibe o ícone de check
                     checkMarkIcon.setVisibility(View.VISIBLE);  // Exibe o ícone de check
                 } else {
+                    // Se não foi completado, esconde o ícone de check
                     checkMarkIcon.setVisibility(View.GONE);  // Esconde o ícone de check
                 }
 
+                // Retorna a view configurada
                 return convertView;
             }
         };
     }
+
 
 
     private void updateListView(List<Exercise> treinos) {
@@ -591,28 +597,49 @@ public class train_detail extends Fragment {
             @Override
             public void onClick(View v) {
                 String weight = input.getText().toString();
-                if (!weight.isEmpty() && btnTriggerArduino.getVisibility() != View.VISIBLE) {
-                    try {
-                        exec = databaseHelper.get_training_execs(treinoExec.getId()) + 1;
-                    } catch (Exception e) {
-                        exec = 1;
+                if(!InternetOn){
+                    if (!weight.isEmpty()){
+                        try {
+                            exec = databaseHelper.get_training_execs(treinoExec.getId()) + 1;
+                        } catch (Exception e) {
+                            exec = 1;
+
+                        }
+                        int series = treinosExec.get(position).getSeries();
+                        treinosExec.get(position).setSeries(series - 1);
+                        updateListView(treinosExec); // Atualiza a lista
+                        System.out.println(treinosExec.get(position).getId() + " e o plano id é " + treinoExec.getId());
+                        SeriesInfo seriesInfo = new SeriesInfo(Integer.parseInt(weight), series, treinosExec.get(position).getId(), treinoExec.getId(), exec, oxigenacao, batimentos);
+                        listofexecutionsseries.add(seriesInfo);
+                        adapter.notifyDataSetChanged(); // Notifica o adaptador de que os dados mudaram
+                        dialogWeight.dismiss();
 
                     }
-                    int series = treinosExec.get(position).getSeries();
-                    treinosExec.get(position).setSeries(series - 1);
-                    updateListView(treinosExec); // Atualiza a lista
-                    System.out.println(treinosExec.get(position).getId() +  " e o plano id é " + treinoExec.getId());
-                    SeriesInfo seriesInfo = new SeriesInfo(Integer.parseInt(weight), series,treinosExec.get(position).getId(), treinoExec.getId(), exec,oxigenacao,batimentos);
-                    listofexecutionsseries.add(seriesInfo);
-                    adapter.notifyDataSetChanged(); // Notifica o adaptador de que os dados mudaram
-                    dialogWeight.dismiss();
+                }else {
 
-                    Toast.makeText(getContext(), "Weight for " + treinosExec.get(position).getName() + " set to " + weight, Toast.LENGTH_SHORT).show();
-                } else if (weight.isEmpty()) {
-                    Toast.makeText(getContext(), "Coloque o peso!", Toast.LENGTH_SHORT).show();
-                }else{
-                    Toast.makeText(getContext(), "Obtenha o rastreamento de saúde!", Toast.LENGTH_SHORT).show();
+                    if (!weight.isEmpty() && btnTriggerArduino.getVisibility() != View.VISIBLE) {
+                        try {
+                            exec = databaseHelper.get_training_execs(treinoExec.getId()) + 1;
+                        } catch (Exception e) {
+                            exec = 1;
 
+                        }
+                        int series = treinosExec.get(position).getSeries();
+                        treinosExec.get(position).setSeries(series - 1);
+                        updateListView(treinosExec); // Atualiza a lista
+                        System.out.println(treinosExec.get(position).getId() + " e o plano id é " + treinoExec.getId());
+                        SeriesInfo seriesInfo = new SeriesInfo(Integer.parseInt(weight), series, treinosExec.get(position).getId(), treinoExec.getId(), exec, oxigenacao, batimentos);
+                        listofexecutionsseries.add(seriesInfo);
+                        adapter.notifyDataSetChanged(); // Notifica o adaptador de que os dados mudaram
+                        dialogWeight.dismiss();
+
+                        Toast.makeText(getContext(), "Weight for " + treinosExec.get(position).getName() + " set to " + weight, Toast.LENGTH_SHORT).show();
+                    } else if (weight.isEmpty()) {
+                        Toast.makeText(getContext(), "Coloque o peso!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), "Obtenha o rastreamento de saúde!", Toast.LENGTH_SHORT).show();
+
+                    }
                 }
             }
         });

@@ -2,8 +2,12 @@ package com.example.finalchallenge;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,16 +25,30 @@ import com.example.finalchallenge.classes.ExerciseDetailed;
 import com.example.finalchallenge.classes.TreinoExec;
 import com.example.finalchallenge.classes.TreinosDetails;
 import com.example.finalchallenge.classes.TreinosDone;
+import com.example.finalchallenge.classes.Utilizador;
 import com.example.finalchallenge.classes.viewModel;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;public class menu_principal extends Fragment {
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class menu_principal extends Fragment {
 
     private ImageButton logoutButton;
     private ImageButton halterButton;
@@ -44,6 +62,8 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
     private ProgressBar progressBar; // ProgressBar
     private viewModel modelview;
     private FirebaseFirestorehelper firebaseFirestorehelper;
+    private Boolean InternetOn;
+    private Executor executorService = Executors.newSingleThreadExecutor();
     public menu_principal() {
         // Required empty public constructor
     }
@@ -55,12 +75,77 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
         modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
         firebaseFirestorehelper = new FirebaseFirestorehelper();
 
-      //  firebaseFirestorehelper.syncTreinoPlanosFromFirebase(modelview.getUser().getValue().getId(),databaseHelper);
-        //firebaseFirestorehelper.syncTreinoPlanosExercicioFromFirebase(modelview.getUser().getValue().getId(),databaseHelper);
-        databaseHelper.inserirPlanosTreino2(); // - SE FOR A PRIMEIRA VEZ A CORRER ESTA MERDA
-        Integer id = 2;
+        InternetOn = isNetworkConnected();
+        if(InternetOn && modelview.getUser().getValue().getFirstTimeFragment()){
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+
+                    if (databaseHelper.isExercisesTableEmpty()) {
+                        getCategoriesAndExercises();
+                    } else {
+                        Log.d("Database", "Exercícios já estão na base de dados.");
+                    }
+                }
+            });
+        }
 
     }
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (cm != null) {
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        }
+        return false;
+    }
+
+    public interface FirebaseSyncCallback {
+        void onComplete();
+    }
+
+    private void synchronizeFirebaseDataAndUpdateList(TextView treinos_completos) {
+        System.out.println(modelview.getFirstTIMEinFrag().getValue());
+        if(Boolean.TRUE.equals(modelview.getIsFirstTime().getValue()) && modelview.getUser().getValue().getFirstTimeFragment() && InternetOn) {
+            System.out.println("No account");
+            String userId = modelview.getUser().getValue().getId();
+            // Contador para rastrear operações concluídas
+            AtomicInteger pendingTasks = new AtomicInteger(4); // Número de operações do Firebase
+            FirebaseSyncCallback onTaskComplete = () -> {
+                if (pendingTasks.decrementAndGet() == 0) {
+                    // Todas as operações foram concluídas, chama getTreinos
+                    getTreinos(2, treinos_completos);
+                }
+            };
+            firebaseFirestorehelper.getAllPlansFromFirebase(userId, databaseHelper, onTaskComplete);
+            firebaseFirestorehelper.getAllPlansExerciseFromFirebase(userId, databaseHelper, onTaskComplete);
+            firebaseFirestorehelper.getAllTreinoDoneFromFirebase(userId, databaseHelper, onTaskComplete);
+            firebaseFirestorehelper.getAllSeriesFromFirebase(userId, databaseHelper, onTaskComplete);
+            modelview.getUser().getValue().setFirstTimeFragment(false);
+        } else if (modelview.getUser().getValue().getFirstTimeFragment() && InternetOn) {
+            System.out.println("Syncronized");
+            AtomicInteger pendingTasks = new AtomicInteger(4); // Número de operações do Firebase
+            FirebaseSyncCallback onTaskComplete = () -> {
+                if (pendingTasks.decrementAndGet() == 0) {
+
+                    getTreinos(2, treinos_completos);
+                }
+            };
+            firebaseFirestorehelper.syncLocalDataToFirebasePLANOS(modelview.getUser().getValue().getId(),databaseHelper, onTaskComplete);
+            firebaseFirestorehelper.syncLocalDataToFirebaseExercicios(modelview.getUser().getValue().getId(),databaseHelper, onTaskComplete);
+            firebaseFirestorehelper.syncLocalDataToFirebaseTreinoDone(modelview.getUser().getValue().getId(),databaseHelper, onTaskComplete);
+            firebaseFirestorehelper.syncLocalDataToFirebaseSerie(modelview.getUser().getValue().getId(),databaseHelper, onTaskComplete);
+            modelview.getUser().getValue().setFirstTimeFragment(false);
+        } else {
+            System.out.println("ALL CHECK");
+
+
+            getTreinos(2, treinos_completos);
+            modelview.getUser().getValue().setFirstTimeFragment(false);
+        }
+    }
+
 
     private void getTreinos(Integer id, TextView treinos_completos) {
 
@@ -147,9 +232,8 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
         statsButton.setOnClickListener(v -> handleStatsClick());
         friendsButton.setOnClickListener(v -> handleFriendsClick());
         Integer id = 2;
-        getTreinos(id,treinos_completos);
-
-
+        synchronizeFirebaseDataAndUpdateList(treinos_completos);
+        modelview.setIsFirstTime(false);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -208,4 +292,134 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
     private void handleFriendsClick() {
         ((MainActivity) requireActivity()).switchtoFriends();
     }
+
+
+
+
+    private void getCategoriesAndExercises() {
+
+        try {
+            // Obter todas as categorias
+            URL url = new URL("https://api.algobook.info/v1/gym/categories");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            int responseCode = con.getResponseCode();
+
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                Log.e("API Error", "Erro ao obter categorias. Response Code: " + responseCode);
+                return;
+            }
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // Processar categorias obtidas
+            List<String> categories = parseCategories(response.toString());
+
+            // Obter os exercícios de cada categoria
+            List<String> allExercises = new ArrayList<>();
+            for (String category : categories) {
+                List<String> exercises = getExercisesForCategory(category);
+                allExercises.addAll(exercises);
+            }
+
+            databaseHelper.AddExerciseAPIintoBD((ArrayList<String>) allExercises);
+
+        } catch (IOException e) {
+            Log.e("Network Error", "Erro de rede: " + e.getMessage());
+        }
+    }
+
+
+
+    private List<String> parseCategories(String jsonResponse) {
+        List<String> categories = new ArrayList<>();
+        try {
+            // Criar o JSONArray a partir da resposta JSON
+            JSONArray categoriesArray = new JSONArray(jsonResponse);
+
+            // Iterar sobre o array de categorias e adicionar cada categoria à lista
+            for (int i = 0; i < categoriesArray.length(); i++) {
+                String category = categoriesArray.getString(i);
+
+                // Adicionar a categoria à lista
+                categories.add(category);
+            }
+        } catch (Exception e) {
+            Log.e("JSON Parsing Error", "Erro ao parsear a resposta JSON: " + e.getMessage());
+        }
+
+        return categories;
+    }
+
+
+    private List<String> getExercisesForCategory(String category) {
+        List<String> exercises = new ArrayList<>();
+        try {
+            System.out.println("ENTROU PARA PEGAR EM CA");
+            // Fazer a requisição para obter os exercícios da categoria
+            URL url = new URL("https://api.algobook.info/v1/gym/categories/" + category);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            int responseCode = con.getResponseCode();
+
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                Log.e("API Error", "Erro ao obter exercícios para a categoria " + category + ". Response Code: " + responseCode);
+                return exercises;
+            }
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+            System.out.println("EXERCICI)OS " + response.toString());
+
+            // Processar exercícios obtidos para a categoria
+            exercises = parseExercises(response.toString());
+
+        } catch (IOException e) {
+            Log.e("Network Error", "Erro ao obter exercícios para a categoria " + category + ": " + e.getMessage());
+        }
+        return exercises;
+    }
+
+    private List<String> parseExercises(String jsonResponse) {
+        List<String> exercises = new ArrayList<>();
+        try {
+            // Criar o JSONObject a partir da resposta JSON
+            JSONObject responseObject = new JSONObject(jsonResponse);
+
+            // Obter o array de exercícios dentro do campo "exercises"
+            JSONArray exercisesArray = responseObject.getJSONArray("exercises");
+
+            // Iterar sobre o array de exercícios
+            for (int i = 0; i < exercisesArray.length(); i++) {
+                // Obter o exercício atual
+                JSONObject exerciseObject = exercisesArray.getJSONObject(i);
+
+                // Extrair o nome e o músculo
+                String name = exerciseObject.getString("name");
+                String muscle = exerciseObject.getString("muscle");
+
+                // Criar a string no formato "name - muscle" e adicionar à lista
+                String exerciseInfo = name + " - " + muscle;
+                exercises.add(exerciseInfo);
+            }
+        } catch (Exception e) {
+            Log.e("JSON Parsing Error", "Erro ao parsear a resposta JSON: " + e.getMessage());
+        }
+        return exercises;
+    }
+
+
 }
