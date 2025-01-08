@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".train_detail">
 
-    <!-- Toolbar -->
+    <!-- Toolbar with a LinearLayout inside for centering buttons -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar3"
         android:layout_width="match_parent"
@@ -61,72 +61,98 @@
 
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
-    <!-- Exercise Name -->
+
     <TextView
         android:id="@+id/exerciseName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Training Name"
+        android:text="Traning Name"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar3"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5" />
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar3" />
 
-    <!-- Exercise List Label -->
     <TextView
         android:id="@+id/listExercise"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="32dp"
         android:text="List of Exercise:"
         android:textStyle="bold"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/exerciseName" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar3" />
 
-    <!-- ProgressBar -->
+    <!-- Botão para adicionar exercício -->
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/helpButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="16dp"
+
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/round_button"
+        android:contentDescription="Adicionar Exercício"
+        android:src="@android:drawable/ic_menu_help"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar3" />
+
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="137dp"
         android:layout_height="157dp"
+        android:layout_centerInParent="true"
         android:indeterminate="true"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
 
-    <!-- ListView -->
+
     <ListView
         android:id="@+id/listView"
-        android:layout_width="737dp"
-        android:layout_height="222dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginEnd="2dp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout4"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintTop_toBottomOf="@+id/listExercise"
-        tools:layout_editor_absoluteX="-6dp"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintVertical_bias="0.0" />
 
-    <!-- Bottom Buttons (Start, Edit, Delete) -->
     <LinearLayout
         android:id="@+id/linearLayout4"
-        android:layout_width="match_parent"
+        android:layout_width="408dp"
         android:layout_height="49dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/listView">
 
-        <!-- Start Button -->
+        <!-- Botão Start -->
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1">
+
             <ImageButton
                 android:id="@+id/startbutton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:background="@drawable/button_end" />
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/button_end"
+                android:contentDescription="Start Training Button" />
+
             <TextView
                 android:id="@+id/start"
                 android:layout_width="wrap_content"
@@ -137,16 +163,21 @@
                 android:textSize="16sp" />
         </RelativeLayout>
 
-        <!-- Edit Button -->
+        <!-- Botão Edit -->
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1">
+
             <ImageButton
                 android:id="@+id/editButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:background="@drawable/button_end" />
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/button_end"
+                android:contentDescription="Edit Button" />
+
             <TextView
                 android:id="@+id/edit"
                 android:layout_width="wrap_content"
@@ -157,16 +188,21 @@
                 android:textSize="16sp" />
         </RelativeLayout>
 
-        <!-- Delete Button -->
+        <!-- Botão Delete -->
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1">
+
             <ImageButton
                 android:id="@+id/delete_image"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:background="@drawable/button_end" />
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/button_end"
+                android:contentDescription="Delete Button" />
+
             <TextView
                 android:id="@+id/buttondelete"
                 android:layout_width="wrap_content"
@@ -176,6 +212,43 @@
                 android:textColor="@color/white"
                 android:textSize="16sp" />
         </RelativeLayout>
+
+        <!-- Botões Stop e Finish (centralizados lado a lado) -->
+        <LinearLayout
+            android:id="@+id/linearLayoutStopFinish"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:gravity="center">
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <ImageButton
+                    android:id="@+id/finish"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:background="@drawable/button_end"
+                    android:contentDescription="Finish Button" />
+
+                <TextView
+                    android:id="@+id/finish_"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="Finish"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+        </LinearLayout>
+
     </LinearLayout>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

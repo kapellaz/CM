@@ -1,10 +1,15 @@
 package com.example.finalchallenge;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
+import androidx.fragment.app.FragmentTransaction;
+;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,11 +24,48 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, login, "LOGIN")
-                .commit();
-    }
 
+
+    if (savedInstanceState != null) {
+        // Retrieve the saved fragment tag
+        String fragmentTag = savedInstanceState.getString("currentFragmentTag");
+        if (fragmentTag != null) {
+            Fragment fragment = getSupportFragmentManager().findFragmentByTag(fragmentTag);
+            if (fragment == null) {
+                // Fragment is not currently in the manager, recreate it based on the tag
+                if (fragmentTag.equals("MENU")) {
+                    fragment = new menu_principal();
+                } else if (fragmentTag.equals("Stats")) {
+                    fragment = new Exercise_List();
+                } else if (fragmentTag.equals("Train_Edit")) {
+                    fragment = new train_edit_exercise();
+                } else if (fragmentTag.equals("Training")) {
+                    fragment = new train_list();
+                } else if (fragmentTag.equals("Login")) {
+                    fragment = new login();
+                } else if (fragmentTag.equals("Train Details")) {
+                    fragment = new train_detail();
+                } else if (fragmentTag.equals("FriendsList")) {
+                    fragment = new FriendsList();
+                } else if (fragmentTag.equals("RequestList")) {
+                    fragment = new OnHoldList();
+                } else if (fragmentTag.equals("Train Details")) {
+                    fragment = new exercise_detail();
+                } else {
+                    fragment = new login(); // Load your default fragment if needed
+                }
+
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.main, fragment, fragmentTag)
+                        .commit();
+            }
+        }
+    } else {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.main, login);
+        ft.commit();
+    }
+}
 
     public void switchMenu() {
         getSupportFragmentManager().beginTransaction()
@@ -82,6 +124,17 @@ public class MainActivity extends AppCompatActivity {
                 .addToBackStack(null)
                 .commit();
     }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main);
+        if (currentFragment != null) {
+            Log.v("DADA","Save" + currentFragment.getTag());
+            outState.putString("currentFragmentTag", currentFragment.getTag());
+        }
+    }
+
 
 }
 

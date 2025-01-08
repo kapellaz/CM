@@ -54,11 +54,7 @@ public class Exercise_List extends Fragment {
         // Inicializando o ListView
         ListView listView = view.findViewById(R.id.listView);
 
-        // Criando uma lista de itens (exemplo de treino ou lista de usuários)
-        String[] items = {"Exercise 1", "Exercise 2", "Exercise 3", "Exercise 4", "Exercise 5"};
-
-        // Criando o Adapter para a lista (pode ser um ArrayAdapter ou CustomAdapter)
-        // Criando o Adapter para a lista (pode ser um ArrayAdapter ou CustomAdapter)
+         // Criando o Adapter para a lista (pode ser um ArrayAdapter ou CustomAdapter)
         ArrayAdapter<Exercicio> adapter = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_list_item_1, list_of_exercises);
 
         // Definindo o Adapter para o ListView

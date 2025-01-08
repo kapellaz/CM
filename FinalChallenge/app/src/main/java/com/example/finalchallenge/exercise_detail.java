@@ -1,5 +1,6 @@
 package com.example.finalchallenge;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +26,8 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+
+import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,11 +49,13 @@ public class exercise_detail extends Fragment {
     private ImageButton halterButton;
     private ImageButton perfilButton;
     private ImageButton statsButton;
+    private TextView oxygenInfo;
+
     private boolean threads = true;
     private ProgressBar progressBar; // ProgressBar
     private DatabaseHelper databaseHelper;
     private List<Execution> executions;
-    private Map<String, List<Integer>> execucoesPorDia = new HashMap<>();
+    private Map<String, List<String>> execucoesPorDia = new HashMap<>();
     private viewModel modelview;
     private String selectedFriend;
     public exercise_detail() {
@@ -75,6 +81,8 @@ public class exercise_detail extends Fragment {
 
         // Obtém o mapa com as execuções agrupadas por data (de pesos por dia)
         get();
+        TextView title = view.findViewById(R.id.exerciseName);
+        title.setText(modelview.getExercicio().getValue().getNome());
         spinner_friends = view.findViewById(R.id.spinner_friends);
         // Localiza o Spinner
         exerciseSpinner = view.findViewById(R.id.spinner);
@@ -85,6 +93,8 @@ public class exercise_detail extends Fragment {
         halterButton = view.findViewById(R.id.halter);
         perfilButton = view.findViewById(R.id.perfil);
         statsButton = view.findViewById(R.id.stats);
+        oxygenInfo = view.findViewById(R.id.oxygenInfo);
+
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -116,7 +126,7 @@ public class exercise_detail extends Fragment {
                 handleStatsClick();
             }
         });
-        // Dados para exibir no Spinner
+
         List<String> exerciseOptions = new ArrayList<>();
         exerciseOptions.add("Média de Pesos");
         exerciseOptions.add("Peso Máximo");
@@ -125,8 +135,8 @@ public class exercise_detail extends Fragment {
         // Configura o Adapter para o Spinner
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
-                android.R.layout.simple_spinner_item, // Layout padrão para itens no Spinner
-                exerciseOptions // Lista de dados
+                android.R.layout.simple_spinner_item,
+                exerciseOptions
         );
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -136,13 +146,11 @@ public class exercise_detail extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 if (position == 0) {
-                    // Exibe a média de pesos no gráfico
                     if(threads == false){
                         showWeightAverageGraph();
                     }
 
                 } else if (position == 1) {
-                    // Exibe o peso máximo no gráfico
                     if(threads == false){
                         showMaxWeightGraph();
                     }
@@ -156,7 +164,7 @@ public class exercise_detail extends Fragment {
             }
         });
 
-        // Dados para exibir no Spinner de amigos
+
         List<String> friendsList = new ArrayList<>();
         friendsList.add("Selecione o seu amigo");
         friendsList.add("John Doe");
@@ -164,28 +172,27 @@ public class exercise_detail extends Fragment {
         friendsList.add("Alice Johnson");
         friendsList.add("Bob Brown");
 
-// Configura o Adapter para o Spinner de amigos
+
         ArrayAdapter<String> friendsAdapter = new ArrayAdapter<>(
                 requireContext(),
-                android.R.layout.simple_spinner_item, // Layout padrão para itens no Spinner
-                friendsList // Lista de amigos
+                android.R.layout.simple_spinner_item,
+                friendsList
         );
 
         friendsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner_friends.setAdapter(friendsAdapter);
 
-// Listener para o Spinner de amigos
+
         spinner_friends.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 if (position != 0) {
                     selectedFriend = friendsList.get(position);
-                    // Faça algo com o amigo selecionado, por exemplo:
-                    System.out.println("Amigo selecionado: " + selectedFriend);
-                    showWeightAverageGraphForBothUsers(); // Ou qualquer outra função necessária
+
+                    showWeightAverageGraphForBothUsers();
                 } else {
                     showWeightAverageGraph();
-                    selectedFriend = null; // Nenhum amigo selecionado ainda
+                    selectedFriend = null;
                 }
             }
 
@@ -200,61 +207,58 @@ public class exercise_detail extends Fragment {
 
 
 
+    @SuppressLint("SetTextI18n")
     private void showWeightAverageGraph() {
-
         if (execucoesPorDia.isEmpty()) {
             return;
         }
-
-
         List<Entry> entries = new ArrayList<>();
         List<String> dates = new ArrayList<>();
+        ArrayList<Integer> oxigen = new ArrayList<>();
+        ArrayList<Integer> bati = new ArrayList<>();
 
+        Map<String, List<String>> groupedExecucoes = new HashMap<>();
 
-        Map<String, List<Integer>> groupedExecucoes = new HashMap<>();
+        for (Map.Entry<String, List<String>> entry : execucoesPorDia.entrySet()) {
+            String day = extractDate(entry.getKey());
+            List<String> info = entry.getValue();
 
-        for (Map.Entry<String, List<Integer>> entry : execucoesPorDia.entrySet()) {
-            String day = extractDate(entry.getKey());  // Extrai a data da chave
-            List<Integer> pesos = entry.getValue();  // Lista de pesos associados à data
-
-            // Se a data já existir no mapa agrupado, adiciona os pesos
             if (groupedExecucoes.containsKey(day)) {
-                groupedExecucoes.get(day).addAll(pesos);
+                groupedExecucoes.get(day).addAll(info);
             } else {
-                // Caso contrário, cria uma nova lista para a data
-                groupedExecucoes.put(day, new ArrayList<>(pesos));
+
+                groupedExecucoes.put(day, new ArrayList<>(info));
             }
         }
-
-
-        Map<String, List<Integer>> sortedGroupedExecucoes = new TreeMap<>(groupedExecucoes);
-
-
+        Map<String, List<String>> sortedGroupedExecucoes = new TreeMap<>(groupedExecucoes);
         int dayIndex = 0;
-        for (Map.Entry<String, List<Integer>> entry : sortedGroupedExecucoes.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : sortedGroupedExecucoes.entrySet()) {
             String day = entry.getKey();
-            List<Integer> pesos = entry.getValue();
-
+            List<String> pesos = entry.getValue();
 
             float totalWeight = 0;
-            for (Integer peso : pesos) {
-                totalWeight += peso;
+            for (String peso : pesos) {
+                String[] data = peso.split("\\|");
+                totalWeight += Integer.parseInt(data[0]);
+                bati.add(Integer.parseInt(data[1]));
+                oxigen.add(Integer.parseInt(data[2]));
             }
 
             float averageWeight = totalWeight / pesos.size();
-
             entries.add(new Entry(dayIndex, averageWeight));
             dayIndex++;
             dates.add(day);
         }
 
 
+        oxygenInfo.setText("Oxigenação: " + CalculateMean(oxigen) + " %\nBatimentos Cardíacos: " + CalculateMean(bati) + " bpm");
+
         LineDataSet dataSet = new LineDataSet(entries, "Média de Pesos");
         dataSet.setColor(ColorTemplate.MATERIAL_COLORS[0]);
         dataSet.setValueTextColor(ColorTemplate.MATERIAL_COLORS[0]);
         LineData lineData = new LineData(dataSet);
-        dataSet.setCircleRadius(6f);  // Aumenta o raio dos pontos para 6 (valor padrão é 4f)
-        dataSet.setCircleColor(ColorTemplate.MATERIAL_COLORS[1]);  // Cor dos círculos
+        dataSet.setCircleRadius(6f);
+        dataSet.setCircleColor(ColorTemplate.MATERIAL_COLORS[1]);
         dataSet.setCircleHoleColor(Color.WHITE);
 
         lineChart.setData(lineData);
@@ -262,17 +266,17 @@ public class exercise_detail extends Fragment {
 
 
         lineChart.getDescription().setText("Evolução do Peso ao Longo do Tempo");
-        lineChart.getDescription().setTextSize(14f); // Aumenta o tamanho do texto da descrição
-        dataSet.setValueTextSize(11f);  // Aumenta o tamanho da fonte dos números associados aos pontos
+        lineChart.getDescription().setTextSize(14f);
+        dataSet.setValueTextSize(11f);
 
-// Aumenta o tamanho dos números no eixo Y
-        lineChart.getAxisLeft().setTextSize(12f); // Para os números do eixo Y à esquerda
-        lineChart.getAxisRight().setTextSize(12f); // Para os números do eixo Y à direita
 
-// Aumenta o tamanho dos números no eixo X
+        lineChart.getAxisLeft().setTextSize(12f);
+        lineChart.getAxisRight().setTextSize(12f);
+
+
         lineChart.getXAxis().setTextSize(12f);
-        // Rotaciona os rótulos do eixo X para ficar vertical
-        lineChart.getXAxis().setLabelRotationAngle(90f); // Rotaciona os rótulos do eixo X para 90 graus
+
+        lineChart.getXAxis().setLabelRotationAngle(90f);
 
 
         lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
@@ -293,73 +297,71 @@ public class exercise_detail extends Fragment {
 
 
 
+    @SuppressLint("SetTextI18n")
     private void showMaxWeightGraph() {
-
         if (execucoesPorDia.isEmpty()) {
             return;
         }
-
 
         List<Entry> entries = new ArrayList<>();
         List<String> dates = new ArrayList<>();
 
 
-        Map<String, List<Integer>> groupedExecucoes = new HashMap<>();
+        Map<String, List<Integer>> groupedExecucoesPeso = new HashMap<>();
+        Map<String, List<Integer>> groupedExecucoesBatimentos = new HashMap<>();
+        Map<String, List<Integer>> groupedExecucoesOxigenacao = new HashMap<>();
 
-        for (Map.Entry<String, List<Integer>> entry : execucoesPorDia.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : execucoesPorDia.entrySet()) {
             String day = extractDate(entry.getKey());
-            List<Integer> pesos = entry.getValue();
+            List<String> info = entry.getValue();
 
-            // Se a data já existir no mapa agrupado, adiciona os pesos
-            if (groupedExecucoes.containsKey(day)) {
-                groupedExecucoes.get(day).addAll(pesos);
-            } else {
-                // Caso contrário, cria uma nova lista para a data
-                groupedExecucoes.put(day, new ArrayList<>(pesos));
+
+            for (String data : info) {
+                String[] partes = data.split("\\|");
+
+
+                if (partes.length == 3) {
+                    int peso = Integer.parseInt(partes[0]);  // Peso
+                    int batimentos = Integer.parseInt(partes[1]);  // Batimentos
+                    int oxigenacao = Integer.parseInt(partes[2]);  // Oxigenação
+
+                    groupedExecucoesPeso.computeIfAbsent(day, k -> new ArrayList<>()).add(peso);
+                    groupedExecucoesBatimentos.computeIfAbsent(day, k -> new ArrayList<>()).add(batimentos);
+                    groupedExecucoesOxigenacao.computeIfAbsent(day, k -> new ArrayList<>()).add(oxigenacao);
+                }
             }
         }
 
-
-        Map<String, List<Integer>> sortedGroupedExecucoes = new TreeMap<>(groupedExecucoes);
+        Map<String, List<Integer>> sortedGroupedExecucoesPeso = new TreeMap<>(groupedExecucoesPeso);
 
 
         int dayIndex = 0;
-        for (Map.Entry<String, List<Integer>> entry : sortedGroupedExecucoes.entrySet()) {
-            String day = entry.getKey();  // Data
-            List<Integer> pesos = entry.getValue();
-            int maiorNumero = Collections.max(pesos);
-
-            entries.add(new Entry(dayIndex, maiorNumero));
+        for (String day : sortedGroupedExecucoesPeso.keySet()) {
+            List<Integer> pesos = sortedGroupedExecucoesPeso.get(day);
+            int maxPeso = pesos.isEmpty() ? 0 : Collections.max(pesos);
+            entries.add(new Entry(dayIndex, maxPeso));
             dayIndex++;
             dates.add(day);
         }
+
+        oxygenInfo.setText("Oxigenação: " + calcularMaiorValor(groupedExecucoesOxigenacao) + " %\nBatimentos Cardíacos: " + calcularMaiorValor(groupedExecucoesBatimentos) + " bpm");
+
 
         LineDataSet dataSet = new LineDataSet(entries, "Peso Máximo");
         dataSet.setColor(ColorTemplate.MATERIAL_COLORS[2]);
         dataSet.setValueTextColor(ColorTemplate.MATERIAL_COLORS[2]);
         LineData lineData = new LineData(dataSet);
-        dataSet.setCircleRadius(6f);  // Aumenta o raio dos pontos para 6 (valor padrão é 4f)
+        dataSet.setCircleRadius(6f);
         dataSet.setCircleColor(ColorTemplate.MATERIAL_COLORS[1]);  // Cor dos círculos
         dataSet.setCircleHoleColor(Color.WHITE);
-
         lineChart.setData(lineData);
         lineChart.invalidate();
-
-
         lineChart.getDescription().setText("Evolução do Peso ao Longo do Tempo");
-        lineChart.getDescription().setTextSize(14f); // Aumenta o tamanho do texto da descrição
-        dataSet.setValueTextSize(11f);  // Aumenta o tamanho da fonte dos números associados aos pontos
-
-// Aumenta o tamanho dos números no eixo Y
-        lineChart.getAxisLeft().setTextSize(12f); // Para os números do eixo Y à esquerda
-        lineChart.getAxisRight().setTextSize(12f); // Para os números do eixo Y à direita
-
-// Aumenta o tamanho dos números no eixo X
+        lineChart.getDescription().setTextSize(14f);
+        dataSet.setValueTextSize(11f);
+        lineChart.getAxisLeft().setTextSize(12f);
+        lineChart.getAxisRight().setTextSize(12f);
         lineChart.getXAxis().setTextSize(12f);
-        // Rotaciona os rótulos do eixo X para ficar vertical
-      //  lineChart.getXAxis().setLabelRotationAngle(90f); // Rotaciona os rótulos do eixo X para 90 graus
-
-
         lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {
@@ -398,20 +400,19 @@ public class exercise_detail extends Fragment {
 
     private String extractDate(String fullDate) {
         try {
-            // Define o formato da data original
+
             SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-            // Converte a string para um objeto Date
+
             Date date = inputFormat.parse(fullDate);
 
-            // Define o formato para a data desejada (sem horas)
+
             SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-            // Retorna a data formatada
             return outputFormat.format(date);
         } catch (Exception e) {
             e.printStackTrace();
-            return "";  // Retorna uma string vazia em caso de erro
+            return "";
         }
     }
 
@@ -437,18 +438,20 @@ public class exercise_detail extends Fragment {
             // Supondo que `execucoesPorDia` contenha dados de execuções de 2 usuários
             // Vamos simular para dois usuários, com dados diferentes para cada um
 
-            for (Map.Entry<String, List<Integer>> entry : execucoesPorDia.entrySet()) {
+            for (Map.Entry<String, List<String>> entry : execucoesPorDia.entrySet()) {
                 String day = extractDate(entry.getKey());  // Extrai a data da chave
-                List<Integer> pesos = entry.getValue();  // Lista de pesos associados à data
+                List<String> pesos = entry.getValue();  // Lista de pesos associados à data
 
                 // Simulando pesos diferentes para os dois usuários
-                List<Integer> pesosUser1 = new ArrayList<>(pesos);  // Para o User 1
-                List<Integer> pesosUser2 = new ArrayList<>(pesos);  // Para o User 2
+                List<Integer> pesosUser1 = new ArrayList<>();  // Para o User 1
+                List<Integer> pesosUser2 = new ArrayList<>();  // Para o User 2
 
                 // Ajustando os pesos para simular dados diferentes para os dois usuários
-                for (int i = 0; i < pesosUser1.size(); i++) {
-                    pesosUser1.set(i, pesosUser1.get(i) + 5000);  // Simula aumento para o User 1
-                    pesosUser2.set(i, pesosUser2.get(i) - 4000);   // Simula redução para o User 2
+                for (int i = 0; i < pesos.size(); i++) {
+
+                    String[] data2 = pesos.get(i).split("\\|");
+                    pesosUser1.add(i, Integer.parseInt(data2[0]) + 5000);  // Simula aumento para o User 1
+                    pesosUser2.add(i, Integer.parseInt(data2[0]) + 4000);   // Simula redução para o User 2
                 }
 
                 // Agrupando as execuções por data para os dois usuários
@@ -559,6 +562,8 @@ public class exercise_detail extends Fragment {
     }
 
 
+
+
     public void get(){
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -566,14 +571,14 @@ public class exercise_detail extends Fragment {
             @Override
             public void run() {
                 if (progressBar != null) {
-                    progressBar.setVisibility(View.VISIBLE);  // Mostrar o ProgressBar
+                    progressBar.setVisibility(View.VISIBLE);
                 }
 
                 execucoesPorDia = databaseHelper.getExecucoesPorExercicio(
                         Objects.requireNonNull(modelview.getUser().getValue()).getId(),
                         modelview.getExercicio().getValue().getId()
                 );
-                // Atualize a UI na thread principal
+
                 lineChart.post(new Runnable() {
                     @Override
                     public void run() {
@@ -588,6 +593,39 @@ public class exercise_detail extends Fragment {
             }}
         );
 
+    }
+    public static int calcularMaiorValor(Map<String, List<Integer>> groupedExecucoes) {
+        int maiorValor = Integer.MIN_VALUE;
+
+
+        for (Map.Entry<String, List<Integer>> entry : groupedExecucoes.entrySet()) {
+            List<Integer> valores = entry.getValue();
+
+            // Encontra o maior valor na lista
+            for (Integer valor : valores) {
+                if (valor > maiorValor) {
+                    maiorValor = valor;
+                }
+            }
+        }
+
+        return maiorValor;
+    }
+
+
+
+    public static double CalculateMean(ArrayList<Integer> list) {
+        if (list == null || list.isEmpty()) {
+            return 0;
+        }
+
+        int sum = 0;
+        for (int num : list) {
+            sum += num;
+        }
+
+
+        return (double) sum / list.size();
     }
 
 

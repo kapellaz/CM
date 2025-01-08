@@ -227,8 +227,8 @@ public class train_list extends Fragment {
 
     // Método para criar o treino
     private void createWorkout(String workoutName) {
-        long id = databaseHelper.createPlan(workoutName,modelview.getUser().getValue().getId());
-        TreinoPlano plan = new TreinoPlano((int) id,workoutName,1);
+        long id = databaseHelper.createPlan(workoutName,modelview.getUser().getValue().getId(),1);
+        TreinoPlano plan = new TreinoPlano((int) id,workoutName,modelview.getUser().getValue().getId(),1);
         firebaseFirestorehelper.createPlan((int)id,workoutName,modelview.getUser().getValue().getId());
         handleItemClick(plan);
     }

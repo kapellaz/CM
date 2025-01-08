@@ -22,10 +22,53 @@
         android:id="@+id/weightInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
         android:hint="Enter weight"
-        android:padding="10dp"/>
+        android:inputType="numberDecimal"
+        android:padding="10dp" />
 
+    <LinearLayout
+        android:id="@+id/linear"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:paddingTop="10dp">
+
+        <TextView
+            android:id="@+id/arduinoInfoText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Obter Rastreamento de Saúde:"
+            android:textSize="16sp"
+            android:paddingEnd="10dp"
+            android:gravity="start"/>
+
+        <Button
+            android:id="@+id/btnTriggerArduino"
+            android:layout_width="53dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/baseline_monitor_heart_24"
+            />
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/oxygenInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:text="Oxigenação: -- %"
+        android:textSize="14sp"
+        android:paddingTop="5dp" />
+
+    <TextView
+        android:id="@+id/heartbeatInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:text="Batimentos Cardíacos: -- bpm"
+        android:textSize="14sp"
+        android:paddingTop="5dp" />
     <!-- Botões OK e Cancel -->
     <LinearLayout
         android:orientation="horizontal"

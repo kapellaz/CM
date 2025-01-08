@@ -28,22 +28,23 @@
 
     <TextView
         android:id="@+id/text3"
-        android:layout_width="410dp"
-        android:layout_height="29dp"
-        android:layout_marginTop="128dp"
-        android:hint="Choose the friend:"
+        android:layout_width="411dp"
+        android:layout_height="33dp"
+        android:layout_marginTop="24dp"
+        android:hint="Escolha o amigo:"
         android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@+id/exerciseName"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="1dp" />
+        app:layout_constraintEnd_toEndOf="parent"
 
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/spinner" />
 
     <Spinner
         android:id="@+id/spinner"
         android:layout_width="410dp"
-        android:layout_height="43dp"
+        android:layout_height="49dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="1dp"
         android:background="@drawable/spinner_background"
@@ -130,12 +131,38 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinner_friends" />
 
+
+    <TextView
+        android:id="@+id/text4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:hint="Resultados do Rastreamento de Saúde:"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/activity_main_linechart"
+
+        tools:layout_editor_absoluteX="1dp" />
+    <TextView
+        android:id="@+id/oxygenInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:text="Oxigenação: -- %"
+        android:textSize="18sp"
+        android:paddingTop="5dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text4"/>
+
+
     <Spinner
         android:id="@+id/spinner_friends"
         android:layout_width="410dp"
-        android:layout_height="43dp"
+        android:layout_height="47dp"
         android:layout_marginTop="24dp"
-        android:layout_marginEnd="1dp"
         android:background="@drawable/spinner_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -147,7 +174,7 @@
         android:layout_width="413dp"
         android:layout_height="22dp"
         android:layout_marginTop="16dp"
-        android:hint="Choose the filter:"
+        android:hint="Escolha o filtro:"
         android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold"
