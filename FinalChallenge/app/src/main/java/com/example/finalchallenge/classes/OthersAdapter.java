@@ -8,22 +8,22 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.finalchallenge.R;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class UtilizadorAdapter extends RecyclerView.Adapter<UtilizadorAdapter.ViewHolder> {
+public class OthersAdapter extends RecyclerView.Adapter<OthersAdapter.ViewHolder>{
 
     private List<Utilizador> utilizadores;
     private List<Utilizador> filteredList;
 
-    // Constructor
-    public UtilizadorAdapter(List<Utilizador> utilizadores) {
-        this.utilizadores = utilizadores;
+    public OthersAdapter(List<Utilizador> users) {
+        this.utilizadores = users;
         this.filteredList = new ArrayList<>(utilizadores); // Initialize filteredList with the full list
     }
 
-    // ViewHolder to hold reference to the views
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView tvName;
 
@@ -32,19 +32,19 @@ public class UtilizadorAdapter extends RecyclerView.Adapter<UtilizadorAdapter.Vi
             tvName = itemView.findViewById(R.id.tvName);
         }
     }
-
-    // onCreateViewHolder: Inflate the item layout
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public OthersAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_friend, parent, false);
-        return new ViewHolder(itemView);
+                .inflate(R.layout.item_other, parent, false);
+        return new OthersAdapter.ViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(OthersAdapter.ViewHolder holder, int position) {
         Utilizador utilizador = filteredList.get(position); // Use filtered list here
         holder.tvName.setText(utilizador.getUsername());
+
+        //button de ADD!
     }
 
     @Override
@@ -53,9 +53,6 @@ public class UtilizadorAdapter extends RecyclerView.Adapter<UtilizadorAdapter.Vi
     }
 
     public void filter(String newText) {
-        if(utilizadores.isEmpty()){
-            return;
-        }
         filteredList.clear();
 
         if (newText.isEmpty()) {
@@ -69,4 +66,5 @@ public class UtilizadorAdapter extends RecyclerView.Adapter<UtilizadorAdapter.Vi
         }
         notifyDataSetChanged();
     }
+
 }

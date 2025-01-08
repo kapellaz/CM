@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import com.example.finalchallenge.classes.OthersAdapter;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import androidx.recyclerview.widget.RecyclerView;
@@ -35,12 +37,15 @@ import com.example.finalchallenge.classes.viewModel;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 public class FriendsList extends Fragment {
     private DatabaseHelper databaseHelper;
     private viewModel modelview;
-
-    private RecyclerView listFriends, listRequests;
+    private RecyclerView listFriends, listRequests, listOthers;
+    private UtilizadorAdapter adapterFriends;
+    private RequestAdapter requestAdapter;
+    private OthersAdapter othersAdapter;
 
     public FriendsList() {
         // Required empty public constructor
@@ -62,22 +67,16 @@ public class FriendsList extends Fragment {
         ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
         listFriends = rootView.findViewById(R.id.rvFriends);
         listRequests = rootView.findViewById(R.id.rvRequests);
+        listOthers = rootView.findViewById(R.id.rvOthers);
 
-        // Create a list of friends
-        List<Utilizador> friends = new ArrayList<>();
-        friends.add(new Utilizador("Alice", "aaaa"));
-        friends.add(new Utilizador("Bob", "aaaa"));
-        friends.add(new Utilizador("Charlie", "aaaa"));
-
-        // Set up the adapter and ListView
-        listFriends.setLayoutManager(new LinearLayoutManager(getContext()));
-        UtilizadorAdapter adapterFriends = new UtilizadorAdapter(friends);
-        listFriends.setAdapter(adapterFriends);
-
-        //Set-up the Requests
+        // Set up amigos
+        setupFriendsList(modelview.getUser().getValue().getId());
+        //Set-up the pedidos
         setupRequestList(modelview.getUser().getValue().getId());
+        //Set-up Others
+        setupOthers(modelview.getUser().getValue().getId());
 
-        // Additional setup for ListView can go here
+        // menu de pesquisa
         requireActivity().addMenuProvider(new MenuProvider() {
             @Override
             public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
@@ -96,12 +95,16 @@ public class FriendsList extends Fragment {
                         return false;
                     }
 
+
+                    //reagir aos inputs do user
                     @Override
                     public boolean onQueryTextChange(String newText) {
+                        adapterFriends.filter(newText);
+                        requestAdapter.filter(newText);
                         return true;
                     }
                 });
-                // Set up the Create Note
+
                 MenuItem goBack = menu.findItem(R.id.action_back);
                 goBack.setOnMenuItemClickListener(item -> {
                     requireActivity().getSupportFragmentManager().popBackStack();
@@ -116,6 +119,73 @@ public class FriendsList extends Fragment {
         }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         return rootView;
+    }
+
+    private void setupFriendsList(String userID){
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(new Runnable() {
+            List<String> amigosIDs = new ArrayList<>();
+            List<Utilizador> amigos = new ArrayList<>();
+            @Override
+            public void run() {
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                //coletar os amigos
+                db.collection("amigos")
+                        .whereEqualTo("user1", userID)
+                        .get()
+                        .addOnCompleteListener(task1 -> {
+                            if (task1.isSuccessful()) {
+
+                                // Process results from the first query
+                                if (!task1.getResult().isEmpty()) {
+                                    for (QueryDocumentSnapshot document : task1.getResult()) {
+                                        amigosIDs.add(document.getString("user2"));
+                                    }
+                                }
+
+                                // Perform the second query
+                                db.collection("amigos")
+                                        .whereEqualTo("user2", userID)
+                                        .get()
+                                        .addOnCompleteListener(task2 -> {
+                                            if (task2.isSuccessful()) {
+                                                // Process results from the second query
+                                                if (!task2.getResult().isEmpty()) {
+                                                    for (QueryDocumentSnapshot document : task2.getResult()) {
+                                                        amigosIDs.add(document.getString("user1"));
+                                                    }
+                                                }
+
+                                                // Fetch user documents for all found `amigosIDs`
+                                                List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+
+                                                for (String amigoID : amigosIDs) {
+                                                    tasks.add(db.collection("users").document(amigoID).get());
+                                                }
+
+                                                Tasks.whenAllSuccess(tasks).addOnCompleteListener(task3 -> {
+                                                    if (task3.isSuccessful()) {
+
+                                                        for (Task<DocumentSnapshot> t : tasks) {
+                                                            DocumentSnapshot document = t.getResult();
+                                                            Utilizador amigo = new Utilizador( document.getString("username"),document.getId());
+                                                            amigos.add(amigo);
+                                                        }
+
+                                                        // Update UI with the friends list
+                                                        requireActivity().runOnUiThread(() -> {
+                                                            listFriends.setLayoutManager(new LinearLayoutManager(getContext()));
+                                                            adapterFriends = new UtilizadorAdapter(amigos);
+                                                            listFriends.setAdapter(adapterFriends);
+                                                        });
+                                                    }
+                                                });
+                                            }
+                                        });
+                            }
+                        });
+            }
+        });
     }
 
     private void setupRequestList(String userID) {
@@ -154,37 +224,106 @@ public class FriendsList extends Fragment {
                                             requests.add(request);
                                         }
 
+
                                         requireActivity().runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
                                                 listRequests.setLayoutManager(new LinearLayoutManager(getContext()));
-                                                RequestAdapter requestAdapter = new RequestAdapter(requests,userID);
+                                                requestAdapter = new RequestAdapter(requests,userID);
                                                 listRequests.setAdapter(requestAdapter);
                                             }
                                         });
 
                                     }
                                 });
-                            } else {
-                                // User not found in Firebase
-                                requireActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getContext(), "Nothing was found", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                            }else{
+                                requestAdapter = new RequestAdapter();
                             }
-                        } else {
-                            // Error retrieving data from Firebase
-                            requireActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getContext(), "Error in Requests", Toast.LENGTH_SHORT).show();
-                                }
-                            });
                         }
                     });
             }
         });
     }
+
+    private void setupOthers(String userID) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            List<Utilizador> users = new ArrayList<>();
+
+            db.collection("users")
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            List<Task<?>> tasks = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                if (userID.equals(document.getId())) {
+                                    continue; // Skip the current user
+                                }
+
+                                // Create tasks for all checks
+                                Task<QuerySnapshot> friendRequestSent = db.collection("pedido_amizade")
+                                        .whereEqualTo("recebeu", document.getId())
+                                        .whereEqualTo("enviou", userID)
+                                        .get();
+                                Task<QuerySnapshot> friendRequestReceived = db.collection("pedido_amizade")
+                                        .whereEqualTo("enviou", document.getId())
+                                        .whereEqualTo("recebeu", userID)
+                                        .get();
+                                Task<QuerySnapshot> friends1 = db.collection("amigos")
+                                        .whereEqualTo("user1", document.getId())
+                                        .whereEqualTo("user2", userID)
+                                        .get();
+                                Task<QuerySnapshot> friends2 = db.collection("amigos")
+                                        .whereEqualTo("user2", document.getId())
+                                        .whereEqualTo("user1", userID)
+                                        .get();
+
+                                // Combine tasks into a single logic block
+                                Task<List<Task<?>>> combinedTask = Tasks.whenAllComplete(friendRequestSent, friendRequestReceived, friends1, friends2)
+                                        .addOnCompleteListener(allTasks -> {
+                                            boolean novo = true;
+
+                                            // Check results of individual tasks
+                                            if (friendRequestSent.isComplete() && friendRequestSent.getResult() != null && !friendRequestSent.getResult().isEmpty()) {
+                                                novo = false;
+                                            }
+                                            if (friendRequestReceived.isComplete() && friendRequestReceived.getResult() != null && !friendRequestReceived.getResult().isEmpty()) {
+                                                novo = false;
+                                            }
+                                            if (friends1.isComplete() && friends1.getResult() != null && !friends1.getResult().isEmpty()) {
+                                                novo = false;
+                                            }
+                                            if (friends2.isComplete() && friends2.getResult() != null && !friends2.getResult().isEmpty()) {
+                                                novo = false;
+                                            }
+
+                                            // Add user if conditions are met
+                                            if (novo) {
+                                                Utilizador user = new Utilizador(document.getString("username"), document.getId());
+                                                synchronized (users) {
+                                                    users.add(user);
+                                                }
+                                            }
+                                        });
+
+                                tasks.add(combinedTask);
+                            }
+
+                            // Finalize when all tasks are complete
+                            Tasks.whenAllComplete(tasks).addOnCompleteListener(finalTask -> {
+                                requireActivity().runOnUiThread(() -> {
+                                    System.out.println("acabeiiii");
+                                    listOthers.setLayoutManager(new LinearLayoutManager(getContext()));
+                                    othersAdapter = new OthersAdapter(users);
+                                    listOthers.setAdapter(othersAdapter);
+                                });
+                            });
+                        }
+                    });
+        });
+    }
+
+
 }
