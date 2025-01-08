@@ -61,6 +61,6 @@ public class TreinoPlano {
 
     @Override
     public String toString() {
-        return nome + "  " + valid + "  " + id ;
+        return "ID: " + id + " | " + nome;
     }
 }
