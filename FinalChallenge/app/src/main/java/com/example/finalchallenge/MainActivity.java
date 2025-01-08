@@ -117,12 +117,6 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    public void switchtoRequests(){
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, new OnHoldList(),"RequestList")
-                .addToBackStack(null)
-                .commit();
-    }
 
     public void switchDetailsExercise() {
         getSupportFragmentManager().beginTransaction()

@@ -1,8 +1,11 @@
 package com.example.finalchallenge;
 import android.icu.number.IntegerWidth;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.finalchallenge.classes.Exercise;
+import com.example.finalchallenge.classes.Request;
+import com.example.finalchallenge.classes.Utilizador;
 import com.example.finalchallenge.classes.SeriesInfo;
 import com.example.finalchallenge.classes.TreinoExercicioPlano;
 import com.example.finalchallenge.classes.TreinoPlano;
@@ -302,7 +305,6 @@ public class FirebaseFirestorehelper {
                     Log.e("DatabaseError", "Erro ao inserir série na coleção series", e);
                 });
     }
-
 
     public void syncTreinoPlanosFromFirebase(String id,DatabaseHelper dblocal) {
 
@@ -880,8 +882,5 @@ public class FirebaseFirestorehelper {
                     Log.e("SyncError", "Erro ao buscar dados do Firebase", e);
                 });
     }
-
-
-
 
 }
