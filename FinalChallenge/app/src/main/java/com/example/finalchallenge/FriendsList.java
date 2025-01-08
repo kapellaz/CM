@@ -101,6 +101,7 @@ public class FriendsList extends Fragment {
                     public boolean onQueryTextChange(String newText) {
                         adapterFriends.filter(newText);
                         requestAdapter.filter(newText);
+                        othersAdapter.filter(newText);
                         return true;
                     }
                 });

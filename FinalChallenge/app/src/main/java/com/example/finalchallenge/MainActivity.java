@@ -47,9 +47,7 @@ public class MainActivity extends AppCompatActivity {
                     fragment = new train_detail();
                 } else if (fragmentTag.equals("FriendsList")) {
                     fragment = new FriendsList();
-                } else if (fragmentTag.equals("RequestList")) {
-                    fragment = new OnHoldList();
-                } else if (fragmentTag.equals("Train Details")) {
+                }  else if (fragmentTag.equals("Train Details")) {
                     fragment = new exercise_detail();
                 } else {
                     fragment = new login(); // Load your default fragment if needed
