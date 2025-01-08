@@ -284,7 +284,6 @@ public class FriendsList extends Fragment {
                                 Task<List<Task<?>>> combinedTask = Tasks.whenAllComplete(friendRequestSent, friendRequestReceived, friends1, friends2)
                                         .addOnCompleteListener(allTasks -> {
                                             boolean novo = true;
-
                                             // Check results of individual tasks
                                             if (friendRequestSent.isComplete() && friendRequestSent.getResult() != null && !friendRequestSent.getResult().isEmpty()) {
                                                 novo = false;
@@ -298,7 +297,6 @@ public class FriendsList extends Fragment {
                                             if (friends2.isComplete() && friends2.getResult() != null && !friends2.getResult().isEmpty()) {
                                                 novo = false;
                                             }
-
                                             // Add user if conditions are met
                                             if (novo) {
                                                 Utilizador user = new Utilizador(document.getString("username"), document.getId());
@@ -307,16 +305,14 @@ public class FriendsList extends Fragment {
                                                 }
                                             }
                                         });
-
                                 tasks.add(combinedTask);
                             }
-
                             // Finalize when all tasks are complete
                             Tasks.whenAllComplete(tasks).addOnCompleteListener(finalTask -> {
                                 requireActivity().runOnUiThread(() -> {
                                     System.out.println("acabeiiii");
                                     listOthers.setLayoutManager(new LinearLayoutManager(getContext()));
-                                    othersAdapter = new OthersAdapter(users);
+                                    othersAdapter = new OthersAdapter(users,userID);
                                     listOthers.setAdapter(othersAdapter);
                                 });
                             });

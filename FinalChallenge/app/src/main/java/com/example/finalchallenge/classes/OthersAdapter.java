@@ -3,6 +3,7 @@ package com.example.finalchallenge.classes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,24 +13,29 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class OthersAdapter extends RecyclerView.Adapter<OthersAdapter.ViewHolder>{
 
     private List<Utilizador> utilizadores;
     private List<Utilizador> filteredList;
+    private String userID;
 
-    public OthersAdapter(List<Utilizador> users) {
+    public OthersAdapter(List<Utilizador> users, String userID) {
         this.utilizadores = users;
         this.filteredList = new ArrayList<>(utilizadores); // Initialize filteredList with the full list
+        this.userID = userID;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView tvName;
+        public Button btnSend;
 
         public ViewHolder(View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvName);
+            btnSend = itemView.findViewById(R.id.btnAction);
         }
     }
     @Override
@@ -44,7 +50,22 @@ public class OthersAdapter extends RecyclerView.Adapter<OthersAdapter.ViewHolder
         Utilizador utilizador = filteredList.get(position); // Use filtered list here
         holder.tvName.setText(utilizador.getUsername());
 
-        //button de ADD!
+        holder.btnSend.setOnClickListener(v -> {
+            sendRequest(utilizador.getId());
+            filteredList.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, filteredList.size());
+        });
+    }
+
+    public void sendRequest(String targetID){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("pedido_amizade").add(
+                        new HashMap<String, Object>() {{
+                            put("recebeu", targetID);
+                            put("enviou", userID);
+                        }}
+                );
     }
 
     @Override
