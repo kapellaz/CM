@@ -4,6 +4,7 @@ import android.util.Log;
 import com.example.finalchallenge.classes.Exercise;
 import com.example.finalchallenge.classes.TreinoExercicioPlano;
 import com.example.finalchallenge.classes.TreinoPlano;
+import com.example.finalchallenge.classes.TreinosDone;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -11,6 +12,7 @@ import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -428,7 +430,127 @@ public class FirebaseFirestorehelper {
 
     }
 
+    public void getAllPlansFromFirebase(String id, DatabaseHelper dblocal, menu_principal.FirebaseSyncCallback callback) {
 
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        ArrayList<TreinoPlano> treinoPlanos = new ArrayList<>();
+
+        db.collection("treino_planos")
+                .whereEqualTo("user_id", id)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        queryDocumentSnapshots.getDocuments().forEach(document -> {
+                            String nome = document.getString("nome");
+                            String user_id = document.getString("user_id");
+
+                            int valid = Math.toIntExact(document.getLong("valid"));
+                            dblocal.createPlan(nome,user_id,valid);
+                        });
+
+                        // Agora imprime os dados após o sucesso da operação
+                        System.out.println("PLANOS: " + treinoPlanos);
+                        callback.onComplete();
+                    } else {
+                        Log.d("DatabaseInfo", "Nenhum exercício encontrado para atualizar.");
+                        callback.onComplete();
+                    }
+                })
+                .addOnFailureListener(e -> {Log.e("DatabaseError", "Erro ao buscar exercício", e);callback.onComplete();});
+    }
+
+    public void getAllPlansExerciseFromFirebase(String id, DatabaseHelper dblocal, menu_principal.FirebaseSyncCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        ArrayList<TreinoExercicioPlano> treinoExercicioPlanos = new ArrayList<>();
+
+        db.collection("treino_exercicios_plano")
+                .whereEqualTo("user_id", id)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        Set<Integer> firebaseIds = new HashSet<>();
+
+                        queryDocumentSnapshots.getDocuments().forEach(document -> {
+                            Integer exercicio_id = document.getLong("exercicio_id").intValue();
+                            Integer treino_id = document.getLong("treino_id").intValue();
+                            Integer series = document.getLong("series").intValue();
+                            Integer repeticoes = document.getLong("repeticoes").intValue();
+                            Integer order_id = document.getLong("order_id").intValue();
+                            String user_id = document.getString("user_id");
+                          //  dblocal.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order);
+                            dblocal.insertExercicioFromPlano(treino_id,exercicio_id,series,repeticoes,order_id);
+                            System.out.println(treino_id + " " + exercicio_id + " " + series);
+                        });
+                        callback.onComplete();
+
+                    } else {
+                        callback.onComplete();
+                        Log.d("DatabaseInfo", "Nenhum plano de exercício encontrado na Firebase.");
+                    }
+                })
+                .addOnFailureListener(e ->{ Log.e("DatabaseError", "Erro ao buscar planos de exercício na Firebase", e);callback.onComplete();});
+
+    }
+
+
+    public void getAllTreinoDoneFromFirebase(String id, DatabaseHelper dblocal, menu_principal.FirebaseSyncCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        ArrayList<TreinosDone> treinosDones = new ArrayList<>();
+
+        db.collection("treino_done")
+                .whereEqualTo("user_id", id)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+
+
+                        queryDocumentSnapshots.getDocuments().forEach(document -> {
+
+                            String data = document.getString("data");
+                            Long treino_id = document.getLong("treino_id");
+                            Long exec = document.getLong("exec");
+                            dblocal.inserttreinodone(Math.toIntExact(treino_id),data, Math.toIntExact(exec),id);
+                          });
+                        callback.onComplete();
+                    } else {
+                        callback.onComplete();
+                        Log.d("DatabaseInfo", "Nenhum plano de exercício encontrado na Firebase.");
+                    }
+                })
+                .addOnFailureListener(e ->{Log.e("DatabaseError", "Erro ao buscar planos de exercício na Firebase", e);callback.onComplete();});
+
+    }
+
+    public void getAllSeriesFromFirebase(String id, DatabaseHelper dblocal, menu_principal.FirebaseSyncCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("series")
+                .whereEqualTo("user_id", id)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        queryDocumentSnapshots.getDocuments().forEach(document -> {
+
+                            Long batimentos = document.getLong("batimentos");
+                            Long exec = document.getLong("exec");
+                            Long numero_serie = document.getLong("numero_serie");
+                            Long oxigenacao = document.getLong("oxigenacao");
+                            Long peso = document.getLong("peso");
+                            Long exercicio_id = document.getLong("treino_exercicio_id");
+                            Long plano_id = document.getLong("plano_id");
+                            dblocal.insertSeries(Math.toIntExact(peso), Math.toIntExact(numero_serie), Math.toIntExact(exercicio_id), Math.toIntExact(plano_id), Math.toIntExact(exec), Math.toIntExact(oxigenacao), Math.toIntExact(batimentos));
+                            callback.onComplete();
+
+                        });
+
+                    } else {
+                        Log.d("DatabaseInfo", "Nenhum plano de exercício encontrado na Firebase.");
+                        callback.onComplete();
+                    }
+                })
+                .addOnFailureListener(e -> {Log.e("DatabaseError", "Erro ao buscar planos de exercício na Firebase", e);callback.onComplete();});
+
+    }
 
 
 

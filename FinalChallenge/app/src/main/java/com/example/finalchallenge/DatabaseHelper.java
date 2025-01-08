@@ -26,7 +26,7 @@ import java.util.Map;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "fitness.db";
-    private static final int DATABASE_VERSION = 19;
+    private static final int DATABASE_VERSION = 29;
 
     // Table Names
     private static final String TABLE_UTILIZADOR = "utilizador";
@@ -492,7 +492,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         treinoExercicioValues.put("series", series);  // Exemplificando 3 séries
         treinoExercicioValues.put("repeticoes", repeticoes);  // Exemplificando 12 repetições
         treinoExercicioValues.put("order_id", order);
-
+        System.out.println(treinoExercicioValues);
         // Inserir na tabela de associação
         return db.insert(TABLE_TREINO_EXERCICIO_PLANO, null, treinoExercicioValues);
     }
@@ -626,14 +626,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
 
-    public long createPlan(String planName, String userId) {
+    public long createPlan(String planName, String userId,int valid) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
         // Inserir valores para a nova entrada
         values.put("nome", planName);
         values.put("user_id", userId);
-        values.put("valid", 1);
+        values.put("valid", valid);
 
         // Inserir na tabela e retornar o ID gerado
         long newPlanId = db.insert(TABLE_TREINO_PLANO, null, values);

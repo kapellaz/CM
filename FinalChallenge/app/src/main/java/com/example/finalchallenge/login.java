@@ -98,6 +98,8 @@ public class login extends Fragment {
                         @Override
                         public void run() {
                             modelview.setUser(user);
+                            modelview.setIsFirstTime(false);
+                            modelview.setfirstTIMEinFrag(true);
                             Toast.makeText(getContext(), "Login Sucessful", Toast.LENGTH_SHORT).show();
                             ((MainActivity) requireActivity()).switchMenu();
                         }
@@ -124,6 +126,8 @@ public class login extends Fragment {
                                         @Override
                                         public void run() {
                                             modelview.setUser(userprov);
+                                            modelview.setIsFirstTime(true);
+                                            modelview.setfirstTIMEinFrag(true);
                                             Toast.makeText(getContext(), "Login Successful", Toast.LENGTH_SHORT).show();
                                             ((MainActivity) requireActivity()).switchMenu();
                                         }

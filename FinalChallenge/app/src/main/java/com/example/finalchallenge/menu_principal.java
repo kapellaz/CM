@@ -30,7 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;public class menu_principal extends Fragment {
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class menu_principal extends Fragment {
 
     private ImageButton logoutButton;
     private ImageButton halterButton;
@@ -54,13 +57,43 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
         databaseHelper = new DatabaseHelper(getContext());
         modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
         firebaseFirestorehelper = new FirebaseFirestorehelper();
+        databaseHelper.inserirPlanosTreino2();
 
-      //  firebaseFirestorehelper.syncTreinoPlanosFromFirebase(modelview.getUser().getValue().getId(),databaseHelper);
-        //firebaseFirestorehelper.syncTreinoPlanosExercicioFromFirebase(modelview.getUser().getValue().getId(),databaseHelper);
-        databaseHelper.inserirPlanosTreino2(); // - SE FOR A PRIMEIRA VEZ A CORRER ESTA MERDA
-        Integer id = 2;
+
 
     }
+
+    public interface FirebaseSyncCallback {
+        void onComplete();
+    }
+
+    private void synchronizeFirebaseDataAndUpdateList(TextView treinos_completos) {
+        if(Boolean.TRUE.equals(modelview.getIsFirstTime().getValue()) && Boolean.TRUE.equals(modelview.getFirstTIMEinFrag().getValue())) {
+
+            String userId = modelview.getUser().getValue().getId();
+
+            // Contador para rastrear operações concluídas
+            AtomicInteger pendingTasks = new AtomicInteger(4); // Número de operações do Firebase
+
+            FirebaseSyncCallback onTaskComplete = () -> {
+
+                if (pendingTasks.decrementAndGet() == 0) {
+                    // Todas as operações foram concluídas, chama getTreinos
+                    getTreinos(2, treinos_completos);
+                }
+            };
+
+            firebaseFirestorehelper.getAllPlansFromFirebase(userId, databaseHelper, onTaskComplete);
+            firebaseFirestorehelper.getAllPlansExerciseFromFirebase(userId, databaseHelper, onTaskComplete);
+            firebaseFirestorehelper.getAllTreinoDoneFromFirebase(userId, databaseHelper, onTaskComplete);
+            firebaseFirestorehelper.getAllSeriesFromFirebase(userId, databaseHelper, onTaskComplete);
+            modelview.setIsFirstTime(false);
+        }else {
+            getTreinos(2, treinos_completos);
+            modelview.setIsFirstTime(false);
+        }
+    }
+
 
     private void getTreinos(Integer id, TextView treinos_completos) {
 
@@ -147,8 +180,7 @@ import java.util.concurrent.Executors;public class menu_principal extends Fragme
         statsButton.setOnClickListener(v -> handleStatsClick());
         friendsButton.setOnClickListener(v -> handleFriendsClick());
         Integer id = 2;
-        getTreinos(id,treinos_completos);
-
+        synchronizeFirebaseDataAndUpdateList(treinos_completos);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

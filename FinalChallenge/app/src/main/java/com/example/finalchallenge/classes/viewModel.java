@@ -14,8 +14,28 @@ public class viewModel extends ViewModel {
 
     private final MutableLiveData<Exercicio> exercicioMutableLiveData = new MutableLiveData<>();
 
+    private final MutableLiveData<Boolean> isFirstTime = new MutableLiveData<>();
+
+    private final MutableLiveData<Boolean> firstTIMEinFrag = new MutableLiveData<>();
+
     public MutableLiveData<TreinoPlano> getSelectedPlan() {
         return selectedData;
+    }
+
+    public MutableLiveData<Boolean> getIsFirstTime(){
+        return isFirstTime;
+    }
+
+    public void setIsFirstTime(Boolean value){
+        this.isFirstTime.setValue(value);
+    }
+
+    public MutableLiveData<Boolean> getFirstTIMEinFrag(){
+        return isFirstTime;
+    }
+
+    public void setfirstTIMEinFrag(Boolean value){
+        this.firstTIMEinFrag.setValue(value);
     }
 
     public void setSelectedPlan(TreinoPlano treinoExec) {
