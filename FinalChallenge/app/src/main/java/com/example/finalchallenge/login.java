@@ -97,9 +97,10 @@ public class login extends Fragment {
                     requireActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            user.setFirstTimeFragment(true);
                             modelview.setUser(user);
                             modelview.setIsFirstTime(false);
-                            modelview.setfirstTIMEinFrag(true);
+
                             Toast.makeText(getContext(), "Login Sucessful", Toast.LENGTH_SHORT).show();
                             ((MainActivity) requireActivity()).switchMenu();
                         }
@@ -125,9 +126,9 @@ public class login extends Fragment {
                                     requireActivity().runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+                                            userprov.setFirstTimeFragment(true);
                                             modelview.setUser(userprov);
                                             modelview.setIsFirstTime(true);
-                                            modelview.setfirstTIMEinFrag(true);
                                             Toast.makeText(getContext(), "Login Successful", Toast.LENGTH_SHORT).show();
                                             ((MainActivity) requireActivity()).switchMenu();
                                         }

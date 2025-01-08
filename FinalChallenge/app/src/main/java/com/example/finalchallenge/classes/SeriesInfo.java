@@ -1,5 +1,8 @@
 package com.example.finalchallenge.classes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SeriesInfo {
     private int peso;
     private int series;
@@ -76,6 +79,20 @@ public class SeriesInfo {
     public void setBatimentos(int batimentos) {
         this.batimentos = batimentos;
     }
+
+    public Map<String, Object> toMap(String userId) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("peso",peso);
+        map.put("series", series);
+        map.put("treino_exercicio_id", exercicioId);
+        map.put("treinoId", treinoId);
+        map.put("exec", exec);
+        map.put("oxigenacao", oxigenacao);
+        map.put("batimentos", batimentos);
+        map.put("user_id", userId);
+        return map;
+    }
+
 
     // Método para exibir os dados de SeriesInfo
     @Override

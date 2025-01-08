@@ -3,6 +3,7 @@ package com.example.finalchallenge.classes;
 public class Utilizador {
     private String username;
     private String id;
+    private boolean firstTimeFragment;
 
     public Utilizador(){
 
@@ -23,6 +24,13 @@ public class Utilizador {
 
     public String getId() {
         return id;
+    }
+    public boolean getFirstTimeFragment(){
+        return firstTimeFragment;
+    }
+
+    public void setFirstTimeFragment(boolean firstTimeFragment) {
+        this.firstTimeFragment = firstTimeFragment;
     }
 
     public void setId(String id) {
