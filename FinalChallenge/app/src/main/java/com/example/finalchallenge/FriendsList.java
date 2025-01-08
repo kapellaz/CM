@@ -24,7 +24,6 @@ import java.util.concurrent.Executors;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import androidx.recyclerview.widget.RecyclerView;
-import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -129,66 +128,62 @@ public class FriendsList extends Fragment {
                 FirebaseFirestore db = FirebaseFirestore.getInstance();
                 //coletar os pedidos de amizade
                 db.collection("pedido_amizade")
-                        .whereEqualTo("recebeu", userID)
-                        .get()
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                if (!task.getResult().isEmpty()) {
+                    .whereEqualTo("recebeu", userID)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            if (!task.getResult().isEmpty()) {
 
-                                    for (QueryDocumentSnapshot document : task.getResult()) {
-                                        senderIDs.add(document.getString("enviou"));
-                                    }
-
-                                    List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
-
-                                    for (String senderID : senderIDs) {
-                                        tasks.add(db.collection("users").document(senderID).get());
-                                    }
-
-                                    //conseguir os users que enviaram os pedidos
-                                    Tasks.whenAllSuccess(tasks).addOnCompleteListener(task2 -> {
-                                        if (task2.isSuccessful()) {
-
-                                            int documentCount = task2.getResult().size();
-                                            System.out.println("Number of documents found: " + documentCount);
-
-                                            for (Task<DocumentSnapshot> t : tasks) {
-                                                DocumentSnapshot document = t.getResult();
-                                                Request request = new Request(document.getString("username"), document.getId());
-                                                requests.add(request);
-                                            }
-
-                                            requireActivity().runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    Toast.makeText(getContext(), "viva", Toast.LENGTH_SHORT).show();
-                                                    listRequests.setLayoutManager(new LinearLayoutManager(getContext()));
-                                                    RequestAdapter requestAdapter = new RequestAdapter(requests);
-                                                    listRequests.setAdapter(requestAdapter);
-                                                }
-                                            });
-
-                                        }
-                                    });
-                                } else {
-                                    // User not found in Firebase
-                                    requireActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(getContext(), "Nothing was found", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    senderIDs.add(document.getString("enviou"));
                                 }
+
+                                List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+
+                                for (String senderID : senderIDs) {
+                                    tasks.add(db.collection("users").document(senderID).get());
+                                }
+
+                                //conseguir os users que enviaram os pedidos
+                                Tasks.whenAllSuccess(tasks).addOnCompleteListener(task2 -> {
+                                    if (task2.isSuccessful()) {
+
+                                        for (Task<DocumentSnapshot> t : tasks) {
+                                            DocumentSnapshot document = t.getResult();
+                                            Request request = new Request(document.getString("username"), document.getId());
+                                            requests.add(request);
+                                        }
+
+                                        requireActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                listRequests.setLayoutManager(new LinearLayoutManager(getContext()));
+                                                RequestAdapter requestAdapter = new RequestAdapter(requests,userID);
+                                                listRequests.setAdapter(requestAdapter);
+                                            }
+                                        });
+
+                                    }
+                                });
                             } else {
-                                // Error retrieving data from Firebase
+                                // User not found in Firebase
                                 requireActivity().runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast.makeText(getContext(), "Error in Requests", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), "Nothing was found", Toast.LENGTH_SHORT).show();
                                     }
                                 });
                             }
-                        });
+                        } else {
+                            // Error retrieving data from Firebase
+                            requireActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getContext(), "Error in Requests", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    });
             }
         });
     }
