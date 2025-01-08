@@ -28,6 +28,7 @@ public class FirebaseFirestorehelper {
         planData.put("id",planID);
         planData.put("nome", planName);
         planData.put("user_id", userId);
+        planData.put("valid", 1);
 
         // Add the document to the treino_planos collection
         db.collection("treino_planos")
@@ -74,7 +75,7 @@ public class FirebaseFirestorehelper {
     public void deletePlanAndExercises(Integer planId, String userId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Step 1: Delete the plan from the treino_planos collection
+        // Step 1: Update the plan's 'valid' field in the treino_planos collection
         db.collection("treino_planos")
                 .whereEqualTo("id", planId)
                 .whereEqualTo("user_id", userId)
@@ -83,12 +84,12 @@ public class FirebaseFirestorehelper {
                     if (!queryDocumentSnapshots.isEmpty()) {
                         queryDocumentSnapshots.getDocuments().forEach(document -> {
                             db.collection("treino_planos").document(document.getId())
-                                    .delete()
+                                    .update("valid", 0)  // Update the 'valid' field to 0
                                     .addOnSuccessListener(aVoid ->
-                                            Log.d("DatabaseSuccess", "Plano deletado com sucesso")
+                                            Log.d("DatabaseSuccess", "Plano atualizado com sucesso")
                                     )
                                     .addOnFailureListener(e ->
-                                            Log.e("DatabaseError", "Erro ao deletar plano", e)
+                                            Log.e("DatabaseError", "Erro ao atualizar plano", e)
                                     );
                         });
                     } else {
@@ -96,29 +97,6 @@ public class FirebaseFirestorehelper {
                     }
                 })
                 .addOnFailureListener(e -> Log.e("DatabaseError", "Erro ao buscar plano", e));
-
-        // Step 2: Delete associated exercises from the treino_exercicios_plano collection
-        db.collection("treino_exercicios_plano")
-                .whereEqualTo("treino_id", planId)
-                .whereEqualTo("user_id", userId)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        queryDocumentSnapshots.getDocuments().forEach(document -> {
-                            db.collection("treino_exercicios_plano").document(document.getId())
-                                    .delete()
-                                    .addOnSuccessListener(aVoid ->
-                                            Log.d("DatabaseSuccess", "Exercício deletado com sucesso")
-                                    )
-                                    .addOnFailureListener(e ->
-                                            Log.e("DatabaseError", "Erro ao deletar exercício", e)
-                                    );
-                        });
-                    } else {
-                        Log.d("DatabaseInfo", "Nenhum exercício encontrado para o plano especificado.");
-                    }
-                })
-                .addOnFailureListener(e -> Log.e("DatabaseError", "Erro ao buscar exercícios", e));
     }
 
 
@@ -142,7 +120,7 @@ public class FirebaseFirestorehelper {
                             db.collection("treino_exercicios_plano").document(document.getId())
                                     .delete()
                                     .addOnSuccessListener(aVoid ->
-                                            Log.d("DatabaseSuccess", "Exercício deletado com sucesso")
+                                            Log.d("DatabaseSuccess", "Exercício apagado com sucesso")
                                     )
                                     .addOnFailureListener(e ->
                                             Log.e("DatabaseError", "Erro ao deletar exercício", e)

@@ -26,7 +26,7 @@ import java.util.Map;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "fitness.db";
-    private static final int DATABASE_VERSION = 18;
+    private static final int DATABASE_VERSION = 19;
 
     // Table Names
     private static final String TABLE_UTILIZADOR = "utilizador";
@@ -57,6 +57,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "nome TEXT, " +
             "user_id INTEGER, " +
+            "valid INTEGER, " +
             "FOREIGN KEY(user_id) REFERENCES " + TABLE_UTILIZADOR + "(id));";
 
     private static final String CREATE_TABLE_TREINO_EXERCICIO = "CREATE TABLE " + TABLE_TREINO_EXERCICIO + "(" +
@@ -404,9 +405,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Consulta SQL para buscar todos os planos de treino de um usuário específico
         Cursor cursor = db.query(TABLE_TREINO_PLANO,
                 new String[] {"id", "nome", "user_id"},
-                "user_id = ?", // Filtra pelo user_id
+                "user_id = ? AND valid = 1", // Filtra pelo user_id e validação
                 new String[] {String.valueOf(userId)}, // Passa o user_id como parâmetro
                 null, null, null);
+
 
         // Verifica se há resultados e os adiciona à lista
         if (cursor != null) {
@@ -435,13 +437,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Iniciar uma transação para garantir a consistência
         db.beginTransaction();
         try {
-            // Excluir os exercícios associados ao plano de treino na tabela TREINO_EXERCICIO_PLANO
-            String deleteTreinoExercicioPlanoSql = "DELETE FROM " + TABLE_TREINO_EXERCICIO_PLANO + " WHERE treino_id = ?";
-            db.execSQL(deleteTreinoExercicioPlanoSql, new Object[]{treinoPlanoId});
-
-            // Excluir o plano de treino na tabela TREINO_PLANO
-            String deleteTreinoPlanoSql = "DELETE FROM " + TABLE_TREINO_PLANO + " WHERE id = ?";
-            db.execSQL(deleteTreinoPlanoSql, new Object[]{treinoPlanoId});
+            // Atualizar a coluna 'valid' para 0 na tabela TREINO_PLANO
+            String updateTreinoPlanoSql = "UPDATE " + TABLE_TREINO_PLANO + " SET valid = 0 WHERE id = ?";
+            db.execSQL(updateTreinoPlanoSql, new Object[]{treinoPlanoId});
 
             // Commitar a transação
             db.setTransactionSuccessful();
@@ -635,6 +633,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Inserir valores para a nova entrada
         values.put("nome", planName);
         values.put("user_id", userId);
+        values.put("valid", 1);
 
         // Inserir na tabela e retornar o ID gerado
         long newPlanId = db.insert(TABLE_TREINO_PLANO, null, values);
