@@ -103,12 +103,14 @@ public class Exercise_List extends Fragment {
             }
         });
 
+
         statsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 handleStatsClick();
             }
         });
+
 
         return view;
 
@@ -135,6 +137,7 @@ public class Exercise_List extends Fragment {
         ((MainActivity) requireActivity()).switchMenu();
     }
 
+
     /**
      * Switches the current fragment to the Stats fragment.
      */
@@ -145,6 +148,7 @@ public class Exercise_List extends Fragment {
     /**
      * Switches the current fragment to the Details Exercise fragment.
      */
+
     private void handleItemClick(String item) {
         ((MainActivity) requireActivity()).switchDetailsExercise();
     }

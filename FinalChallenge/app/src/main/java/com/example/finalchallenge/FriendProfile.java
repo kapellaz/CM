@@ -67,9 +67,11 @@ public class FriendProfile extends Fragment {
     }
 
 
+
     /**
      * Called when the fragment is first created.
      */
+
 
     @SuppressLint("SetTextI18n")
     @Override

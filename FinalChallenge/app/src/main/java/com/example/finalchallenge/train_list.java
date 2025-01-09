@@ -131,12 +131,6 @@ public class train_list extends Fragment {
             }
         });
 
-        halterButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                handleHalterClick();
-            }
-        });
 
         perfilButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -235,9 +229,6 @@ public class train_list extends Fragment {
     /**
      * Switches the current fragment to the Halter fragment.
      */
-    private void handleHalterClick() {
-        ((MainActivity) requireActivity()).switchTrain();
-    }
 
     /**
      * Switches the current fragment to the Perfil fragment.

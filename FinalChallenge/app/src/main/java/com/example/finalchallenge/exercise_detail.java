@@ -459,9 +459,8 @@ public class exercise_detail extends Fragment {
      * Switches the current fragment to the Stats fragment.
      */
     private void handleStatsClick() {
-        ((MainActivity) requireActivity()).switchtoStats();
+        requireActivity().getSupportFragmentManager().popBackStack();
     }
-
 
 
 
