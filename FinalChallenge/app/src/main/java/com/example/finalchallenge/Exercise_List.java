@@ -35,6 +35,9 @@ public class Exercise_List extends Fragment {
     }
 
 
+    /**
+     * Initializes the fragment and sets up essential components such as the database and modelview.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,22 +47,24 @@ public class Exercise_List extends Fragment {
 
     }
 
+    /**
+     * Called when the fragment is first created.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
 
         View view = inflater.inflate(R.layout.fragment_exercise__list, container, false);
 
-        // Inicializando o ListView
+
         ListView listView = view.findViewById(R.id.listView);
 
-         // Criando o Adapter para a lista (pode ser um ArrayAdapter ou CustomAdapter)
+
         ArrayAdapter<Exercicio> adapter = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_list_item_1, list_of_exercises);
 
-        // Definindo o Adapter para o ListView
+
         listView.setAdapter(adapter);
-        // Inicializa os botões
+
         logoutButton = view.findViewById(R.id.logout);
         halterButton = view.findViewById(R.id.halter);
         perfilButton = view.findViewById(R.id.perfil);
@@ -67,19 +72,18 @@ public class Exercise_List extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Ação ao clicar em um item da lista
+
                 Exercicio selectedItem = (Exercicio) parent.getItemAtPosition(position);
-                System.out.println(selectedItem.getId() + " O ID do " + selectedItem.getNome());
+
                 modelview.setExercicio(selectedItem);
                 handleItemClick(selectedItem.getNome());
             }
         });
 
-        // Configura os listeners para os botões
+
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Ação ao clicar no botão de logout
                 handleLogoutClick();
             }
         });
@@ -87,7 +91,7 @@ public class Exercise_List extends Fragment {
         halterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Ação ao clicar no botão de halter
+
                 handleHalterClick();
             }
         });
@@ -95,7 +99,6 @@ public class Exercise_List extends Fragment {
         perfilButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Ação ao clicar no botão de perfil
                 handlePerfilClick();
             }
         });
@@ -103,7 +106,6 @@ public class Exercise_List extends Fragment {
         statsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Ação ao clicar no botão de estatísticas
                 handleStatsClick();
             }
         });
@@ -112,24 +114,40 @@ public class Exercise_List extends Fragment {
 
     }
 
-
+    /**
+     * Switches the current fragment to the Logout fragment.
+     */
     private void handleLogoutClick() {
         ((MainActivity) requireActivity()).switchLogin();
     }
+    /**
+     * Switches the current fragment to the Train fragment.
+     */
 
     private void handleHalterClick() {
         ((MainActivity) requireActivity()).switchTrain();
     }
 
+    /**
+     * Switches the current fragment to the Peerfil fragment.
+     */
     private void handlePerfilClick() {
         ((MainActivity) requireActivity()).switchMenu();
     }
 
+    /**
+     * Switches the current fragment to the Stats fragment.
+     */
     private void handleStatsClick() {
         ((MainActivity) requireActivity()).switchtoStats();
     }
+
+    /**
+     * Switches the current fragment to the Details Exercise fragment.
+     */
     private void handleItemClick(String item) {
         ((MainActivity) requireActivity()).switchDetailsExercise();
     }
+
 
 }

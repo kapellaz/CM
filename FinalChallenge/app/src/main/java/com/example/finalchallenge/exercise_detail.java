@@ -215,7 +215,6 @@ public class exercise_detail extends Fragment {
                         @Override
                         public void onDetalhes(Map<String, List<String>> detalhes) {
 
-                            System.out.println("SPINNERRR  " + exerciseSpinner.getSelectedItemPosition() + " " + detalhes);
                             detail = detalhes;
                             if(detalhes == null){
                                 lineChart.clear();
@@ -238,21 +237,29 @@ public class exercise_detail extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
-                // Nenhuma seleção feita
+
             }
         });
 
     }
 
+    /**
+     * Method allows the class to perform specific actions when a Firebase-related asynchronous operation completes.
+     */
     public interface DetalhesTrainFriend {
         void onDetalhes(Map<String, List<String>> detalhes);
     }
+    /**
+     * Method allows the class to perform specific actions when a Firebase-related asynchronous operation completes.
+     */
     public interface FriendsCallback {
         void onFriendsFetched(List<Utilizador> amigos);
     }
 
 
-
+    /**
+     * Method that presents the graph of the average weight of an exercise to the logged in user
+     */
     @SuppressLint("SetTextI18n")
     private void showWeightAverageGraph() {
         if (execucoesPorDia.isEmpty()) {
@@ -341,7 +348,9 @@ public class exercise_detail extends Fragment {
         lineChart.getXAxis().setGranularity(1f);
     }
 
-
+    /**
+     * Method that presents the graph of the maximum weight of an exercise to the logged in user
+     */
 
     @SuppressLint("SetTextI18n")
     private void showMaxWeightGraph() {
@@ -424,37 +433,50 @@ public class exercise_detail extends Fragment {
         lineChart.getXAxis().setGranularity(10f);
     }
 
+
+    /**
+     * Switches the current fragment to the Logout fragment.
+     */
     private void handleLogoutClick() {
         ((MainActivity) requireActivity()).switchLogin();
     }
+    /**
+     * Switches the current fragment to the Train fragment.
+     */
 
     private void handleHalterClick() {
         ((MainActivity) requireActivity()).switchTrain();
     }
 
+    /**
+     * Switches the current fragment to the Peerfil fragment.
+     */
     private void handlePerfilClick() {
         ((MainActivity) requireActivity()).switchMenu();
     }
 
+    /**
+     * Switches the current fragment to the Stats fragment.
+     */
     private void handleStatsClick() {
         ((MainActivity) requireActivity()).switchtoStats();
     }
 
-    private void handleItemClick(String item) {
-        ((MainActivity) requireActivity()).switchDetailsTrain();
-    }
+
+
+
+
+    /**
+     * The extractDate method receives a string representing a complete date and extracts only the part corresponding to the date (year, month and day), discarding the time part.
+     * @param fullDate - date
+     * @return date formated
+     */
 
     private String extractDate(String fullDate) {
         try {
-
             SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-
             Date date = inputFormat.parse(fullDate);
-
-
             SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
-
             return outputFormat.format(date);
         } catch (Exception e) {
             e.printStackTrace();
@@ -462,64 +484,50 @@ public class exercise_detail extends Fragment {
         }
     }
 
+    /**
+     * Method that presents the graph comparation between logged in user and friend click of the maximum weight of an exercise
+     */
     private void showWeightAverageGraphForBothUsers(Map<String, List<String>> detalhes) {
 
-
-            if (execucoesPorDia.isEmpty() || detalhes.isEmpty()) {
-                System.out.println("YAHHHH");
+        if (execucoesPorDia.isEmpty() || detalhes.isEmpty()) {
                 lineChart.clear();
                 lineChart.invalidate();
-            return;
-            }
-
-        // Listas para armazenar os pontos do gráfico
+                return;
+        }
         List<Entry> entriesUser1 = new ArrayList<>();
         List<Entry> entriesUser2 = new ArrayList<>();
         List<String> dates = new ArrayList<>();
-
-        // Mapas para agrupar as execuções por data para dois usuários
         Map<String, List<Integer>> groupedExecucoesUser1 = new HashMap<>();
         Map<String, List<Integer>> groupedExecucoesUser2 = new HashMap<>();
 
-
         for (Map.Entry<String, List<String>> entry : execucoesPorDia.entrySet()) {
-            String day = extractDate(entry.getKey());  // Extrai a data da chave
-            List<String> pesos = entry.getValue();  // Lista de pesos associados à data
+            String day = extractDate(entry.getKey());
+            List<String> pesos = entry.getValue();
 
-
-            List<Integer> pesosUser1 = new ArrayList<>();  // Para o User 1
-
-
+            List<Integer> pesosUser1 = new ArrayList<>();
 
             for (int i = 0; i < pesos.size(); i++) {
 
                 String[] data2 = pesos.get(i).split("\\|");
                 pesosUser1.add(i, Integer.parseInt(data2[0]));
-               }
-
-            // Agrupando as execuções por data para os dois usuários
+            }
             if (groupedExecucoesUser1.containsKey(day)) {
                 groupedExecucoesUser1.get(day).addAll(pesosUser1);
             } else {
                 groupedExecucoesUser1.put(day, new ArrayList<>(pesosUser1));
             }
-
         }
 
 
             for (Map.Entry<String, List<String>> entry : detalhes.entrySet()) {
-                String day = extractDate(entry.getKey());  // Extrai a data da chave
-                List<String> pesos = entry.getValue();  // Lista de pesos associados à data
-
-
-                List<Integer> pesosUser2 = new ArrayList<>();  // Para o User 2
-
-                // Ajustando os pesos para simular dados diferentes para os dois usuários
+                String day = extractDate(entry.getKey());
+                List<String> pesos = entry.getValue();
+                List<Integer> pesosUser2 = new ArrayList<>();
                 for (int i = 0; i < pesos.size(); i++) {
 
                     String[] data2 = pesos.get(i).split("\\|");
 
-                    pesosUser2.add(i, Integer.parseInt(data2[0]));   // Simula redução para o User 2
+                    pesosUser2.add(i, Integer.parseInt(data2[0]));
                 }
 
                 if (groupedExecucoesUser2.containsKey(day)) {
@@ -529,13 +537,13 @@ public class exercise_detail extends Fragment {
                 }
             }
 
-        // Ordena os mapas para garantir que as datas sejam exibidas de forma crescente
+
         Map<String, List<Integer>> sortedGroupedExecucoesUser1 = new TreeMap<>(groupedExecucoesUser1);
         Map<String, List<Integer>> sortedGroupedExecucoesUser2 = new TreeMap<>(groupedExecucoesUser2);
 
         int dayIndex = 0;
 
-        // Calcula a média de pesos para o primeiro usuário
+
         for (Map.Entry<String, List<Integer>> entry : sortedGroupedExecucoesUser1.entrySet()) {
             String day = entry.getKey();
             List<Integer> pesosUser1 = entry.getValue();
@@ -548,12 +556,12 @@ public class exercise_detail extends Fragment {
             float averageWeightUser1 = totalWeightUser1 / pesosUser1.size();
             entriesUser1.add(new Entry(dayIndex, averageWeightUser1));
             dayIndex++;
-            dates.add(day);  // Adiciona a data à lista
+            dates.add(day);
         }
 
         dayIndex = 0;
 
-        // Calcula a média de pesos para o segundo usuário
+
         for (Map.Entry<String, List<Integer>> entry : sortedGroupedExecucoesUser2.entrySet()) {
             String day = entry.getKey();
             List<Integer> pesosUser2 = entry.getValue();
@@ -568,56 +576,56 @@ public class exercise_detail extends Fragment {
             dayIndex++;
         }
 
-    // Cria os conjuntos de dados para os dois usuários
-                LineDataSet dataSetUser1 = new LineDataSet(entriesUser1, "Média de Pesos - " + modelview.getUser().getValue().getUsername());
-                dataSetUser1.setColor(ColorTemplate.MATERIAL_COLORS[0]);  // Cor para o Usuário 1
-                dataSetUser1.setValueTextColor(ColorTemplate.MATERIAL_COLORS[0]);  // Cor dos números para o Usuário 1
-                dataSetUser1.setCircleRadius(6f);  // Tamanho do círculo
-                dataSetUser1.setCircleColor(ColorTemplate.MATERIAL_COLORS[0]);  // Cor do círculo
-                dataSetUser1.setCircleHoleColor(Color.WHITE);  // Cor do centro do círculo
-                dataSetUser1.setValueTextSize(11f);  // Tamanho do texto dos valores
 
-                Legend legend = lineChart.getLegend();
-                legend.setTextSize(14);  // Aumenta o tamanho do texto da legenda
-                legend.setFormSize(10f);  // Opcional: Tamanho do marcador (círculo) na legenda
-                legend.setForm(Legend.LegendForm.CIRCLE);
+            LineDataSet dataSetUser1 = new LineDataSet(entriesUser1, "Média de Pesos - " + modelview.getUser().getValue().getUsername());
+            dataSetUser1.setColor(ColorTemplate.MATERIAL_COLORS[0]);
+            dataSetUser1.setValueTextColor(ColorTemplate.MATERIAL_COLORS[0]);
+            dataSetUser1.setCircleRadius(6f);
+            dataSetUser1.setCircleColor(ColorTemplate.MATERIAL_COLORS[0]);
+            dataSetUser1.setCircleHoleColor(Color.WHITE);
+            dataSetUser1.setValueTextSize(11f);
+
+            Legend legend = lineChart.getLegend();
+            legend.setTextSize(14);
+            legend.setFormSize(10f);
+            legend.setForm(Legend.LegendForm.CIRCLE);
 
             LineDataSet dataSetUser2 = new LineDataSet(entriesUser2, "Média de Pesos - " + selectedFriend);
-                dataSetUser2.setColor(ColorTemplate.MATERIAL_COLORS[2]);  // Cor para o Usuário 2
-                dataSetUser2.setValueTextColor(ColorTemplate.MATERIAL_COLORS[2]);  // Cor dos números para o Usuário 2
-                dataSetUser2.setCircleRadius(6f);  // Tamanho do círculo
-                dataSetUser2.setCircleColor(ColorTemplate.MATERIAL_COLORS[2]);  // Cor do círculo
-                dataSetUser2.setCircleHoleColor(Color.WHITE);  // Cor do centro do círculo
-                dataSetUser2.setValueTextSize(11f);  // Tamanho do texto dos valores
+            dataSetUser2.setColor(ColorTemplate.MATERIAL_COLORS[2]);
+            dataSetUser2.setValueTextColor(ColorTemplate.MATERIAL_COLORS[2]);
+            dataSetUser2.setCircleRadius(6f);
+            dataSetUser2.setCircleColor(ColorTemplate.MATERIAL_COLORS[2]);
+            dataSetUser2.setCircleHoleColor(Color.WHITE);
+            dataSetUser2.setValueTextSize(11f);
 
-                // Cria o conjunto de dados para o gráfico
-                LineData lineData = new LineData(dataSetUser1, dataSetUser2);
 
-                // Atualiza o gráfico
-                lineChart.setData(lineData);
-                lineChart.invalidate();
+            LineData lineData = new LineData(dataSetUser1, dataSetUser2);
 
-                // Título do gráfico
-                lineChart.getDescription().setText("Evolução do Peso ao Longo do Tempo");
-                lineChart.getDescription().setTextSize(14f); // Tamanho do texto da descrição
 
-                // Ajusta o tamanho do texto dos números nos eixos
-                lineChart.getAxisLeft().setTextSize(12f);  // Eixo Y à esquerda
-                lineChart.getAxisRight().setTextSize(12f); // Eixo Y à direita
-                lineChart.getXAxis().setTextSize(12f);  // Eixo X
-                lineChart.getXAxis().setLabelRotationAngle(90f); // Rotaciona os rótulos do eixo X para 90 graus
+            lineChart.setData(lineData);
+            lineChart.invalidate();
 
-                // Configura a exibição das datas nos eixos
-                lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
-                    @Override
-                    public String getFormattedValue(float value) {
-                        int index = (int) value;
-                        if (index < dates.size() && index >= 0) {
-                            return dates.get(index);
-                        }
-                        return "";
+
+            lineChart.getDescription().setText("Evolução do Peso ao Longo do Tempo");
+            lineChart.getDescription().setTextSize(14f);
+
+
+            lineChart.getAxisLeft().setTextSize(12f);
+            lineChart.getAxisRight().setTextSize(12f);
+            lineChart.getXAxis().setTextSize(12f);
+            lineChart.getXAxis().setLabelRotationAngle(90f);
+
+
+            lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
+                @Override
+                public String getFormattedValue(float value) {
+                    int index = (int) value;
+                    if (index < dates.size() && index >= 0) {
+                        return dates.get(index);
                     }
-                });
+                    return "";
+                }
+            });
         }
 
 

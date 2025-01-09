@@ -52,7 +52,9 @@ public class FriendProfile extends Fragment {
     public FriendProfile() {
         // Required empty public constructor
     }
-
+    /**
+     * Initializes the fragment and sets up essential components such as the Firebase and get arguments (friend selected).
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +67,9 @@ public class FriendProfile extends Fragment {
     }
 
 
+    /**
+     * Called when the fragment is first created.
+     */
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -91,29 +96,29 @@ public class FriendProfile extends Fragment {
         return view;
     }
 
+
+    /**
+     * Method that gets all train of friend clicked
+     */
     private void listTrain() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         List<TreinosDone> treinos = new ArrayList<>();
-        List<Task<?>> tasks = new ArrayList<>(); // List to hold all the tasks
+        List<Task<?>> tasks = new ArrayList<>();
 
-        // Get all treinos for the user
+
         db.collection("treino_done")
                 .whereEqualTo("user_id", friend.getId())
                 .get()
                 .addOnCompleteListener(task1 -> {
                     if (task1.isSuccessful()) {
                         if (!task1.getResult().isEmpty()) {
-
-                            // Loop through the documents returned in task1
                             for (QueryDocumentSnapshot document : task1.getResult()) {
-                                // Create a TreinosDone object with the data from Firestore
                                 TreinosDone train = new TreinosDone(
                                         document.getLong("treino_id").intValue(),
                                         document.getString("data"),
                                         document.getLong("exec").intValue()
                                 );
 
-                                // For each treino, query treino_planos to get the name
                                 Task<QuerySnapshot> treinoPlanosTask = db.collection("treino_planos")
                                         .whereEqualTo("user_id", friend.getId())
                                         .whereEqualTo("id", train.getTreino_id())
@@ -149,25 +154,37 @@ public class FriendProfile extends Fragment {
                 });
     }
 
-
+    /**
+     * Switches the current fragment to the Logout fragment.
+     */
     private void handleLogoutClick() {
         requireActivity().getSupportFragmentManager().popBackStack();
         ((MainActivity) requireActivity()).switchLogin();
     }
+    /**
+     * Switches the current fragment to the Halter fragment.
+     */
 
     private void handleHalterClick() {
         requireActivity().getSupportFragmentManager().popBackStack();
         ((MainActivity) requireActivity()).switchTrain();
     }
-
+    /**
+     * Switches the current fragment to the Perfil fragment.
+     */
     private void handlePerfilClick() {
         requireActivity().getSupportFragmentManager().popBackStack();
         requireActivity().getSupportFragmentManager().popBackStack();
     }
 
+    /**
+     * Switches the current fragment to the Stats fragment.
+     */
     private void handleStatsClick() {
         requireActivity().getSupportFragmentManager().popBackStack();
         ((MainActivity) requireActivity()).switchtoStats();
     }
+
+
 
 }
