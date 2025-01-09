@@ -8,10 +8,16 @@ public class TreinosDone {
     private int treino_id;
     private String data;
     private int exec;
-
+    private String trainName;
 
     public TreinosDone(int id, int treino_id, String data, int exec) {
         this.id = id;
+        this.treino_id = treino_id;
+        this.data = data;
+        this.exec = exec;
+    }
+
+    public TreinosDone(int treino_id, String data, int exec) {
         this.treino_id = treino_id;
         this.data = data;
         this.exec = exec;
@@ -48,6 +54,14 @@ public class TreinosDone {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public String getTrainName() {
+        return trainName;
+    }
+
+    public void setTrainName(String trainName) {
+        this.trainName = trainName;
     }
 
     public Map<String, Object> toMap(String user_id) {

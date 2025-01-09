@@ -1,40 +1,34 @@
 package com.example.finalchallenge;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import com.example.finalchallenge.classes.ExerciseDetailed;
-import com.example.finalchallenge.classes.TreinosDetails;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.example.finalchallenge.classes.TrainAdapter;
 import com.example.finalchallenge.classes.TreinosDone;
 import com.example.finalchallenge.classes.Utilizador;
+import com.example.finalchallenge.classes.UtilizadorAdapter;
 import com.example.finalchallenge.classes.viewModel;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class FriendProfile extends Fragment {
 
@@ -52,6 +46,9 @@ public class FriendProfile extends Fragment {
     private FirebaseFirestorehelper firebaseFirestorehelper;
     private Boolean InternetOn;
     private Utilizador friend;
+    private RecyclerView listTrains;
+    private TrainAdapter trainAdapter;
+
     public FriendProfile() {
         // Required empty public constructor
     }
@@ -75,75 +72,102 @@ public class FriendProfile extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_friend_profile, container, false);
         progressBar = view.findViewById(R.id.progressBar);
-        ListView listView = view.findViewById(R.id.listView);
+
         Username = view.findViewById(R.id.textView2);
         treinos_completos = view.findViewById(R.id.textView3);
         logoutButton = view.findViewById(R.id.logout);
         halterButton = view.findViewById(R.id.halter);
         perfilButton = view.findViewById(R.id.perfil);
         statsButton = view.findViewById(R.id.stats);
-
+        listTrains = view.findViewById(R.id.listView);
         //set-up perfil
         Username.setText("Username: " + friend.getUsername());
-
+        listTrain();
         // set-up botões
         logoutButton.setOnClickListener(v -> handleLogoutClick());
         halterButton.setOnClickListener(v -> handleHalterClick());
         perfilButton.setOnClickListener(v -> handlePerfilClick());
         statsButton.setOnClickListener(v -> handleStatsClick());
-        /*
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Retrieve the selected training
-                TreinosDone selectedTraining = treinosExec.get(position);
-
-                TreinosDetails selectedTrainingDetails = databaseHelper.getTreinoDetails(selectedTraining);
-                // Get the details (assuming ExerciseDetailed is a field in TreinosDone)
-                TreinosDetails details = selectedTrainingDetails;
-
-                // Prepare details to show in the dialog
-                StringBuilder detailsText = new StringBuilder();
-                for (ExerciseDetailed exercise : details.getExercise()) {
-                    detailsText.append(exercise);
-                    detailsText.append("Series Information:\n");
-
-                    // Iterate over the series map to display the data
-                    for (Map.Entry<Integer, Integer> entry : exercise.getSeriesMap().entrySet()) {
-                        detailsText.append("Set ").append(entry.getKey())
-                                .append(": ").append(entry.getValue()).append(" kilos\n");
-                    }
-                }
-
-                // Show details in an AlertDialog
-                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
-                dialogBuilder.setTitle("Training Details");
-                dialogBuilder.setMessage(detailsText.toString());
-                dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                dialogBuilder.create().show();
-            }
-        });*/
         return view;
     }
 
+    private void listTrain() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        List<TreinosDone> treinos = new ArrayList<>();
+        List<Task<?>> tasks = new ArrayList<>(); // List to hold all the tasks
+
+        // Get all treinos for the user
+        db.collection("treino_done")
+                .whereEqualTo("user_id", friend.getId())
+                .get()
+                .addOnCompleteListener(task1 -> {
+                    if (task1.isSuccessful()) {
+                        if (!task1.getResult().isEmpty()) {
+
+                            // Loop through the documents returned in task1
+                            for (QueryDocumentSnapshot document : task1.getResult()) {
+                                // Create a TreinosDone object with the data from Firestore
+                                TreinosDone train = new TreinosDone(
+                                        document.getLong("treino_id").intValue(),
+                                        document.getString("data"),
+                                        document.getLong("exec").intValue()
+                                );
+
+                                // For each treino, query treino_planos to get the name
+                                Task<QuerySnapshot> treinoPlanosTask = db.collection("treino_planos")
+                                        .whereEqualTo("user_id", friend.getId())
+                                        .whereEqualTo("id", train.getTreino_id())
+                                        .get()
+                                        .addOnCompleteListener(task2 -> {
+                                            if (task2.isSuccessful()) {
+                                                if (!task2.getResult().isEmpty()) {
+                                                    // Set the train name if the query is successful
+                                                    String nome = task2.getResult().getDocuments().get(0).getString("nome");
+                                                    train.setTrainName(nome);
+                                                }
+                                            }
+                                            treinos.add(train); // Add the train to the list
+                                        });
+
+                                tasks.add(treinoPlanosTask); // Add this task to the list of tasks
+                            }
+
+                            // Combine all tasks and wait for them to complete
+                            Tasks.whenAllComplete(tasks).addOnCompleteListener(finalTask -> {
+                                // Once all tasks are complete, update the UI
+                                requireActivity().runOnUiThread(() -> {
+                                    listTrains.setLayoutManager(new LinearLayoutManager(getContext()));
+                                    trainAdapter = new TrainAdapter(treinos);
+                                    listTrains.setAdapter(trainAdapter);
+                                    treinos_completos.setText("Treinos Completos:" + String.valueOf(trainAdapter.getItemCount()));
+                                });
+                            });
+                        }
+                    }
+                });
+    }
+
+
     private void handleLogoutClick() {
+        requireActivity().getSupportFragmentManager().popBackStack();
+        requireActivity().getSupportFragmentManager().popBackStack();
         ((MainActivity) requireActivity()).switchLogin();
     }
 
     private void handleHalterClick() {
+        requireActivity().getSupportFragmentManager().popBackStack();
+        requireActivity().getSupportFragmentManager().popBackStack();
         ((MainActivity) requireActivity()).switchTrain();
     }
 
     private void handlePerfilClick() {
-        ((MainActivity) requireActivity()).switchMenu();
+        requireActivity().getSupportFragmentManager().popBackStack();
+        requireActivity().getSupportFragmentManager().popBackStack();
     }
 
     private void handleStatsClick() {
+        requireActivity().getSupportFragmentManager().popBackStack();
+        requireActivity().getSupportFragmentManager().popBackStack();
         ((MainActivity) requireActivity()).switchtoStats();
     }
 
