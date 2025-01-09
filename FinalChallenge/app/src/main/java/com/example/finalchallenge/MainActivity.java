@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
+    //switch to the user profile
     public void switchMenu() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new menu_principal(),"MENU")
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+    //switch to the stats page where all exercises are listed
     public void switchtoStats() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new Exercise_List(),"Stats")
@@ -79,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-
+    //switch to the train edit fragment
     public void switchtoEdit() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new train_edit_exercise(),"Train_Edit")
@@ -87,13 +89,15 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-
+    //switch to the listing of trainings
     public void switchTrain() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new train_list(),"Training")
                 .addToBackStack(null)
                 .commit();
     }
+
+    //switch initial login
     public void switchLogin() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new login(),"Login")
@@ -101,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+    //switch the fragment shows the series and repetitios of the exeercises in a training
     public void switchDetailsTrain() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new train_detail(),"Train Details")
@@ -108,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+    //switch to the friends list
     public void switchtoFriends(){
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new FriendsList(),"FriendsList")
@@ -115,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+    //switch to a friend profile
     public void switchtoFriendProfile(Utilizador friend) {
         FriendProfile friendProfile = new FriendProfile();
         Bundle args = new Bundle();
@@ -126,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+    //switch to the details of an exercise
     public void switchDetailsExercise() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main, new exercise_detail(),"Train Details")
@@ -133,6 +141,8 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+
+    //saves the info on the fragment
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
