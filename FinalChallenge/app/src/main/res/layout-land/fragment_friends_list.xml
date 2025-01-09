@@ -1,118 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".FriendsList">
 
-    <!-- Toolbar with full width -->
+    <!-- Toolbar -->
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar3"
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="66dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:background="@drawable/border"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <!-- Centered LinearLayout for the Toolbar buttons -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_gravity="center">
-
-            <!-- Logout Button -->
-            <ImageButton
-                android:id="@+id/logout"
-                android:layout_width="51dp"
-                android:layout_height="55dp"
-                android:layout_margin="8dp"
-                android:background="@drawable/baseline_logout_24" />
-
-            <!-- Halter Button -->
-            <ImageButton
-                android:id="@+id/halter"
-                android:layout_width="63dp"
-                android:layout_height="62dp"
-                android:layout_marginStart="8dp"
-                android:background="@mipmap/halter_foreground" />
-
-            <!-- Perfil Button -->
-            <ImageButton
-                android:id="@+id/perfil"
-                android:layout_width="63dp"
-                android:layout_height="62dp"
-                android:layout_marginStart="8dp"
-                android:background="@mipmap/perfil_foreground" />
-
-            <!-- Stats Button -->
-            <ImageButton
-                android:id="@+id/stats"
-                android:layout_width="55dp"
-                android:layout_height="52dp"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/baseline_query_stats_24" />
-
-        </LinearLayout>
-    </androidx.appcompat.widget.Toolbar>
-
-    <Button
-        android:id="@+id/friends"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Friends"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/requests"
-        app:layout_constraintTop_toBottomOf="@id/toolbar3"
-        app:layout_constraintHorizontal_chainStyle="spread" />
-
-    <Button
-        android:id="@+id/requests"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Requests"
-        app:layout_constraintStart_toEndOf="@+id/friends"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar3" />
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
+    <!-- Friends Section -->
     <TextView
-        android:id="@+id/exerciseName"
-        android:layout_width="wrap_content"
+        android:id="@+id/tvFriends"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Amigos"
-        android:textSize="24sp"
+        android:padding="16dp"
+        android:text="Friends"
+        android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="?android:attr/textColorPrimary"
+        android:background="?attr/colorAccent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/friends" />
+        app:layout_constraintEnd_toStartOf="@+id/tvRequests" />
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="137dp"
-        android:layout_height="157dp"
-        android:layout_centerInParent="true"
-        android:indeterminate="true"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
-
-    <ListView
-        android:id="@+id/list_view"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvFriends"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/exerciseName"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvFriends"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/rvRequests"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:listitem="@layout/item_friend" />
+
+    <!-- Requests Section -->
+    <TextView
+        android:id="@+id/tvRequests"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="Requests"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="?android:attr/textColorPrimary"
+        android:background="?attr/colorAccent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toEndOf="@id/tvFriends"
+        app:layout_constraintEnd_toStartOf="@+id/tvOthers" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvRequests"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tvRequests"
+        app:layout_constraintStart_toEndOf="@id/rvFriends"
+        app:layout_constraintEnd_toStartOf="@+id/rvOthers"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:listitem="@layout/item_request" />
+
+    <!-- Others Section -->
+    <TextView
+        android:id="@+id/tvOthers"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="Others"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="?android:attr/textColorPrimary"
+        android:background="?attr/colorAccent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toEndOf="@id/tvRequests"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvOthers"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tvOthers"
+        app:layout_constraintStart_toEndOf="@id/rvRequests"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:listitem="@layout/item_other" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
