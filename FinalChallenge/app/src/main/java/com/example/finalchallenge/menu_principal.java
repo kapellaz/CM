@@ -169,7 +169,7 @@ public class menu_principal extends Fragment {
 
                 List<TreinosDone> treinos = databaseHelper.getAllTreinosDoneByUserId(modelview.getUser().getValue().getId());
 
-
+                System.out.println("TREINOS " + treinos);
                 requireActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -244,6 +244,7 @@ public class menu_principal extends Fragment {
                 TreinosDetails selectedTrainingDetails = databaseHelper.getTreinoDetails(selectedTraining);
                 // Get the details (assuming ExerciseDetailed is a field in TreinosDone)
                 TreinosDetails details = selectedTrainingDetails;
+                System.out.println("Details: " + details);
 
                 // Prepare details to show in the dialog
                 StringBuilder detailsText = new StringBuilder();

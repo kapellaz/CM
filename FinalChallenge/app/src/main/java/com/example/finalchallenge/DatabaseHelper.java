@@ -327,12 +327,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         for (Exercise exercise : exercises) {
 
             Map<Integer, Integer> seriesMap = new HashMap<>(); // Chave: número da série, Valor: peso
-
+            System.out.println("--------------------");
+            System.out.println("Exercise: " + exercise);
+            System.out.println(exercise.getId() + treinoId + treinoDone.getExec());
+            System.out.println("--------------------");
             Cursor cursor = db.query(
                     TABLE_SERIES,
                     new String[] {"peso", "numero_serie"},
                     "treino_exercicio_id = ? AND plano_id = ? AND exec = ?", // Filtra pelo treino_exercicio_id e plano_id
-                    new String[] {String.valueOf(exercise.getId()), String.valueOf(treinoId), String.valueOf(treinoDone.getExec())}, // Passa os valores
+                    new String[] {String.valueOf(exercise.getId_exercicio()), String.valueOf(treinoId), String.valueOf(treinoDone.getExec())}, // Passa os valores
                     null, null, null
             );
             System.out.println(cursor);
