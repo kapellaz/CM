@@ -451,7 +451,7 @@ public class train_detail extends Fragment {
      * Switches the current fragment to the Halter fragment.
      */
     private void handleHalterClick() {
-        ((MainActivity) requireActivity()).switchTrain();
+        requireActivity().getSupportFragmentManager().popBackStack();
     }
 
     /**

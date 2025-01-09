@@ -437,11 +437,7 @@ public class exercise_detail extends Fragment {
     }
 
     private void handleStatsClick() {
-        ((MainActivity) requireActivity()).switchtoStats();
-    }
-
-    private void handleItemClick(String item) {
-        ((MainActivity) requireActivity()).switchDetailsTrain();
+        requireActivity().getSupportFragmentManager().popBackStack();
     }
 
     private String extractDate(String fullDate) {

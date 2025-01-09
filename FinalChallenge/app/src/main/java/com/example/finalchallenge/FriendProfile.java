@@ -64,8 +64,6 @@ public class FriendProfile extends Fragment {
         }
     }
 
-
-
     @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

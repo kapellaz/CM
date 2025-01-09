@@ -100,14 +100,6 @@ public class Exercise_List extends Fragment {
             }
         });
 
-        statsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Ação ao clicar no botão de estatísticas
-                handleStatsClick();
-            }
-        });
-
         return view;
 
     }
@@ -125,9 +117,6 @@ public class Exercise_List extends Fragment {
         ((MainActivity) requireActivity()).switchMenu();
     }
 
-    private void handleStatsClick() {
-        ((MainActivity) requireActivity()).switchtoStats();
-    }
     private void handleItemClick(String item) {
         ((MainActivity) requireActivity()).switchDetailsExercise();
     }
