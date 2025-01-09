@@ -186,7 +186,7 @@ public class FriendsList extends Fragment {
                                                         // Update UI with the friends list
                                                         requireActivity().runOnUiThread(() -> {
                                                             listFriends.setLayoutManager(new LinearLayoutManager(getContext()));
-                                                            adapterFriends = new UtilizadorAdapter(amigos);
+                                                            adapterFriends = new UtilizadorAdapter(requireActivity(),amigos);
                                                             listFriends.setAdapter(adapterFriends);
                                                         });
                                                     }
@@ -321,7 +321,6 @@ public class FriendsList extends Fragment {
                             // Finalize when all tasks are complete
                             Tasks.whenAllComplete(tasks).addOnCompleteListener(finalTask -> {
                                 requireActivity().runOnUiThread(() -> {
-                                    System.out.println("acabeiiii");
                                     listOthers.setLayoutManager(new LinearLayoutManager(getContext()));
                                     othersAdapter = new OthersAdapter(users,userID);
                                     listOthers.setAdapter(othersAdapter);

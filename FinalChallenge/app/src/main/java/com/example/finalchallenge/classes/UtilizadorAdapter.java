@@ -1,12 +1,15 @@
 package com.example.finalchallenge.classes;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.finalchallenge.MainActivity;
 import com.example.finalchallenge.R;
 
 import java.util.ArrayList;
@@ -16,9 +19,11 @@ public class UtilizadorAdapter extends RecyclerView.Adapter<UtilizadorAdapter.Vi
 
     private List<Utilizador> utilizadores;
     private List<Utilizador> filteredList;
+    private Context context;
 
     // Constructor
-    public UtilizadorAdapter(List<Utilizador> utilizadores) {
+    public UtilizadorAdapter(Context context, List<Utilizador> utilizadores) {
+        this.context = context; // Initialize context
         this.utilizadores = utilizadores;
         this.filteredList = new ArrayList<>(utilizadores); // Initialize filteredList with the full list
     }
@@ -26,10 +31,11 @@ public class UtilizadorAdapter extends RecyclerView.Adapter<UtilizadorAdapter.Vi
     // ViewHolder to hold reference to the views
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView tvName;
-
+        public Button btnVisit;
         public ViewHolder(View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvName);
+            btnVisit = itemView.findViewById(R.id.btnAction);
         }
     }
 
@@ -45,6 +51,17 @@ public class UtilizadorAdapter extends RecyclerView.Adapter<UtilizadorAdapter.Vi
     public void onBindViewHolder(ViewHolder holder, int position) {
         Utilizador utilizador = filteredList.get(position); // Use filtered list here
         holder.tvName.setText(utilizador.getUsername());
+
+        holder.btnVisit.setOnClickListener(v -> {
+            handleVisit(utilizador);
+        });
+
+    }
+
+    private void handleVisit(Utilizador friend) {
+        if (context instanceof MainActivity) {
+            ((MainActivity) context).switchtoFriendProfile(friend);
+        }
     }
 
     @Override

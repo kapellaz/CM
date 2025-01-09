@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import androidx.fragment.app.FragmentTransaction;
-;
+;import com.example.finalchallenge.classes.Utilizador;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -115,6 +115,16 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+    public void switchtoFriendProfile(Utilizador friend) {
+        FriendProfile friendProfile = new FriendProfile();
+        Bundle args = new Bundle();
+        args.putParcelable("friend", friend); // Pass the Parcelable object
+        friendProfile.setArguments(args);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main, friendProfile, "FriendProfile")
+                .addToBackStack(null)
+                .commit();
+    }
 
     public void switchDetailsExercise() {
         getSupportFragmentManager().beginTransaction()
