@@ -92,5 +92,9 @@ public class TreinoExercicioPlano {
         return map;
     }
 
-
+    @Override
+    public String toString() {
+        return "series: " + series +
+                " repeticoes: " + repeticoes;
+    }
 }
