@@ -25,6 +25,7 @@ import android.widget.TextView;
 import com.example.finalchallenge.classes.ExerciseDetailed;
 import com.example.finalchallenge.classes.TreinosDetails;
 import com.example.finalchallenge.classes.TreinosDone;
+import com.example.finalchallenge.classes.Utilizador;
 import com.example.finalchallenge.classes.viewModel;
 
 import java.util.ArrayList;
@@ -50,9 +51,7 @@ public class FriendProfile extends Fragment {
     private viewModel modelview;
     private FirebaseFirestorehelper firebaseFirestorehelper;
     private Boolean InternetOn;
-    private Executor executorService = Executors.newSingleThreadExecutor();
-    private String FriendID;
-
+    private Utilizador friend;
     public FriendProfile() {
         // Required empty public constructor
     }
@@ -63,44 +62,9 @@ public class FriendProfile extends Fragment {
         databaseHelper = new DatabaseHelper(getContext());
         modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
         firebaseFirestorehelper = new FirebaseFirestorehelper();
-
-        InternetOn = isNetworkConnected();
-        if(InternetOn && modelview.getUser().getValue().getFirstTimeFragment()){
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-
-                    if (databaseHelper.isExercisesTableEmpty()) {
-                        //getCategoriesAndExercises();
-                    } else {
-                        Log.d("Database", "Exercícios já estão na base de dados.");
-                    }
-                }
-            });
+        if (getArguments() != null) {
+            friend = getArguments().getParcelable("friend");
         }
-
-    }
-    private boolean isNetworkConnected() {
-        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        if (cm != null) {
-            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-            return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-        }
-        return false;
-    }
-
-
-
-    private void updateListView(TextView treinos_completos) {
-        // Atualiza o ListView com os dados obtidos
-        int treinos = treinosExec.size();
-        ListView listView = getView().findViewById(R.id.listView);
-        ArrayAdapter<TreinosDone> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, treinosExec);
-        listView.setAdapter(adapter);
-
-        treinos_completos.setText("Treinos Completos: " + treinos);
-
     }
 
 
@@ -109,32 +73,25 @@ public class FriendProfile extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Infla o layout para este fragmento
-        View view = inflater.inflate(R.layout.fragment_menu_principal, container, false);
-
-        // Inicializa o ProgressBar
+        View view = inflater.inflate(R.layout.fragment_friend_profile, container, false);
         progressBar = view.findViewById(R.id.progressBar);
-
-        // Inicializa o ListView e outros botões
         ListView listView = view.findViewById(R.id.listView);
-        ArrayAdapter<TreinosDone> adapter = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_list_item_1, treinosExec);
-        listView.setAdapter(adapter);
         Username = view.findViewById(R.id.textView2);
         treinos_completos = view.findViewById(R.id.textView3);
-        Username.setText("Username: " + modelview.getUser().getValue().getUsername());
-        // Inicializa os botões
         logoutButton = view.findViewById(R.id.logout);
         halterButton = view.findViewById(R.id.halter);
         perfilButton = view.findViewById(R.id.perfil);
         statsButton = view.findViewById(R.id.stats);
-        friendsButton = view.findViewById(R.id.friend_list);
 
-        // Configura os listeners para os botões
+        //set-up perfil
+        Username.setText("Username: " + friend.getUsername());
+
+        // set-up botões
         logoutButton.setOnClickListener(v -> handleLogoutClick());
         halterButton.setOnClickListener(v -> handleHalterClick());
         perfilButton.setOnClickListener(v -> handlePerfilClick());
         statsButton.setOnClickListener(v -> handleStatsClick());
-        modelview.setIsFirstTime(false);
+        /*
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -170,7 +127,7 @@ public class FriendProfile extends Fragment {
                 });
                 dialogBuilder.create().show();
             }
-        });
+        });*/
         return view;
     }
 

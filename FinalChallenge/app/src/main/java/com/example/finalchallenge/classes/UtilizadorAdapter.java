@@ -53,14 +53,14 @@ public class UtilizadorAdapter extends RecyclerView.Adapter<UtilizadorAdapter.Vi
         holder.tvName.setText(utilizador.getUsername());
 
         holder.btnVisit.setOnClickListener(v -> {
-            handleVisit(utilizador.getId());
+            handleVisit(utilizador);
         });
 
     }
 
-    private void handleVisit(String userID) {
+    private void handleVisit(Utilizador friend) {
         if (context instanceof MainActivity) {
-            ((MainActivity) context).switchtoFriendProfile(userID);
+            ((MainActivity) context).switchtoFriendProfile(friend);
         }
     }
 
