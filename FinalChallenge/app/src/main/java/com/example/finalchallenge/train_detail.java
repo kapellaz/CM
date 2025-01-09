@@ -366,7 +366,7 @@ public class train_detail extends Fragment {
                     String currentDate = sdf.format(new Date());
                     System.out.println(listofexecutionsseries.size());
                     for(SeriesInfo serie :listofexecutionsseries){
-                        System.out.println("ENTROUUU");
+                        System.out.println("ENTROUUU" + serie.getExercicioId() + " " + serie.getTreinoId());
                         databaseHelper.insertSeries(serie.getPeso(),serie.getSeries(),serie.getExercicioId(),serie.getTreinoId(),serie.getExec(),serie.getOxigenacao(), serie.getBatimentos());
                         firebaseFirestorehelper.insertSeries(serie.getPeso(),serie.getSeries(),serie.getExercicioId(),serie.getTreinoId(),serie.getExec(),modelview.getUser().getValue().getId(),serie.getOxigenacao(), serie.getBatimentos());
                     }
@@ -608,8 +608,8 @@ public class train_detail extends Fragment {
                         int series = treinosExec.get(position).getSeries();
                         treinosExec.get(position).setSeries(series - 1);
                         updateListView(treinosExec); // Atualiza a lista
-                        System.out.println(treinosExec.get(position).getId() + " e o plano id é " + treinoExec.getId());
-                        SeriesInfo seriesInfo = new SeriesInfo(Integer.parseInt(weight), series, treinosExec.get(position).getId(), treinoExec.getId(), exec, oxigenacao, batimentos);
+                        System.out.println(treinosExec.get(position).getId_exercicio() + " e o plano id é " + treinoExec.getId());
+                        SeriesInfo seriesInfo = new SeriesInfo(Integer.parseInt(weight), series, treinosExec.get(position).getId_exercicio(), treinoExec.getId(), exec, oxigenacao, batimentos);
                         listofexecutionsseries.add(seriesInfo);
                         adapter.notifyDataSetChanged(); // Notifica o adaptador de que os dados mudaram
                         dialogWeight.dismiss();
@@ -628,7 +628,7 @@ public class train_detail extends Fragment {
                         treinosExec.get(position).setSeries(series - 1);
                         updateListView(treinosExec); // Atualiza a lista
                         System.out.println(treinosExec.get(position).getId() + " e o plano id é " + treinoExec.getId());
-                        SeriesInfo seriesInfo = new SeriesInfo(Integer.parseInt(weight), series, treinosExec.get(position).getId(), treinoExec.getId(), exec, oxigenacao, batimentos);
+                        SeriesInfo seriesInfo = new SeriesInfo(Integer.parseInt(weight), series, treinosExec.get(position).getId_exercicio(), treinoExec.getId(), exec, oxigenacao, batimentos);
                         listofexecutionsseries.add(seriesInfo);
                         adapter.notifyDataSetChanged(); // Notifica o adaptador de que os dados mudaram
                         dialogWeight.dismiss();

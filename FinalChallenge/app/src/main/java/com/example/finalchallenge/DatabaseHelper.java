@@ -27,7 +27,7 @@ import java.util.Map;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "fitness.db";
-    private static final int DATABASE_VERSION = 45;
+    private static final int DATABASE_VERSION = 52;
 
     // Table Names
     private static final String TABLE_UTILIZADOR = "utilizador";
@@ -335,6 +335,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     new String[] {String.valueOf(exercise.getId()), String.valueOf(treinoId), String.valueOf(treinoDone.getExec())}, // Passa os valores
                     null, null, null
             );
+            System.out.println(cursor);
+
 
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
@@ -342,6 +344,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         @SuppressLint("Range") int peso = cursor.getInt(cursor.getColumnIndex("peso"));
                         @SuppressLint("Range") int numeroSerie = cursor.getInt(cursor.getColumnIndex("numero_serie"));
                         seriesMap.put(numeroSerie, peso); // Adiciona a série ao mapa
+                        System.out.println(numeroSerie + "  " + peso);
                     } while (cursor.moveToNext());
                 }
                 cursor.close();
@@ -369,6 +372,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         System.out.println(detailsText);
         return treinoDetails;
     }
+
+
 
 
     public List<Exercise> getExercisesForTraining(int treinoId) {

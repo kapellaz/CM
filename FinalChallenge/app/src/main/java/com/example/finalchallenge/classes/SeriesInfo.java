@@ -85,7 +85,7 @@ public class SeriesInfo {
         map.put("peso",peso);
         map.put("numero_serie", series);
         map.put("treino_exercicio_id", exercicioId);
-        map.put("treinoId", treinoId);
+        map.put("plano_id", treinoId);
         map.put("exec", exec);
         map.put("oxigenacao", oxigenacao);
         map.put("batimentos", batimentos);

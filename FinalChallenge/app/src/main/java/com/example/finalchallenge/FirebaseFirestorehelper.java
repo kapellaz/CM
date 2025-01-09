@@ -814,6 +814,7 @@ public class FirebaseFirestorehelper {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         Map<String, List<String>> execucoesMap = new HashMap<>();
         System.out.println(userId);
+        int counter = 0;
         // Passo 1: Buscar todos os treinos feitos por este usuário
         db.collection("treino_done")
                 .whereEqualTo("user_id", userId)
@@ -831,14 +832,19 @@ public class FirebaseFirestorehelper {
 
                             // Passo 2: Verificar se o exercício está presente neste treino
                             db.collection("series")
+                                    .whereEqualTo("user_id",userId)
                                     .whereEqualTo("plano_id", treinoId)
                                     .get()
                                     .addOnCompleteListener(taskExercises -> {
                                         if (taskExercises.isSuccessful()) {
                                             List<DocumentSnapshot> exerciseDocs = taskExercises.getResult().getDocuments();
+                                            if(exerciseDocs.isEmpty()){
 
+                                                callback.onDetalhes(execucoesMap);
+                                            }
                                             for (DocumentSnapshot exerciseDoc : exerciseDocs) {
-                                                System.out.println(exerciseDoc.getLong("treino_exercicio_id") + exercicioId);
+                                                System.out.println("SUPOSTAMTNE");
+                                                System.out.println(exerciseDoc.getLong("treino_exercicio_id") + "  " + exercicioId);
                                                 if (exerciseDoc.getLong("treino_exercicio_id").intValue() == exercicioId) {
                                                     System.out.println("DAHDIAUDHAS");
                                                     int numeroSerie = exerciseDoc.getLong("numero_serie").intValue();
@@ -848,17 +854,21 @@ public class FirebaseFirestorehelper {
 
                                                     if (!execucoesMap.containsKey(data)) {
                                                         execucoesMap.put(data, new ArrayList<>());
-                                                    }else {
-                                                        String info = peso + "|" + batimentos + "|" + oxigenacao;
-                                                        System.out.println(info);
-                                                        execucoesMap.get(data).add(info);
                                                     }
+                                                    String info = peso + "|" + batimentos + "|" + oxigenacao;
+                                                    System.out.println(info);
+                                                    execucoesMap.get(data).add(info);
+
                                                 }
                                             }
+                                            callback.onDetalhes(execucoesMap);
+
                                         }
+                                        callback.onDetalhes(execucoesMap);
                                     });
-                            System.out.println(execucoesMap);
+
                         }
+                        callback.onDetalhes(execucoesMap);
                     }
                 });
     }
