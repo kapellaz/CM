@@ -202,7 +202,10 @@ public class login extends Fragment {
                                                 Utilizador userprov =  new Utilizador(username,docId);
                                                 databaseHelper.addUser(userprov,password);
                                                 requireActivity().runOnUiThread(() -> {
+                                                    userprov.setFirstTimeFragment(true);
+                                                    modelview.setIsFirstTime(true);
                                                     modelview.setUser(userprov);
+                                                    ((MainActivity) requireActivity()).switchMenu();
                                                     Toast.makeText(getContext(), "Register Successful!!", Toast.LENGTH_SHORT).show();
                                                 });
                                             })

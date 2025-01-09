@@ -9,16 +9,13 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar3"
-        android:layout_width="409dp"
-        android:layout_height="66dp"
-        android:layout_marginStart="1dp"
+        android:layout_width="385dp"
+        android:layout_height="59dp"
         android:layout_marginTop="28dp"
-        android:layout_marginEnd="1dp"
         android:background="@drawable/border"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -27,21 +24,21 @@
         android:id="@+id/logout"
         android:layout_width="51dp"
         android:layout_height="55dp"
-        android:layout_marginStart="16dp"
         android:background="@drawable/baseline_logout_24"
         app:layout_constraintBottom_toBottomOf="@+id/toolbar3"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/halter"
+        app:layout_constraintStart_toStartOf="@+id/toolbar3"
         app:layout_constraintTop_toTopOf="@+id/toolbar3"
-        app:layout_constraintVertical_bias="0.545" />
+        app:layout_constraintVertical_bias="0.75" />
 
     <ImageButton
         android:id="@+id/halter"
         android:layout_width="63dp"
         android:layout_height="62dp"
-        android:layout_marginStart="112dp"
         android:background="@mipmap/halter_foreground"
         app:layout_constraintBottom_toBottomOf="@+id/toolbar3"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/stats"
+        app:layout_constraintStart_toStartOf="@+id/toolbar3"
         app:layout_constraintTop_toTopOf="@+id/toolbar3"
         app:layout_constraintVertical_bias="1.0" />
 
@@ -49,21 +46,25 @@
         android:id="@+id/perfil"
         android:layout_width="63dp"
         android:layout_height="62dp"
-        android:layout_marginStart="236dp"
+        android:layout_marginStart="174dp"
         android:background="@mipmap/perfil_foreground"
         app:layout_constraintBottom_toBottomOf="@+id/toolbar3"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/stats"
+        app:layout_constraintStart_toEndOf="@+id/halter"
+        app:layout_constraintStart_toStartOf="@+id/toolbar3"
         app:layout_constraintTop_toTopOf="@+id/toolbar3"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <ImageButton
         android:id="@+id/stats"
         android:layout_width="55dp"
         android:layout_height="52dp"
-        android:layout_marginStart="324dp"
+        android:layout_marginStart="284dp"
         android:background="@drawable/baseline_query_stats_24"
         app:layout_constraintBottom_toBottomOf="@+id/toolbar3"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/toolbar3"
+        app:layout_constraintStart_toEndOf="@+id/perfil"
+        app:layout_constraintStart_toStartOf="@+id/toolbar3"
         app:layout_constraintTop_toTopOf="@+id/toolbar3"
         app:layout_constraintVertical_bias="0.428" />
 
@@ -84,20 +85,21 @@
 
 
     <!-- Botão para adicionar exercício -->
+
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/helpButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="68dp"
-        android:layout_marginEnd="344dp"
+        android:layout_marginStart="28dp"
 
+        android:layout_marginTop="68dp"
         android:background="@drawable/round_button"
         android:contentDescription="Adicionar Exercício"
         android:src="@android:drawable/ic_menu_help"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/logout" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/toolbar3" />
 
     <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/addExerciseButton"

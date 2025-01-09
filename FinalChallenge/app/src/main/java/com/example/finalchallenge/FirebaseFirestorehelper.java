@@ -821,7 +821,7 @@ public class FirebaseFirestorehelper {
 
                         Integer treinoExercicioId = Math.toIntExact(document.getLong("treino_exercicio_id"));
                         Integer numeroSerie = Math.toIntExact(document.getLong("numero_serie"));
-                        Integer planId = Math.toIntExact(document.getLong("plano_id"));
+                        Integer planId = Math.toIntExact(document.getLong("treinoId"));
                         Integer exec = Math.toIntExact(document.getLong("exec"));
 
                         // Gerar a chave única para identificar a série

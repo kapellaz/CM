@@ -77,6 +77,12 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.ViewHold
         });
     }
 
+    public void updateRequests(List<Request> newRequests) {
+        this.requests.clear();
+        this.requests.addAll(newRequests);
+        notifyDataSetChanged();
+    }
+
     public void acceptRequest(String senderID) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 

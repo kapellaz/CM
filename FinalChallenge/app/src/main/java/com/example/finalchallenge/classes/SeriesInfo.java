@@ -83,7 +83,7 @@ public class SeriesInfo {
     public Map<String, Object> toMap(String userId) {
         Map<String, Object> map = new HashMap<>();
         map.put("peso",peso);
-        map.put("series", series);
+        map.put("numero_serie", series);
         map.put("treino_exercicio_id", exercicioId);
         map.put("treinoId", treinoId);
         map.put("exec", exec);

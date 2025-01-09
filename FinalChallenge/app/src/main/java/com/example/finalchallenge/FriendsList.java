@@ -1,5 +1,7 @@
 package com.example.finalchallenge;
 
+import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -27,6 +29,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.finalchallenge.classes.Request;
@@ -85,8 +88,15 @@ public class FriendsList extends Fragment {
 
                 MenuItem searchItem = menu.findItem(R.id.action_search);
                 SearchView searchView = (SearchView) searchItem.getActionView();
+                @SuppressLint("DiscouragedApi") int id = searchView.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+                TextView searchText = searchView.findViewById(id);
+                if (searchText != null) {
+                    searchText.setTextColor(Color.WHITE); // Define a cor do texto
+                    searchText.setHintTextColor(Color.LTGRAY); // Define a cor do placeholder
+                }
                 assert searchView != null;
                 searchView.setQueryHint("Type Here");
+
 
                 // Set up the search view listener
                 searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
