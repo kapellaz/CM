@@ -51,6 +51,6 @@ public class Exercise {
         return name  +
                 " | Séries: " + series +
                 " | Repetições: " + repetitions +
-                "| " + id;
+                "| " + id_exercicio;
     }
 }

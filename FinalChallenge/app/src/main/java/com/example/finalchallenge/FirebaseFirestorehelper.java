@@ -1,24 +1,20 @@
 package com.example.finalchallenge;
-import android.icu.number.IntegerWidth;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.finalchallenge.classes.Exercise;
-import com.example.finalchallenge.classes.Request;
 import com.example.finalchallenge.classes.Utilizador;
 import com.example.finalchallenge.classes.SeriesInfo;
 import com.example.finalchallenge.classes.TreinoExercicioPlano;
 import com.example.finalchallenge.classes.TreinoPlano;
 import com.example.finalchallenge.classes.TreinosDone;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -306,134 +302,7 @@ public class FirebaseFirestorehelper {
                 });
     }
 
-    public void syncTreinoPlanosFromFirebase(String id,DatabaseHelper dblocal) {
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        ArrayList<TreinoPlano> treinoPlanos = dblocal.getAllTreinoPlanos_sync(id);
-
-        db.collection("treino_planos")
-                .whereEqualTo("user_id", id)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        Set<Integer> firebaseIds = new HashSet<>();
-                        queryDocumentSnapshots.getDocuments().forEach(document -> {
-
-                            Long id_doc = document.getLong("id");
-                            String nome = document.getString("nome");
-                            String user_id = document.getString("user_id");
-
-                            boolean existsInLocalList = false;
-                            for (TreinoPlano plano : treinoPlanos) {
-                                if (plano.getId() == Math.toIntExact(id_doc)) {
-                                    existsInLocalList = true;
-                                    treinoPlanos.remove(plano); // Remove o plano do ArrayList
-                                    break; // Não há necessidade de continuar a busca, já encontrou
-                                }
-                            }
-
-                            // Se o documento não existir no ArrayList, apaga da Firebase
-                            if (!existsInLocalList) {
-                                db.collection("treino_planos")
-                                        .document(document.getId())
-                                        .delete()
-                                        .addOnSuccessListener(aVoid ->
-                                                Log.d("Sync", "Plano removido da Firebase: " + id_doc)
-                                        )
-                                        .addOnFailureListener(e ->
-                                                Log.e("Sync", "Erro ao remover plano da Firebase", e)
-                                        );
-                            }
-
-
-
-                        });
-                        // No final, qualquer item restante no ArrayList é um plano que não está na Firebase
-                        for (TreinoPlano plano : treinoPlanos) {
-                            // Adiciona os planos restantes da lista local para a Firebase
-                            db.collection("treino_planos")
-                                    .add(plano)
-                                    .addOnSuccessListener(documentReference ->
-                                            Log.d("Sync", "Plano adicionado à Firebase: " + plano.getId())
-                                    )
-                                    .addOnFailureListener(e ->
-                                            Log.e("Sync", "Erro ao adicionar plano à Firebase", e)
-                                    );
-                        }
-                    } else {
-                        Log.d("DatabaseInfo", "Nenhum exercício encontrado para atualizar.");
-                    }
-                })
-                .addOnFailureListener(e -> Log.e("DatabaseError", "Erro ao buscar exercício", e));
-
-    }
-
-    public void syncTreinoPlanosExercicioFromFirebase(String id, DatabaseHelper dblocal){
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        ArrayList<TreinoExercicioPlano> treinoExercicioPlanos = dblocal.getAllTreinoExercicioPlanos_sync(id);
-
-        db.collection("treino_exercicios_plano")
-                .whereEqualTo("user_id", id)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        Set<Integer> firebaseIds = new HashSet<>();
-
-                        queryDocumentSnapshots.getDocuments().forEach(document -> {
-                            Long id_doc = document.getLong("id");
-                            Integer exercicio_id = document.getLong("exercicio_id").intValue();
-                            Integer treino_id = document.getLong("treino_id").intValue();
-                            Integer series = document.getLong("series").intValue();
-                            Integer repeticoes = document.getLong("repeticoes").intValue();
-                            Integer order_id = document.getLong("order_id").intValue();
-                            String user_id = document.getString("user_id");
-
-                            // Verifica se o plano de treino existe na lista local
-                            boolean existsInLocalList = false;
-                            for (TreinoExercicioPlano plano : treinoExercicioPlanos) {
-                                if (plano.getId() == Math.toIntExact(id_doc)) {
-                                    existsInLocalList = true;
-                                    treinoExercicioPlanos.remove(plano); // Remove o plano do ArrayList
-                                    break; // Não há necessidade de continuar a busca, já encontrou
-                                }
-                            }
-
-                            // Se o documento não existir no ArrayList, apaga da Firebase
-                            if (!existsInLocalList) {
-                                db.collection("treino_exercicios_plano")
-                                        .document(document.getId())
-                                        .delete()
-                                        .addOnSuccessListener(aVoid ->
-                                                Log.d("Sync", "Plano de exercício removido da Firebase: " + id_doc)
-                                        )
-                                        .addOnFailureListener(e ->
-                                                Log.e("Sync", "Erro ao remover plano de exercício da Firebase", e)
-                                        );
-                            }
-
-                            // Adiciona o id ao Set para manter controle
-                            firebaseIds.add(Math.toIntExact(id_doc));
-                        });
-
-                        // No final, qualquer item restante no ArrayList é um plano que não está na Firebase
-                        for (TreinoExercicioPlano plano : treinoExercicioPlanos) {
-                            // Adiciona os planos restantes da lista local para a Firebase
-                            db.collection("treino_exercicios_plano")
-                                    .add(plano)
-                                    .addOnSuccessListener(documentReference ->
-                                            Log.d("Sync", "Plano de exercício adicionado à Firebase: " + plano.getId())
-                                    )
-                                    .addOnFailureListener(e ->
-                                            Log.e("Sync", "Erro ao adicionar plano de exercício à Firebase", e)
-                                    );
-                        }
-                    } else {
-                        Log.d("DatabaseInfo", "Nenhum plano de exercício encontrado na Firebase.");
-                    }
-                })
-                .addOnFailureListener(e -> Log.e("DatabaseError", "Erro ao buscar planos de exercício na Firebase", e));
-
-    }
 
     public void getAllPlansFromFirebase(String id, DatabaseHelper dblocal, menu_principal.FirebaseSyncCallback callback) {
 
@@ -821,7 +690,7 @@ public class FirebaseFirestorehelper {
 
                         Integer treinoExercicioId = Math.toIntExact(document.getLong("treino_exercicio_id"));
                         Integer numeroSerie = Math.toIntExact(document.getLong("numero_serie"));
-                        Integer planId = Math.toIntExact(document.getLong("treinoId"));
+                        Integer planId = Math.toIntExact(document.getLong("plano_id"));
                         Integer exec = Math.toIntExact(document.getLong("exec"));
 
                         // Gerar a chave única para identificar a série
@@ -882,5 +751,130 @@ public class FirebaseFirestorehelper {
                     Log.e("SyncError", "Erro ao buscar dados do Firebase", e);
                 });
     }
+
+
+    public void getAllFriends(String userID, exercise_detail.FriendsCallback callback) {
+        List<String> amigosIDs = new ArrayList<>();
+        List<Utilizador> amigos = new ArrayList<>();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Coletar os amigos
+        db.collection("amigos")
+                .whereEqualTo("user1", userID)
+                .get()
+                .addOnCompleteListener(task1 -> {
+                    if (task1.isSuccessful()) {
+                        // Processar resultados da primeira consulta
+                        if (!task1.getResult().isEmpty()) {
+                            for (QueryDocumentSnapshot document : task1.getResult()) {
+                                amigosIDs.add(document.getString("user2"));
+                            }
+                        }
+
+                        // Performar a segunda consulta
+                        db.collection("amigos")
+                                .whereEqualTo("user2", userID)
+                                .get()
+                                .addOnCompleteListener(task2 -> {
+                                    if (task2.isSuccessful()) {
+                                        // Processar resultados da segunda consulta
+                                        if (!task2.getResult().isEmpty()) {
+                                            for (QueryDocumentSnapshot document : task2.getResult()) {
+                                                amigosIDs.add(document.getString("user1"));
+                                            }
+                                        }
+
+                                        // Buscar documentos de usuários para todos os `amigosIDs`
+                                        List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+                                        for (String amigoID : amigosIDs) {
+                                            tasks.add(db.collection("users").document(amigoID).get());
+                                        }
+
+                                        Tasks.whenAllSuccess(tasks).addOnCompleteListener(task3 -> {
+                                            if (task3.isSuccessful()) {
+                                                for (Task<DocumentSnapshot> t : tasks) {
+                                                    DocumentSnapshot document = t.getResult();
+                                                    Utilizador amigo = new Utilizador(document.getString("username"), document.getId());
+                                                    amigos.add(amigo);
+                                                }
+
+                                                // Chama o callback passando a lista de amigos
+                                                callback.onFriendsFetched(amigos);
+                                            }
+                                        });
+                                    }
+                                });
+                    }
+                });
+    }
+
+
+
+    public void getExecucoesPorExercicio(String userId, int exercicioId, exercise_detail.DetalhesTrainFriend callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, List<String>> execucoesMap = new HashMap<>();
+        System.out.println(userId);
+        int counter = 0;
+        // Passo 1: Buscar todos os treinos feitos por este usuário
+        db.collection("treino_done")
+                .whereEqualTo("user_id", userId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<DocumentSnapshot> treinosDoneDocs = task.getResult().getDocuments();
+
+                        // Iterar pelos treinos feitos
+                        for (DocumentSnapshot treinoDoc : treinosDoneDocs) {
+                            int treinoId = treinoDoc.getLong("treino_id").intValue();
+                            int execucao = treinoDoc.getLong("exec").intValue();
+                            String data = treinoDoc.getString("data");
+                            System.out.println("PLANO " + treinoId);
+
+                            // Passo 2: Verificar se o exercício está presente neste treino
+                            db.collection("series")
+                                    .whereEqualTo("user_id",userId)
+                                    .whereEqualTo("plano_id", treinoId)
+                                    .get()
+                                    .addOnCompleteListener(taskExercises -> {
+                                        if (taskExercises.isSuccessful()) {
+                                            List<DocumentSnapshot> exerciseDocs = taskExercises.getResult().getDocuments();
+                                            if(exerciseDocs.isEmpty()){
+
+                                                callback.onDetalhes(execucoesMap);
+                                            }
+                                            for (DocumentSnapshot exerciseDoc : exerciseDocs) {
+                                                System.out.println("SUPOSTAMTNE");
+                                                System.out.println(exerciseDoc.getLong("treino_exercicio_id") + "  " + exercicioId);
+                                                if (exerciseDoc.getLong("treino_exercicio_id").intValue() == exercicioId) {
+                                                    System.out.println("DAHDIAUDHAS");
+                                                    int numeroSerie = exerciseDoc.getLong("numero_serie").intValue();
+                                                    int peso = exerciseDoc.getLong("peso").intValue();
+                                                    int batimentos = exerciseDoc.getLong("batimentos").intValue();
+                                                    int oxigenacao = exerciseDoc.getLong("oxigenacao").intValue();
+
+                                                    if (!execucoesMap.containsKey(data)) {
+                                                        execucoesMap.put(data, new ArrayList<>());
+                                                    }
+                                                    String info = peso + "|" + batimentos + "|" + oxigenacao;
+                                                    System.out.println(info);
+                                                    execucoesMap.get(data).add(info);
+
+                                                }
+                                            }
+                                            callback.onDetalhes(execucoesMap);
+
+                                        }
+                                        callback.onDetalhes(execucoesMap);
+                                    });
+
+                        }
+                        callback.onDetalhes(execucoesMap);
+                    }
+                });
+    }
+
+
+
+
 
 }
