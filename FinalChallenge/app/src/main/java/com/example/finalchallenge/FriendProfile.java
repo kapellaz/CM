@@ -123,7 +123,9 @@ public class FriendProfile extends Fragment {
                                                 if (!task2.getResult().isEmpty()) {
                                                     // Set the train name if the query is successful
                                                     String nome = task2.getResult().getDocuments().get(0).getString("nome");
+                                                    int trainID = task2.getResult().getDocuments().get(0).getLong("id").intValue();
                                                     train.setTrainName(nome);
+                                                    train.setTreino_id(trainID);
                                                 }
                                             }
                                             treinos.add(train); // Add the train to the list
@@ -137,7 +139,7 @@ public class FriendProfile extends Fragment {
                                 // Once all tasks are complete, update the UI
                                 requireActivity().runOnUiThread(() -> {
                                     listTrains.setLayoutManager(new LinearLayoutManager(getContext()));
-                                    trainAdapter = new TrainAdapter(treinos);
+                                    trainAdapter = new TrainAdapter(requireActivity(),treinos, friend.getId(),modelview.getUser().getValue().getId());
                                     listTrains.setAdapter(trainAdapter);
                                     treinos_completos.setText("Treinos Completos:" + String.valueOf(trainAdapter.getItemCount()));
                                 });
@@ -150,12 +152,10 @@ public class FriendProfile extends Fragment {
 
     private void handleLogoutClick() {
         requireActivity().getSupportFragmentManager().popBackStack();
-        requireActivity().getSupportFragmentManager().popBackStack();
         ((MainActivity) requireActivity()).switchLogin();
     }
 
     private void handleHalterClick() {
-        requireActivity().getSupportFragmentManager().popBackStack();
         requireActivity().getSupportFragmentManager().popBackStack();
         ((MainActivity) requireActivity()).switchTrain();
     }
@@ -166,7 +166,6 @@ public class FriendProfile extends Fragment {
     }
 
     private void handleStatsClick() {
-        requireActivity().getSupportFragmentManager().popBackStack();
         requireActivity().getSupportFragmentManager().popBackStack();
         ((MainActivity) requireActivity()).switchtoStats();
     }

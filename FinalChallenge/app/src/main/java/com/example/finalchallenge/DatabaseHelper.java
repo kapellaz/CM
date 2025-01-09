@@ -959,7 +959,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+    public String getExerciseNameById(int exercicioId) {
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+        String exerciseName = "";
 
+        try {
+            db = this.getReadableDatabase();
+            cursor = db.rawQuery("SELECT nome FROM " + TABLE_EXERCICIO + " WHERE id = ?", new String[]{String.valueOf(exercicioId)});
 
+            if (cursor != null && cursor.moveToFirst()) {
+                exerciseName = cursor.getString(cursor.getColumnIndexOrThrow("nome"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+
+        return exerciseName;
+    }
 
 }
