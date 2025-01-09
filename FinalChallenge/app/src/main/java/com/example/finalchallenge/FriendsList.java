@@ -186,7 +186,7 @@ public class FriendsList extends Fragment {
                                                         // Update UI with the friends list
                                                         requireActivity().runOnUiThread(() -> {
                                                             listFriends.setLayoutManager(new LinearLayoutManager(getContext()));
-                                                            adapterFriends = new UtilizadorAdapter(amigos);
+                                                            adapterFriends = new UtilizadorAdapter(requireActivity(),amigos);
                                                             listFriends.setAdapter(adapterFriends);
                                                         });
                                                     }

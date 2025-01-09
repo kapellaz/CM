@@ -115,6 +115,12 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+    public void switchtoFriendProfile(String Friendid){
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main, new FriendProfile(),"FriendProfile")
+                .addToBackStack(null)
+                .commit();
+    }
 
     public void switchDetailsExercise() {
         getSupportFragmentManager().beginTransaction()

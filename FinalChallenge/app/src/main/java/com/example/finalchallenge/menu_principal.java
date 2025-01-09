@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -290,11 +291,12 @@ public class menu_principal extends Fragment {
     }
 
     private void handleFriendsClick() {
-        ((MainActivity) requireActivity()).switchtoFriends();
+        if(InternetOn){
+            ((MainActivity) requireActivity()).switchtoFriends();
+        }else{
+            Toast.makeText(getContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
-
-
-
 
     private void getCategoriesAndExercises() {
 
