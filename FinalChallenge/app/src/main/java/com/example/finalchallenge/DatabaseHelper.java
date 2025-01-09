@@ -27,7 +27,7 @@ import java.util.Map;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "fitness.db";
-    private static final int DATABASE_VERSION = 39;
+    private static final int DATABASE_VERSION = 43;
 
     // Table Names
     private static final String TABLE_UTILIZADOR = "utilizador";
@@ -502,10 +502,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues treinoExercicioValues = new ContentValues();
         treinoExercicioValues.put("exercicio_id", exerciseId);
         treinoExercicioValues.put("treino_id", treinoPlanoId);  // Usar o treino_id do plano inserido
-        treinoExercicioValues.put("series", series);  // Exemplificando 3 séries
+        treinoExercicioValues.put("numero_series", series);  // Exemplificando 3 séries
         treinoExercicioValues.put("repeticoes", repeticoes);  // Exemplificando 12 repetições
         treinoExercicioValues.put("order_id", order);
-        System.out.println(treinoExercicioValues);
+        System.out.println("ADDD DB " + treinoExercicioValues);
         // Inserir na tabela de associação
         return db.insert(TABLE_TREINO_EXERCICIO_PLANO, null, treinoExercicioValues);
     }

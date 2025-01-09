@@ -368,10 +368,10 @@ public class train_edit_exercise extends Fragment {
 
         // Atualizar a lista no ViewModel
         modelview.getExercises().setValue(exerciseList);
-
+        addExerciseInPlanIntoDB(exerciseName,series,repetitions,exerciseList.size());
         // Notificar o adaptador para inserir o novo item
         adapter.notifyItemInserted(exerciseList.size() - 1);
-        addExerciseInPlanIntoDB(exerciseName,series,repetitions,exerciseList.size());
+
     }
 
     // Adapter para o RecyclerView

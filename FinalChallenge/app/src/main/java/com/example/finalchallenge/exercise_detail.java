@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.finalchallenge.classes.Execution;
+import com.example.finalchallenge.classes.Utilizador;
 import com.example.finalchallenge.classes.viewModel;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
@@ -57,7 +58,9 @@ public class exercise_detail extends Fragment {
     private List<Execution> executions;
     private Map<String, List<String>> execucoesPorDia = new HashMap<>();
     private viewModel modelview;
+    List<String> friendsList = new ArrayList<>();
     private String selectedFriend;
+    private FirebaseFirestorehelper firebaseFirestorehelper;
     public exercise_detail() {
         // Required empty public constructor
     }
@@ -78,6 +81,8 @@ public class exercise_detail extends Fragment {
         databaseHelper = new DatabaseHelper(getContext());
         progressBar = view.findViewById(R.id.progressBar);
         modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
+
+        firebaseFirestorehelper = new FirebaseFirestorehelper();
 
         // Obtém o mapa com as execuções agrupadas por data (de pesos por dia)
         get();
@@ -165,22 +170,28 @@ public class exercise_detail extends Fragment {
         });
 
 
-        List<String> friendsList = new ArrayList<>();
-        friendsList.add("Selecione o seu amigo");
-        friendsList.add("John Doe");
-        friendsList.add("Jane Smith");
-        friendsList.add("Alice Johnson");
-        friendsList.add("Bob Brown");
+        firebaseFirestorehelper.getAllFriends(modelview.getUser().getValue().getId(), new FriendsCallback() {
+            @Override
+            public void onFriendsFetched(List<Utilizador> amigos) {
+                // Aqui você tem a lista de amigos quando a operação for concluída
+                System.out.println("NEW FRINEDS");
+                friendsList.add("Selecione o seu amigo");
 
+                // Adicionar os nomes dos amigos na lista
+                for (Utilizador amigo : amigos) {
+                    friendsList.add(amigo.getUsername());  // Assume que 'getUsername()' retorna o nome do amigo
+                }
 
-        ArrayAdapter<String> friendsAdapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_spinner_item,
-                friendsList
-        );
-
-        friendsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner_friends.setAdapter(friendsAdapter);
+                // Atualizar o Spinner com a lista de amigos
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                        requireContext(),
+                        android.R.layout.simple_spinner_item,
+                        friendsList
+                );
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinner_friends.setAdapter(adapter);
+            }
+        });
 
 
         spinner_friends.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -188,8 +199,15 @@ public class exercise_detail extends Fragment {
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 if (position != 0) {
                     selectedFriend = friendsList.get(position);
+                    firebaseFirestorehelper.getExecucoesPorExercicio("7BxdpBuZg0voMCqLUbHY", modelview.getExercicio().getValue().getId(), new DetalhesTrainFriend() {
+                        @Override
+                        public void onDetalhes(Map<String, List<String>> detalhes) {
+                            System.out.println("AHAHH");
+                            System.out.println("ALGO : "  + detalhes);
+                            showWeightAverageGraphForBothUsers();
+                        }
+                    });
 
-                    showWeightAverageGraphForBothUsers();
                 } else {
                     showWeightAverageGraph();
                     selectedFriend = null;
@@ -204,6 +222,12 @@ public class exercise_detail extends Fragment {
 
     }
 
+    public interface DetalhesTrainFriend {
+        void onDetalhes(Map<String, List<String>> detalhes);
+    }
+    public interface FriendsCallback {
+        void onFriendsFetched(List<Utilizador> amigos);
+    }
 
 
 
