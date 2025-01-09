@@ -1,6 +1,6 @@
 package com.example.finalchallenge;
 
-import static androidx.core.content.ContextCompat.getSystemService;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
@@ -17,8 +17,7 @@ import android.widget.Toast;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import com.example.finalchallenge.classes.viewModel;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 
@@ -26,8 +25,7 @@ import com.example.finalchallenge.classes.Utilizador;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 public class login extends Fragment {
     private viewModel modelview;
@@ -38,20 +36,26 @@ public class login extends Fragment {
         // Required empty public constructor
     }
 
+    /**
+     * Initializes the fragment and sets up essential components such as the ViewModel and database.
+    */
 
-
-    @Override
+     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         databaseHelper = new DatabaseHelper(getContext());
         modelview = new ViewModelProvider(requireActivity()).get(viewModel.class);
     }
 
+
+    /**
+     * Called when the fragment is first created.
+     */
     @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         View view = inflater.inflate(R.layout.fragment_login, container, false);
         EditText usernameEditText = view.findViewById(R.id.editName);
         EditText passwordEditText = view.findViewById(R.id.editPass);
@@ -59,7 +63,7 @@ public class login extends Fragment {
         Button registerButton = view.findViewById(R.id.registerButton);
         status = view.findViewById(R.id.statusText);
 
-        // login
+
         loginButton.setOnClickListener(v -> {
             String username = usernameEditText.getText().toString();
             String password = passwordEditText.getText().toString();
@@ -70,7 +74,7 @@ public class login extends Fragment {
             }
         });
 
-        // Register
+
         registerButton.setOnClickListener(v -> {
             String username = usernameEditText.getText().toString();
             String password = passwordEditText.getText().toString();
@@ -84,77 +88,70 @@ public class login extends Fragment {
     }
 
 
+    /**
+     * Method to log in to an account
+     * @param username - Username account
+     * @param password - Password account
+     */
+
     private void loginUser(String username, String password) {
-        //procurar na DB local
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                // Check if the user exists in the local database
-                Utilizador user = databaseHelper.loginUser(username, password);
-                if (user != null) {
-                    // User found in local database, proceed with login
-                    requireActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            user.setFirstTimeFragment(true);
-                            modelview.setUser(user);
-                            modelview.setIsFirstTime(false);
 
-                            Toast.makeText(getContext(), "Login Sucessful", Toast.LENGTH_SHORT).show();
-                            ((MainActivity) requireActivity()).switchMenu();
-                        }
-                    });
-                    return; // Exit the method if user is found locally
-                }
+        // Check if the user exists in the local database
+        Utilizador user = databaseHelper.loginUser(username, password);
+        if (user != null) {
 
-                // User not found locally, check Firebase
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                db.collection("users")
-                        .whereEqualTo("username", username)
-                        .whereEqualTo("password", password)
-                        .get()
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                if (!task.getResult().isEmpty()) {
-                                    //trabalhar com o documento obtido
-                                    DocumentSnapshot document = task.getResult().getDocuments().get(0);
-                                    //colocar o documento obtido em um utilizador
-                                    Utilizador userprov = new Utilizador(document.getString("username"), document.getId());
-                                    //add user to local DB
-                                    databaseHelper.addUser(userprov,document.getString("password"));
-                                    requireActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            userprov.setFirstTimeFragment(true);
-                                            modelview.setUser(userprov);
-                                            modelview.setIsFirstTime(true);
-                                            Toast.makeText(getContext(), "Login Successful", Toast.LENGTH_SHORT).show();
-                                            ((MainActivity) requireActivity()).switchMenu();
-                                        }
-                                    });
-                                } else {
-                                    // User not found in Firebase
-                                    requireActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(getContext(), "Invalid username or password", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
+            user.setFirstTimeFragment(true);
+            modelview.setUser(user);
+            modelview.setIsFirstTime(false);
+
+            Toast.makeText(getContext(), "Login Sucessful", Toast.LENGTH_SHORT).show();
+            ((MainActivity) requireActivity()).switchMenu();
+
+
+            return;
+        }
+
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .whereEqualTo("username", username)
+                .whereEqualTo("password", password)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (!task.getResult().isEmpty()) {
+                            DocumentSnapshot document = task.getResult().getDocuments().get(0);
+
+                            Utilizador userprov = new Utilizador(document.getString("username"), document.getId());
+
+                            databaseHelper.addUser(userprov,document.getString("password"));
+                            requireActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    userprov.setFirstTimeFragment(true);
+                                    modelview.setUser(userprov);
+                                    modelview.setIsFirstTime(true);
+                                    Toast.makeText(getContext(), "Login Successful", Toast.LENGTH_SHORT).show();
+                                    ((MainActivity) requireActivity()).switchMenu();
                                 }
-                            } else {
-                                // Error retrieving data from Firebase
-                                requireActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getContext(), "Error logging in", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        });
+                            });
+                        } else {
+                            status.setText("Invalid username or password!");
+
+
+                        }
+                    } else {
+                        Toast.makeText(getContext(), "Error logging in", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
-        });
-    }
+
+
+    /**
+     * Method that registers the user, both in fb and in the local database
+     * @param username - Username account
+     * @param password - Password
+     */
 
 
     private void registerUser(String username, String password) {
@@ -170,65 +167,48 @@ public class login extends Fragment {
                 return;
             }
         }
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
 
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                db.collection("users")
-                        .whereEqualTo("username", username)
-                        .get()
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                if (!task.getResult().isEmpty()) {
-                                    requireActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(getContext(), "Username already used", Toast.LENGTH_SHORT).show();
-                                        }
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .whereEqualTo("username", username)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (!task.getResult().isEmpty()) {
+
+                            status.setText("Invalid username or password!");
+
+                        } else {
+
+                            Map<String, Object> newUser = new HashMap<>();
+                            newUser.put("username", username);
+                            newUser.put("password", password);
+
+                            db.collection("users")
+                                    .add(newUser)
+                                    .addOnSuccessListener(documentReference -> {
+                                        //add user to local DB
+                                        String docId = documentReference.getId();
+                                        Utilizador userprov = new Utilizador(username, docId);
+                                        databaseHelper.addUser(userprov, password);
+                                        userprov.setFirstTimeFragment(true);
+                                        modelview.setIsFirstTime(true);
+                                        modelview.setUser(userprov);
+                                        ((MainActivity) requireActivity()).switchMenu();
+                                        Toast.makeText(getContext(), "Register Successful!!", Toast.LENGTH_SHORT).show();
+
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        requireActivity().runOnUiThread(() -> {
+                                            Toast.makeText(getContext(), "Error adding user", Toast.LENGTH_SHORT).show();
+                                        });
                                     });
-                                }else {
-                                    
-                                    Map<String, Object> newUser = new HashMap<>();
-                                    newUser.put("username", username);
-                                    newUser.put("password", password);
+                        }
+                    } else {
+                        Toast.makeText(getContext(), "No wifi connection", Toast.LENGTH_SHORT).show();
 
-                                    db.collection("users")
-                                            .add(newUser)
-                                            .addOnSuccessListener(documentReference -> {
-                                                //add user to local DB
-                                                String docId = documentReference.getId();
-                                                Utilizador userprov =  new Utilizador(username,docId);
-                                                databaseHelper.addUser(userprov,password);
-                                                requireActivity().runOnUiThread(() -> {
-                                                    userprov.setFirstTimeFragment(true);
-                                                    modelview.setIsFirstTime(true);
-                                                    modelview.setUser(userprov);
-                                                    ((MainActivity) requireActivity()).switchMenu();
-                                                    Toast.makeText(getContext(), "Register Successful!!", Toast.LENGTH_SHORT).show();
-                                                });
-                                            })
-                                            .addOnFailureListener(e -> {
-                                                requireActivity().runOnUiThread(() -> {
-                                                    Toast.makeText(getContext(), "Error adding user", Toast.LENGTH_SHORT).show();
-                                                });
-                                            });
-                                }
-                            } else {
-                                // Error retrieving data from Firebase
-                                requireActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getContext(), "No wifi connection", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        });
-                //Escrever na FB
-                //Escrever na DB local
-            }
-        });
+                        }
+                });
     }
 
 }
