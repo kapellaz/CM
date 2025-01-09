@@ -23,27 +23,21 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.finalchallenge.classes.ExerciseDetailed;
-import com.example.finalchallenge.classes.TreinoExec;
 import com.example.finalchallenge.classes.TreinosDetails;
 import com.example.finalchallenge.classes.TreinosDone;
-import com.example.finalchallenge.classes.Utilizador;
 import com.example.finalchallenge.classes.viewModel;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -69,6 +63,10 @@ public class menu_principal extends Fragment {
         // Required empty public constructor
     }
 
+    /**
+     * Initializes the fragment and sets up essential components such as the ViewModel and database.
+     * If the table of exercises is empty, an API call will be made to get all exercises
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +90,10 @@ public class menu_principal extends Fragment {
         }
 
     }
+    /**
+     * method checks whether the device is connected to a network.
+     * @return true if are connect, otherwise false
+     */
     private boolean isNetworkConnected() {
         ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -102,21 +104,37 @@ public class menu_principal extends Fragment {
         return false;
     }
 
+    /**
+     * Method that allows the class to perform specific actions when a Firebase-related asynchronous operation completes.
+     */
     public interface FirebaseSyncCallback {
         void onComplete();
     }
 
+    /**
+     * Method to synchronize database data with firebase.
+     * If it is a new user on the local cell phone, but already exists in firebase. This will get all data via firebase.
+     * If it already exists on your phone, all data from your phone will be transferred to Firebase.
+     * @param treinos_completos - Textview to update info
+     */
+
     private void synchronizeFirebaseDataAndUpdateList(TextView treinos_completos) {
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
         System.out.println(modelview.getFirstTIMEinFrag().getValue());
         if(Boolean.TRUE.equals(modelview.getIsFirstTime().getValue()) && modelview.getUser().getValue().getFirstTimeFragment() && InternetOn) {
-            System.out.println("No account");
+
             String userId = modelview.getUser().getValue().getId();
-            // Contador para rastrear operações concluídas
-            AtomicInteger pendingTasks = new AtomicInteger(4); // Número de operações do Firebase
+
+            AtomicInteger pendingTasks = new AtomicInteger(4);
             FirebaseSyncCallback onTaskComplete = () -> {
                 if (pendingTasks.decrementAndGet() == 0) {
-                    // Todas as operações foram concluídas, chama getTreinos
-                    getTreinos(2, treinos_completos);
+
+                    getTreinos(treinos_completos);
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.GONE);
+                    }
                 }
             };
             firebaseFirestorehelper.getAllPlansFromFirebase(userId, databaseHelper, onTaskComplete);
@@ -125,12 +143,15 @@ public class menu_principal extends Fragment {
             firebaseFirestorehelper.getAllSeriesFromFirebase(userId, databaseHelper, onTaskComplete);
             modelview.getUser().getValue().setFirstTimeFragment(false);
         } else if (modelview.getUser().getValue().getFirstTimeFragment() && InternetOn) {
-            System.out.println("Syncronized");
-            AtomicInteger pendingTasks = new AtomicInteger(4); // Número de operações do Firebase
+
+            AtomicInteger pendingTasks = new AtomicInteger(4);
             FirebaseSyncCallback onTaskComplete = () -> {
                 if (pendingTasks.decrementAndGet() == 0) {
 
-                    getTreinos(2, treinos_completos);
+                    getTreinos(treinos_completos);
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.GONE);
+                    }
                 }
             };
             firebaseFirestorehelper.syncLocalDataToFirebasePLANOS(modelview.getUser().getValue().getId(),databaseHelper, onTaskComplete);
@@ -139,47 +160,42 @@ public class menu_principal extends Fragment {
             firebaseFirestorehelper.syncLocalDataToFirebaseSerie(modelview.getUser().getValue().getId(),databaseHelper, onTaskComplete);
             modelview.getUser().getValue().setFirstTimeFragment(false);
         } else {
-            System.out.println("ALL CHECK");
-
-
-            getTreinos(2, treinos_completos);
+            getTreinos(treinos_completos);
             modelview.getUser().getValue().setFirstTimeFragment(false);
         }
     }
 
 
-    private void getTreinos(Integer id, TextView treinos_completos) {
+    private void getTreinos(TextView treinos_completos) {
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        // Exibe o ProgressBar enquanto carrega os dados
+
         requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if (progressBar != null) {
-                    progressBar.setVisibility(View.VISIBLE);  // Mostrar o ProgressBar
+                    progressBar.setVisibility(View.VISIBLE);
                 }
             }
         });
 
-        // Executa a tarefa de busca dos treinos em segundo plano
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
 
                 List<TreinosDone> treinos = databaseHelper.getAllTreinosDoneByUserId(modelview.getUser().getValue().getId());
 
-                System.out.println("TREINOS " + treinos);
                 requireActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
 
                         if (treinos != null) {
                             treinosExec = treinos;
-                            updateListView(treinos_completos); // Atualiza o ListView
+                            updateListView(treinos_completos);
                         }
 
-                        // Esconde o ProgressBar quando os dados forem carregados
                         if (progressBar != null) {
                             progressBar.setVisibility(View.GONE);
                         }
@@ -188,78 +204,78 @@ public class menu_principal extends Fragment {
             }
         });
     }
+    /**
+     * Updates the ListView by associating a new adapter with the updated data(All training dones).
+     */
 
     private void updateListView(TextView treinos_completos) {
-        // Atualiza o ListView com os dados obtidos
         int treinos = treinosExec.size();
         ListView listView = getView().findViewById(R.id.listView);
         ArrayAdapter<TreinosDone> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, treinosExec);
         listView.setAdapter(adapter);
-
         treinos_completos.setText("Treinos Completos: " + treinos);
-
     }
 
 
-
+    /**
+     * Called when the fragment is first created.
+     */
     @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Infla o layout para este fragmento
+
         View view = inflater.inflate(R.layout.fragment_menu_principal, container, false);
 
-        // Inicializa o ProgressBar
+
         progressBar = view.findViewById(R.id.progressBar);
 
-        // Inicializa o ListView e outros botões
+
         ListView listView = view.findViewById(R.id.listView);
         ArrayAdapter<TreinosDone> adapter = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_list_item_1, treinosExec);
         listView.setAdapter(adapter);
         Username = view.findViewById(R.id.textView2);
         treinos_completos = view.findViewById(R.id.textView3);
         Username.setText("Username: " + modelview.getUser().getValue().getUsername());
-        // Inicializa os botões
+
         logoutButton = view.findViewById(R.id.logout);
         halterButton = view.findViewById(R.id.halter);
         perfilButton = view.findViewById(R.id.perfil);
         statsButton = view.findViewById(R.id.stats);
         friendsButton = view.findViewById(R.id.friend_list);
 
-        // Configura os listeners para os botões
+
         logoutButton.setOnClickListener(v -> handleLogoutClick());
         halterButton.setOnClickListener(v -> handleHalterClick());
         perfilButton.setOnClickListener(v -> handlePerfilClick());
         statsButton.setOnClickListener(v -> handleStatsClick());
         friendsButton.setOnClickListener(v -> handleFriendsClick());
-        Integer id = 2;
+
         synchronizeFirebaseDataAndUpdateList(treinos_completos);
         modelview.setIsFirstTime(false);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Retrieve the selected training
+
                 TreinosDone selectedTraining = treinosExec.get(position);
 
                 TreinosDetails selectedTrainingDetails = databaseHelper.getTreinoDetails(selectedTraining);
-                // Get the details (assuming ExerciseDetailed is a field in TreinosDone)
-                TreinosDetails details = selectedTrainingDetails;
-                System.out.println("Details: " + details);
 
-                // Prepare details to show in the dialog
+                TreinosDetails details = selectedTrainingDetails;
+
                 StringBuilder detailsText = new StringBuilder();
                 for (ExerciseDetailed exercise : details.getExercise()) {
                     detailsText.append(exercise);
                     detailsText.append("Series Information:\n");
 
-                    // Iterate over the series map to display the data
+
                     for (Map.Entry<Integer, Integer> entry : exercise.getSeriesMap().entrySet()) {
                         detailsText.append("Set ").append(entry.getKey())
                                 .append(": ").append(entry.getValue()).append(" kilos\n");
                     }
                 }
 
-                // Show details in an AlertDialog
+
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
                 dialogBuilder.setTitle("Training Details");
                 dialogBuilder.setMessage(detailsText.toString());
@@ -275,22 +291,38 @@ public class menu_principal extends Fragment {
         return view;
     }
 
+    /**
+     * Switches the current fragment to the Logout fragment.
+     */
     private void handleLogoutClick() {
         ((MainActivity) requireActivity()).switchLogin();
     }
 
+    /**
+     * Switches the current fragment to the Halter fragment.
+     */
     private void handleHalterClick() {
         ((MainActivity) requireActivity()).switchTrain();
     }
 
+    /**
+     * Switches the current fragment to the Perfil fragment.
+     */
     private void handlePerfilClick() {
         ((MainActivity) requireActivity()).switchMenu();
     }
 
+
+    /**
+     * Switches the current fragment to the Stats fragment.
+     */
     private void handleStatsClick() {
         ((MainActivity) requireActivity()).switchtoStats();
     }
 
+    /**
+     * Switches the current fragment to the Friends fragment, only if internet connection exists.
+     */
     private void handleFriendsClick() {
         if(InternetOn){
             ((MainActivity) requireActivity()).switchtoFriends();
@@ -300,9 +332,7 @@ public class menu_principal extends Fragment {
     }
 
     private void getCategoriesAndExercises() {
-
         try {
-            // Obter todas as categorias
             URL url = new URL("https://api.algobook.info/v1/gym/categories");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -322,16 +352,12 @@ public class menu_principal extends Fragment {
             }
             in.close();
 
-            // Processar categorias obtidas
             List<String> categories = parseCategories(response.toString());
-
-            // Obter os exercícios de cada categoria
             List<String> allExercises = new ArrayList<>();
             for (String category : categories) {
                 List<String> exercises = getExercisesForCategory(category);
                 allExercises.addAll(exercises);
             }
-
             databaseHelper.AddExerciseAPIintoBD((ArrayList<String>) allExercises);
 
         } catch (IOException e) {
@@ -344,14 +370,9 @@ public class menu_principal extends Fragment {
     private List<String> parseCategories(String jsonResponse) {
         List<String> categories = new ArrayList<>();
         try {
-            // Criar o JSONArray a partir da resposta JSON
             JSONArray categoriesArray = new JSONArray(jsonResponse);
-
-            // Iterar sobre o array de categorias e adicionar cada categoria à lista
             for (int i = 0; i < categoriesArray.length(); i++) {
                 String category = categoriesArray.getString(i);
-
-                // Adicionar a categoria à lista
                 categories.add(category);
             }
         } catch (Exception e) {
@@ -361,12 +382,15 @@ public class menu_principal extends Fragment {
         return categories;
     }
 
-
+    /**
+     * // Method to fetch exercises for a given category
+     * @param category - category in question
+     * @return - all exercises from this category
+     */
     private List<String> getExercisesForCategory(String category) {
         List<String> exercises = new ArrayList<>();
         try {
-            System.out.println("ENTROU PARA PEGAR EM CA");
-            // Fazer a requisição para obter os exercícios da categoria
+
             URL url = new URL("https://api.algobook.info/v1/gym/categories/" + category);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -385,9 +409,9 @@ public class menu_principal extends Fragment {
                 response.append(inputLine);
             }
             in.close();
-            System.out.println("EXERCICI)OS " + response.toString());
 
-            // Processar exercícios obtidos para a categoria
+
+
             exercises = parseExercises(response.toString());
 
         } catch (IOException e) {
@@ -396,25 +420,28 @@ public class menu_principal extends Fragment {
         return exercises;
     }
 
+    /**
+     * Method to parse exercises from the JSON response
+     * @param jsonResponse - All exercises
+     * @return - Return in right format
+     */
+
     private List<String> parseExercises(String jsonResponse) {
         List<String> exercises = new ArrayList<>();
         try {
-            // Criar o JSONObject a partir da resposta JSON
             JSONObject responseObject = new JSONObject(jsonResponse);
 
-            // Obter o array de exercícios dentro do campo "exercises"
             JSONArray exercisesArray = responseObject.getJSONArray("exercises");
 
-            // Iterar sobre o array de exercícios
+
             for (int i = 0; i < exercisesArray.length(); i++) {
-                // Obter o exercício atual
+
                 JSONObject exerciseObject = exercisesArray.getJSONObject(i);
 
-                // Extrair o nome e o músculo
                 String name = exerciseObject.getString("name");
                 String muscle = exerciseObject.getString("muscle");
 
-                // Criar a string no formato "name - muscle" e adicionar à lista
+
                 String exerciseInfo = name + " - " + muscle;
                 exercises.add(exerciseInfo);
             }

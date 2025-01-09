@@ -22,7 +22,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
-import java.util.ArrayList;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -31,16 +31,16 @@ import java.util.concurrent.Executors;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
-import android.os.Bundle;
+
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.finalchallenge.classes.Exercicio;
 import com.example.finalchallenge.classes.Exercise;
-import com.example.finalchallenge.classes.TreinoExec;
+
 import com.example.finalchallenge.classes.TreinoPlano;
 import com.example.finalchallenge.classes.viewModel;
+
 public class train_edit_exercise extends Fragment {
     private ImageButton logoutButton;
     private ImageButton halterButton;
@@ -62,7 +62,9 @@ public class train_edit_exercise extends Fragment {
     public train_edit_exercise() {
         // Required empty public constructor
     }
-
+    /**
+     * Initializes the fragment and sets up essential components such as the ViewModel, firebase and database.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,45 +80,45 @@ public class train_edit_exercise extends Fragment {
     @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflar o layout para o fragment
+
         View view = inflater.inflate(R.layout.fragment_train_edit_exercise, container, false);
         TextView exerciseName = view.findViewById(R.id.exerciseName);
         exerciseName.setText("Edição: " + Objects.requireNonNull(treinoPlano).getNome());
 
-        // Inicializa os botões
+
         logoutButton = view.findViewById(R.id.logout);
         halterButton = view.findViewById(R.id.halter);
         perfilButton = view.findViewById(R.id.perfil);
         statsButton = view.findViewById(R.id.stats);
-        // Inicializando o RecyclerView
+
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Configurar o Adapter
+
         adapter = new ExerciseAdapter(exerciseList);
         recyclerView.setAdapter(adapter);
 
-        // Adicionar ItemDecoration (opcional)
+
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
 
 
-        // Configuração do ItemTouchHelper
+        // ItemTouchHelper Configuration
+
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 int fromPosition = viewHolder.getAdapterPosition();
                 int toPosition = target.getAdapterPosition();
 
-                // Evitar mover para a mesma posição
+
                 if (fromPosition == toPosition) {
                     return false;
                 }
 
-                // Trocar os itens na lista
                 Collections.swap(exerciseList, fromPosition, toPosition);
 
-                // Atualizar a lista no ViewModel
+
                 modelview.getExercises().setValue(exerciseList);
 
                 adapter.notifyItemMoved(fromPosition, toPosition);
@@ -128,17 +130,11 @@ public class train_edit_exercise extends Fragment {
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
 
-                // Remover o exercício da lista e do banco de dados
                 databaseHelper.deleteExercicioFromPlano(treinoPlano.getId(), exerciseList.get(position),modelview.getUser().getValue().getId());
                 firebaseFirestorehelper.deleteExercicioFromPlano(treinoPlano.getId(),exerciseList.get(position).getId(),modelview.getUser().getValue().getId());
 
                 exerciseList.remove(position);
-
-                // Atualizar a lista no ViewModel
                 modelview.getExercises().setValue(exerciseList);
-
-
-                // Notificar o adaptador sobre a remoção do item
                 adapter.notifyItemRemoved(position);
             }
             @Override
@@ -148,16 +144,16 @@ public class train_edit_exercise extends Fragment {
 
             @Override
             public boolean isLongPressDragEnabled() {
-                return true; // Habilita o drag and drop com long press
+                return true;
             }
 
         };
 
 
-// Vincular o ItemTouchHelper ao RecyclerView
+
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
-        // Configurar o listener de clique no RecyclerView
+
         recyclerView.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
             GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
@@ -165,7 +161,7 @@ public class train_edit_exercise extends Fragment {
                     View child = recyclerView.findChildViewUnder(e.getX(), e.getY());
                     if (child != null) {
                         int position = recyclerView.getChildAdapterPosition(child);
-                        showEditExerciseDialog(position); // Chama o diálogo de edição
+                        showEditExerciseDialog(position);
                         return true;
                     }
                     return false;
@@ -174,16 +170,15 @@ public class train_edit_exercise extends Fragment {
 
             @Override
             public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-                return gestureDetector.onTouchEvent(e); // Passa os eventos para o GestureDetector
+                return gestureDetector.onTouchEvent(e);
             }
         });
 
 
-        // Configurar o botão de adicionar exercício
+
         addExerciseButton = view.findViewById(R.id.addExerciseButton);
         addExerciseButton.setOnClickListener(v -> showAddExerciseDialog());
 
-        // Configurar o botão de adicionar exercício
         helpbutton = view.findViewById(R.id.helpButton);
         helpbutton.setOnClickListener(v -> showHelpDialog());
 
@@ -195,31 +190,45 @@ public class train_edit_exercise extends Fragment {
         return view;
     }
 
+    /**
+     * Switches the current fragment to the Logout fragment.
+     */
     private void handleLogoutClick() {
         ((MainActivity) requireActivity()).switchLogin();
     }
 
+    /**
+     * Switches the current fragment to the Halter fragment.
+     */
     private void handleHalterClick() {
         ((MainActivity) requireActivity()).switchTrain();
     }
 
+    /**
+     * Switches the current fragment to the Perfil fragment.
+     */
     private void handlePerfilClick() {
         ((MainActivity) requireActivity()).switchMenu();
     }
 
+
+    /**
+     * Switches the current fragment to the Stats fragment.
+     */
     private void handleStatsClick() {
         ((MainActivity) requireActivity()).switchtoStats();
     }
 
+
+    /**
+     *  Method to display the edit exercise dialog
+     */
     private void showEditExerciseDialog(int position) {
         final Dialog dialog = new Dialog(requireContext());
         dialog.setContentView(R.layout.dialog_edit_exercise);
 
-        // Personaliza o fundo do diálogo (usando o drawable com bordas arredondadas)
+
         Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawableResource(android.R.color.transparent);
-
-
-
 
         Exercise exercise = exerciseList.get(position);
 
@@ -230,7 +239,7 @@ public class train_edit_exercise extends Fragment {
         Button create = dialog.findViewById(R.id.create_button);
         Button cancelar = dialog.findViewById(R.id.cancel_button);
 
-        // Preencher os campos com os valores atuais
+
         inputRepetitions.setText(String.valueOf(exercise.getRepetitions()));
         inputSeries.setText(String.valueOf(exercise.getSeries()));
 
@@ -251,19 +260,14 @@ public class train_edit_exercise extends Fragment {
                     int newRepetitions = Integer.parseInt(repetitionsString);
                     int newSeries = Integer.parseInt(seriesString);
 
-                    // Atualizar os dados do exercício
+
                     exercise.setRepetitions(newRepetitions);
                     exercise.setSeries(newSeries);
-
-                    // Atualizar no banco de dados
-
-
-                    // Atualizar na lista e notificar o adaptador
 
                     updateExerciseInfoInDB();
                     adapter.notifyItemChanged(position);
                 }
-                dialog.dismiss(); // Fecha o diálogo
+                dialog.dismiss();
             }
         });
 
@@ -271,38 +275,37 @@ public class train_edit_exercise extends Fragment {
         dialog.show();
     }
 
-    // Método para exibir o diálogo de adicionar exercício
+
+    /**
+     *  Method to display the add exercise dialog
+     */
     private void showAddExerciseDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Adicionar Exercício");
 
-        // Layout para adicionar um exercício
+
         final View customLayout = getLayoutInflater().inflate(R.layout.dialog_add_exercise, null);
         builder.setView(customLayout);
 
         final Spinner spinner = customLayout.findViewById(R.id.exerciseNameSpinner);
-        // Criar o ArrayAdapter
+
         ArrayAdapter<Exercicio> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, exercicios);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        // Configurar o Spinner com o adaptador
+
         spinner.setAdapter(adapter);
         final AlertDialog dialog3 = builder.create();
         Objects.requireNonNull(dialog3.getWindow()).setBackgroundDrawableResource(R.drawable.customdialog); // Aplica o fundo arredondado
         final String[] selected = {""};
 
-        // Opcional: lidar com a seleção do item
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 selected[0] = parentView.getItemAtPosition(position).toString();
-
-                // Faça algo com o nome do exercício selecionado
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
-                // Não faça nada se nada for selecionado
             }
         });
         final EditText inputSeries = customLayout.findViewById(R.id.seriesEditText);
@@ -331,25 +334,24 @@ public class train_edit_exercise extends Fragment {
 
         builder.show();
     }
-
-
+    /**
+     *  Method to display the help dialog
+     */
     private void showHelpDialog() {
 
         final Dialog dialog = new Dialog(requireContext());
         dialog.setContentView(R.layout.layou_help);
 
-        // Personaliza o fundo do diálogo (usando o drawable com bordas arredondadas)
         Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawableResource(android.R.color.transparent);
 
         Button helpOkButton = dialog.findViewById(R.id.helpOkButton);
 
 
 
-        // Configurar o botão "Cancelar"
         helpOkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss(); // Fecha o diálogo
+                dialog.dismiss();
             }
         });
 
@@ -358,23 +360,28 @@ public class train_edit_exercise extends Fragment {
     }
 
 
+    /**
+     *   Method to add exercise to the list, and database call
+     * @param exerciseName - Name of Exercise
+     * @param id_exercicio - id of exercise
+     * @param repetitions - repetitions info
+     * @param series - series info
+      */
 
-    // Método para adicionar exercício à lista
     private void addExercise(String exerciseName, int id_exercicio,int series, int repetitions) {
-        // Adicionando um novo exercício com um ID gerado
-        int newId = exerciseList.size() + 1; // Exemplo de ID simples
+
+        int newId = exerciseList.size() + 1;
         Exercise newExercise = new Exercise(newId, id_exercicio,exerciseName, series, repetitions,exerciseList.size() + 1);
         exerciseList.add(newExercise);
-
-        // Atualizar a lista no ViewModel
         modelview.getExercises().setValue(exerciseList);
         addExerciseInPlanIntoDB(exerciseName,series,repetitions,exerciseList.size());
-        // Notificar o adaptador para inserir o novo item
         adapter.notifyItemInserted(exerciseList.size() - 1);
 
     }
 
-    // Adapter para o RecyclerView
+    /**
+     * Adapter for RecyclerView
+      */
     private static class ExerciseAdapter extends RecyclerView.Adapter<ExerciseAdapter.ExerciseViewHolder> {
         private List<Exercise> exerciseList;
 
@@ -385,17 +392,16 @@ public class train_edit_exercise extends Fragment {
 
         @Override
         public ExerciseViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            // Inflar o layout personalizado
+
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_exercise_edit, parent, false);
             return new ExerciseViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(ExerciseViewHolder holder, int position) {
-            // Obter o exercício na posição
+
             Exercise exercise = exerciseList.get(position);
 
-            // Configurar os TextViews com os dados do exercício
             holder.exerciseName.setText(exercise.getName());
             holder.exerciseDetails.setText("Séries: " + exercise.getSeries() + ", Repetições: " + exercise.getRepetitions());
         }
@@ -405,7 +411,7 @@ public class train_edit_exercise extends Fragment {
             return exerciseList.size();
         }
 
-        // ViewHolder para o item de exercício
+
         public static class ExerciseViewHolder extends RecyclerView.ViewHolder {
             public TextView exerciseName;
             public TextView exerciseDetails;
@@ -419,59 +425,49 @@ public class train_edit_exercise extends Fragment {
 
 
     }
+
+    /**
+     * Method that add an exercise in Plan into firebase and database local.
+     */
     public void addExerciseInPlanIntoDB(String name, int series, int rep,int order){
         ExecutorService executor = Executors.newSingleThreadExecutor();
-
-
-        // Executa a tarefa de busca dos treinos em segundo plano
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                // Chama o método do databaseHelper para pegar os treinos
                 int id = databaseHelper.getExerciseIdByName(name);
                 long t = databaseHelper.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order);
                 firebaseFirestorehelper.insertExercicioFromPlano(treinoPlano.getId(),id,series,rep,order,modelview.getUser().getValue().getId(),(int) t);
-
-
-
             }
         });
     }
 
+    /**
+     * Method that update all exercises info (order)
+     */
     private void updateExerciseOrderInDB() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
-
-
-        // Executa a tarefa de busca dos treinos em segundo plano
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                // Obtém o id do treino atual
-                int treinoId = treinoPlano.getId();
-                System.out.println("A ATUALIZAR ORDERS");
-                System.out.println(exerciseList);
 
-                // Atualiza a ordem dos exercícios no banco de dados
+                int treinoId = treinoPlano.getId();
                 databaseHelper.updateExerciseOrderInPlan(treinoId, exerciseList);
                 firebaseFirestorehelper.updateExerciseOrdersInPlan(treinoPlano.getId(),exerciseList);
             }
         });
     }
 
+    /**
+      * Method that update all exercises info (reps and sets)
+     */
     private void updateExerciseInfoInDB() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         firebaseFirestorehelper.updateExerciseDetailsInPlan(treinoPlano.getId(),exerciseList);
 
-        // Executa a tarefa de busca dos treinos em segundo plano
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                // Obtém o id do treino atual
                 int treinoId = treinoPlano.getId();
-
-                System.out.println(exerciseList);
-
-                // Atualiza a ordem dos exercícios no banco de dados
                 databaseHelper.updateExerciseDetailsInPlan(treinoId, exerciseList);
             }
         });

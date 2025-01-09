@@ -174,7 +174,7 @@ public class login extends Fragment {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                //ver se já existe na FB
+
                 FirebaseFirestore db = FirebaseFirestore.getInstance();
                 db.collection("users")
                         .whereEqualTo("username", username)
@@ -189,7 +189,7 @@ public class login extends Fragment {
                                         }
                                     });
                                 }else {
-                                    //add to user to FB
+                                    
                                     Map<String, Object> newUser = new HashMap<>();
                                     newUser.put("username", username);
                                     newUser.put("password", password);
